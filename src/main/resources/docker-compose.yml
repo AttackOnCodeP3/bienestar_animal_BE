@@ -1,0 +1,22 @@
+services:
+  db_mariadb_proyecto_3:
+    image: mariadb:latest
+    container_name: mariadb
+    environment:
+      - MYSQL_ROOT_PASSWORD=infos
+      - MYSQL_DATABASE=proyectoSCV2
+      - MYSQL_USER=infos
+      - MYSQL_PASSWORD=infos
+    volumes:
+      - mariadb_volume:/var/lib/mysql
+    networks:
+      - mariadb_network
+    ports:
+      - "3306:3306"
+
+
+volumes:
+  mariadb_volume:
+
+networks:
+  mariadb_network:
