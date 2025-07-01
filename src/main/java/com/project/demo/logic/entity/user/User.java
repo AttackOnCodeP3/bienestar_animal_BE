@@ -1,4 +1,7 @@
 package com.project.demo.logic.entity.user;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.project.demo.logic.entity.interest.Interest;
 import com.project.demo.logic.entity.municipality.Municipality;
 import com.project.demo.logic.entity.rol.Role;
 import jakarta.persistence.*;
@@ -15,6 +18,7 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 
 @Table(name = "user")
@@ -66,6 +70,14 @@ public class User implements UserDetails {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "municipality_id", nullable = false)
     private Municipality municipality;
+
+    @ManyToMany
+    @JoinTable(
+            name = "user_interest",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "interest_id")
+    )
+    private Set<Interest> interests;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")

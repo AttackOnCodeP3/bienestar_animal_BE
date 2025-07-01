@@ -1,5 +1,6 @@
 package com.project.demo.logic.entity.municipality;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.user.User;
 import jakarta.persistence.*;
@@ -36,5 +37,6 @@ public class Municipality {
     private Canton canton;
 
     @OneToMany(mappedBy = "municipality", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<User> users = new ArrayList<>();
 }
