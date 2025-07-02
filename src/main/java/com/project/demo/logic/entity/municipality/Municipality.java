@@ -5,8 +5,11 @@ import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 @Table(name = "municipality")
@@ -39,4 +42,12 @@ public class Municipality {
     @OneToMany(mappedBy = "municipality", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<User> users = new ArrayList<>();
+
+    @CreationTimestamp
+    @Column(updatable = false, name = "created_at")
+    private Date createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Date updatedAt;
 }

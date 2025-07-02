@@ -4,6 +4,10 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.demo.logic.entity.district.District;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.util.Date;
 
 @Table(name = "neighborhood")
 @Entity
@@ -24,4 +28,12 @@ public class Neighborhood {
     @JoinColumn(name = "district_id", nullable = false)
     @JsonIgnoreProperties("neighborhoods")
     private District district;
+
+    @CreationTimestamp
+    @Column(updatable = false, name = "created_at")
+    private Date createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private Date updatedAt;
 }
