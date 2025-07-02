@@ -3,6 +3,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.demo.logic.entity.interest.Interest;
 import com.project.demo.logic.entity.municipality.Municipality;
+import com.project.demo.logic.entity.neighborhood.Neighborhood;
 import com.project.demo.logic.entity.rol.Role;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -78,6 +79,10 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "interest_id")
     )
     private Set<Interest> interests;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "neighborhood_id", nullable = false)
+    private Neighborhood neighborhood;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")

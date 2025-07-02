@@ -4,6 +4,8 @@ import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.canton.CantonRepository;
 import com.project.demo.logic.entity.municipality.Municipality;
 import com.project.demo.logic.entity.municipality.MunicipalityRepository;
+import com.project.demo.logic.entity.neighborhood.Neighborhood;
+import com.project.demo.logic.entity.neighborhood.NeighborhoodRepository;
 import com.project.demo.logic.entity.rol.Role;
 import com.project.demo.logic.entity.rol.RoleEnum;
 import com.project.demo.logic.entity.rol.RoleRepository;
@@ -25,6 +27,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final RoleRepository roleRepository;
     private final UserRepository userRepository;
     private final MunicipalityRepository municipalityRepository;
+    private final NeighborhoodRepository neighborhoodRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -35,12 +38,14 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
             RoleRepository roleRepository,
             UserRepository  userRepository,
             PasswordEncoder passwordEncoder,
-            MunicipalityRepository municipalityRepository
+            MunicipalityRepository municipalityRepository,
+            NeighborhoodRepository neighborhoodRepository
     ) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.municipalityRepository = municipalityRepository;
+        this.neighborhoodRepository = neighborhoodRepository;
     }
 
     @Override
@@ -66,8 +71,9 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         Optional<Role> optionalRole = roleRepository.findByName(RoleEnum.SUPER_ADMIN);
         Optional<User> optionalUser = userRepository.findByEmail(superAdmin.getEmail());
         Optional<Municipality> optionalMunicipality = municipalityRepository.findById(1L);
+        Optional<Neighborhood> optionalNeighborhood = neighborhoodRepository.findById(1L);
 
-        if (optionalRole.isEmpty() || optionalUser.isPresent() || optionalMunicipality.isEmpty()) {
+        if (optionalRole.isEmpty() || optionalUser.isPresent() || optionalMunicipality.isEmpty()  || optionalNeighborhood.isEmpty()) {
             return;
         }
 
@@ -79,6 +85,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         user.setPhoneNumber(superAdmin.getPhoneNumber());
         user.setIdentificationCard(superAdmin.getIdentificationCard());
         user.setMunicipality(optionalMunicipality.get());
+        user.setNeighborhood(optionalNeighborhood.get());
         user.setPassword(passwordEncoder.encode(superAdmin.getPassword()));
         user.setRole(optionalRole.get());
 

@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-@Order(1)
+@Order(2)
 @Component
 public class RoleSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final RoleRepository roleRepository;

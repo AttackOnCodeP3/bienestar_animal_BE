@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-@Order(3)
+@Order(4)
 @Component
 public class MunicipalitySeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final MunicipalityRepository municipalityRepository;

@@ -1,19 +1,17 @@
-package com.project.demo.logic.entity.canton;
+package com.project.demo.logic.entity.neighborhood;
 
 import com.project.demo.logic.entity.district.District;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.List;
-
-@Table(name = "canton")
+@Table(name = "neighborhood")
 @Entity
 @Getter
 @Setter
 @RequiredArgsConstructor
 @Builder
 @AllArgsConstructor
-public class Canton {
+public class Neighborhood {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -21,6 +19,7 @@ public class Canton {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "canton")
-    private List<District> districts;
+    @ManyToOne
+    @JoinColumn(name = "district_id", nullable = false)
+    private District district;
 }

@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.logging.Logger;
 
-@Order(4)
+@Order(3)
 @Component
 public class InterestSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final InterestRepository interestRepository;
