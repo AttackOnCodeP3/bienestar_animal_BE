@@ -1,5 +1,6 @@
 package com.project.demo.logic.entity.interest;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.demo.logic.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
@@ -13,6 +14,7 @@ import java.util.Set;
 @RequiredArgsConstructor
 @Builder
 @AllArgsConstructor
+@JsonIgnoreProperties({"users"})
 public class Interest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

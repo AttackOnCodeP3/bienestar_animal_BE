@@ -64,7 +64,7 @@ public class SecurityConfiguration {
                 // mientras que el resto requiere autenticación.
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.POST, PublicEndpointsConstants.AUTH).permitAll()
-                        .requestMatchers(PublicEndpointsConstants.OAUTH2, PublicEndpointsConstants.LOGIN).permitAll()
+                        .requestMatchers(PublicEndpointsConstants.OAUTH2, PublicEndpointsConstants.LOGIN, PublicEndpointsConstants.INTERESTS, PublicEndpointsConstants.MUNICIPALITIES).permitAll()
                         .anyRequest().authenticated()
                 )
 

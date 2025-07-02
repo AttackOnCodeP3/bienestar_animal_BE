@@ -68,7 +68,7 @@ public class User implements UserDetails {
     private boolean registeredByCensusTaker = false;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "municipality_id", nullable = false)
+    @JoinColumn(name = "municipality_id")
     private Municipality municipality;
 
     @ManyToMany

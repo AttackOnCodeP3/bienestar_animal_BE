@@ -19,7 +19,7 @@ import java.time.LocalDate;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-@Order(4)
+@Order(5)
 @Component
 public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final RoleRepository roleRepository;
