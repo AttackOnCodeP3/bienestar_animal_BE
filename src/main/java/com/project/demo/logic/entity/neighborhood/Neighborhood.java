@@ -1,5 +1,6 @@
 package com.project.demo.logic.entity.neighborhood;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.demo.logic.entity.district.District;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,5 +22,6 @@ public class Neighborhood {
 
     @ManyToOne
     @JoinColumn(name = "district_id", nullable = false)
+    @JsonIgnoreProperties("neighborhoods")
     private District district;
 }

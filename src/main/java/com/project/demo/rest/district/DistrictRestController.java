@@ -4,6 +4,7 @@ import com.project.demo.logic.entity.district.District;
 import com.project.demo.logic.entity.district.DistrictRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
+import com.project.demo.logic.entity.neighborhood.NeighborhoodRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,6 +22,9 @@ public class DistrictRestController {
 
     @Autowired
     private DistrictRepository districtRepository;
+
+    @Autowired
+    private NeighborhoodRepository neighborhoodRepository;
 
     @GetMapping
     public ResponseEntity<?> getAll(
@@ -53,11 +57,11 @@ public class DistrictRestController {
         }
     }
 
-    @GetMapping("/cantons/{cantonId}/districts")
-    public ResponseEntity<?> getByCantonId(@PathVariable Long cantonId, HttpServletRequest request) {
-        var districts = districtRepository.findByCantonId(cantonId);
-        return new GlobalResponseHandler().handleResponse("Districts of canton retrieved successfully",
-                districts, HttpStatus.OK, request);
+    @GetMapping("{districtId}/neighborhoods")
+    public ResponseEntity<?> getByDistrictId(@PathVariable Long districtId, HttpServletRequest request) {
+        var neighborhoods = neighborhoodRepository.findByDistrictId(districtId);
+        return new GlobalResponseHandler().handleResponse("Neighborhoods of district retrieved successfully",
+                neighborhoods, HttpStatus.OK, request);
     }
 
     @PostMapping

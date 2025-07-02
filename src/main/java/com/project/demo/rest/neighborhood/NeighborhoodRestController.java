@@ -53,13 +53,6 @@ public class NeighborhoodRestController {
         }
     }
 
-    @GetMapping("/districts/{districtId}/neighborhoods")
-    public ResponseEntity<?> getByDistrictId(@PathVariable Long districtId, HttpServletRequest request) {
-        var neighborhoods = neighborhoodRepository.findByDistrictId(districtId);
-        return new GlobalResponseHandler().handleResponse("Neighborhoods of district retrieved successfully",
-                neighborhoods, HttpStatus.OK, request);
-    }
-
     @PostMapping
     public ResponseEntity<?> create(@RequestBody Neighborhood neighborhood, HttpServletRequest request) {
         Neighborhood saved = neighborhoodRepository.save(neighborhood);

@@ -2,8 +2,10 @@ package com.project.demo.rest.canton;
 
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.canton.CantonRepository;
+import com.project.demo.logic.entity.district.DistrictRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
+import com.project.demo.logic.seeds.MunicipalitySeeder;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -14,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/cantons")
@@ -21,6 +24,11 @@ public class CantonRestController {
 
     @Autowired
     private CantonRepository cantonRepository;
+
+    @Autowired
+    private DistrictRepository districtRepository;
+
+    private final Logger logger = Logger.getLogger(CantonRestController.class.getName());
 
     @GetMapping
     public ResponseEntity<?> getAll(
@@ -51,6 +59,14 @@ public class CantonRestController {
             return new GlobalResponseHandler().handleResponse("Canton id " + cantonId + " not found",
                     HttpStatus.NOT_FOUND, request);
         }
+    }
+
+    @GetMapping("/{cantonId}/districts")
+    public ResponseEntity<?> getByCantonId(@PathVariable Long cantonId, HttpServletRequest request) {
+        logger.info("Getting districts for canton with ID: " + cantonId);
+        var districts = districtRepository.findByCantonId(cantonId);
+        return new GlobalResponseHandler().handleResponse("Districts of canton retrieved successfully",
+                districts, HttpStatus.OK, request);
     }
 
     @PostMapping

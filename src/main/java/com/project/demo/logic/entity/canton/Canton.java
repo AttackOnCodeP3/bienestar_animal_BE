@@ -1,5 +1,6 @@
 package com.project.demo.logic.entity.canton;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.demo.logic.entity.district.District;
 import jakarta.persistence.*;
 import lombok.*;
@@ -21,6 +22,7 @@ public class Canton {
     @Column(nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "canton")
+    @OneToMany(mappedBy = "canton", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("canton")
     private List<District> districts;
 }
