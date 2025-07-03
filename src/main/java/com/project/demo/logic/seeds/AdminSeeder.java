@@ -47,34 +47,32 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
     }
 
     @Override
-    public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        this.createSuperAdministrator();
+    public void onApplicationEvent(ContextRefreshedEvent event) {
+        createSuperAdmin();
+        createMunicipalAdmin();
+        createVolunteerUser();
+        createCommunityUser();
     }
 
-    private void createSuperAdministrator() {
-        String email = "super.admin@gmail.com";
+    private void createSuperAdmin() {
+        final String email = "super.admin@gmail.com";
 
         if (userRepository.findByEmail(email).isPresent()) {
-            logger.info("Super Administrator already exists, skipping seeding.");
+            logger.info("Super admin already exists, skipping creation.");
             return;
         }
 
-        Optional<Role> superAdminRole = roleRepository.findByName(RoleEnum.SUPER_ADMIN);
-        Optional<Role> municipalAdminRole = roleRepository.findByName(RoleEnum.MUNICIPAL_ADMIN);
-        Optional<Role> volunteerRole = roleRepository.findByName(RoleEnum.VOLUNTEER_USER);
-        Optional<Role> communityUserRole = roleRepository.findByName(RoleEnum.COMMUNITY_USER);
-
-        if (superAdminRole.isEmpty() || municipalAdminRole.isEmpty() ||
-                volunteerRole.isEmpty() || communityUserRole.isEmpty()) {
-            logger.warning("One or more required roles not found, skipping super admin creation.");
+        Optional<Role> role = roleRepository.findByName(RoleEnum.SUPER_ADMIN);
+        if (role.isEmpty()) {
+            logger.warning("SUPER_ADMIN role not found.");
             return;
         }
 
-        Optional<Municipality> municipalityOpt = municipalityRepository.findById(1L);
-        Optional<Neighborhood> neighborhoodOpt = neighborhoodRepository.findById(1L);
+        Optional<Municipality> municipality = municipalityRepository.findById(1L);
+        Optional<Neighborhood> neighborhood = neighborhoodRepository.findById(1L);
 
-        if (municipalityOpt.isEmpty() || neighborhoodOpt.isEmpty()) {
-            logger.warning("Municipality or Neighborhood not found, skipping super admin creation.");
+        if (municipality.isEmpty() || neighborhood.isEmpty()) {
+            logger.warning("Municipality or neighborhood not found.");
             return;
         }
 
@@ -82,19 +80,133 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         user.setName("Super");
         user.setLastname("Admin");
         user.setEmail(email);
-        user.setPassword(passwordEncoder.encode("superadmin123"));
-        user.setPhoneNumber("1234567890");
-        user.setBirthDate(LocalDate.of(1990, 1, 1));
-        user.setIdentificationCard("123456789");
-        user.setMunicipality(municipalityOpt.get());
-        user.setNeighborhood(neighborhoodOpt.get());
-
-        user.addRole(superAdminRole.get());
-        user.addRole(municipalAdminRole.get());
-        user.addRole(volunteerRole.get());
-        user.addRole(communityUserRole.get());
+        user.setPassword(passwordEncoder.encode("123"));
+        user.setPhoneNumber("88888888");
+        user.setBirthDate(LocalDate.of(1980, 1, 1));
+        user.setIdentificationCard("999999999");
+        user.setMunicipality(municipality.get());
+        user.setNeighborhood(neighborhood.get());
+        user.addRole(role.get());
 
         userRepository.save(user);
-        logger.info("Super Administrator created with email: " + email);
+        logger.info("SUPER_ADMIN user created with email: " + email);
+    }
+
+    private void createMunicipalAdmin() {
+        final String email = "municipal.admin@gmail.com";
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            logger.info("Municipal admin already exists, skipping creation.");
+            return;
+        }
+
+        Optional<Role> role = roleRepository.findByName(RoleEnum.MUNICIPAL_ADMIN);
+        if (role.isEmpty()) {
+            logger.warning("MUNICIPAL_ADMIN role not found.");
+            return;
+        }
+
+        Optional<Municipality> municipality = municipalityRepository.findById(1L);
+        Optional<Neighborhood> neighborhood = neighborhoodRepository.findById(1L);
+
+        if (municipality.isEmpty() || neighborhood.isEmpty()) {
+            logger.warning("Municipality or neighborhood not found.");
+            return;
+        }
+
+        User user = new User();
+        user.setName("Municipal");
+        user.setLastname("Admin");
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode("123"));
+        user.setPhoneNumber("87777777");
+        user.setBirthDate(LocalDate.of(1985, 5, 10));
+        user.setIdentificationCard("888888888");
+        user.setMunicipality(municipality.get());
+        user.setNeighborhood(neighborhood.get());
+        user.addRole(role.get());
+
+        userRepository.save(user);
+        logger.info("MUNICIPAL_ADMIN user created with email: " + email);
+    }
+
+    private void createVolunteerUser() {
+        final String email = "volunteer.user@gmail.com";
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            logger.info("Volunteer user already exists, skipping creation.");
+            return;
+        }
+
+        Optional<Role> volunteerRole = roleRepository.findByName(RoleEnum.VOLUNTEER_USER);
+        Optional<Role> communityRole = roleRepository.findByName(RoleEnum.COMMUNITY_USER);
+
+        if (volunteerRole.isEmpty() || communityRole.isEmpty()) {
+            logger.warning("VOLUNTEER_USER or COMMUNITY_USER role not found.");
+            return;
+        }
+
+        Optional<Municipality> municipality = municipalityRepository.findById(1L);
+        Optional<Neighborhood> neighborhood = neighborhoodRepository.findById(1L);
+
+        if (municipality.isEmpty() || neighborhood.isEmpty()) {
+            logger.warning("Municipality or neighborhood not found.");
+            return;
+        }
+
+        User user = new User();
+        user.setName("Volunteer");
+        user.setLastname("Demo");
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode("123"));
+        user.setPhoneNumber("86666666");
+        user.setBirthDate(LocalDate.of(1992, 3, 15));
+        user.setIdentificationCard("777777777");
+        user.setMunicipality(municipality.get());
+        user.setNeighborhood(neighborhood.get());
+
+        user.addRole(volunteerRole.get());
+        user.addRole(communityRole.get());
+
+        userRepository.save(user);
+        logger.info("VOLUNTEER_USER with COMMUNITY_USER role created with email: " + email);
+    }
+
+    private void createCommunityUser() {
+        final String email = "community.user@gmail.com";
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            logger.info("Community user already exists, skipping creation.");
+            return;
+        }
+
+        Optional<Role> role = roleRepository.findByName(RoleEnum.COMMUNITY_USER);
+        if (role.isEmpty()) {
+            logger.warning("COMMUNITY_USER role not found.");
+            return;
+        }
+
+        Optional<Municipality> municipality = municipalityRepository.findById(1L);
+        Optional<Neighborhood> neighborhood = neighborhoodRepository.findById(1L);
+
+        if (municipality.isEmpty() || neighborhood.isEmpty()) {
+            logger.warning("Municipality or neighborhood not found.");
+            return;
+        }
+
+        User user = new User();
+        user.setName("Community");
+        user.setLastname("User");
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode("123"));
+        user.setPhoneNumber("85555555");
+        user.setBirthDate(LocalDate.of(1995, 6, 20));
+        user.setIdentificationCard("666666666");
+        user.setMunicipality(municipality.get());
+        user.setNeighborhood(neighborhood.get());
+        user.addRole(role.get());
+
+        userRepository.save(user);
+        logger.info("COMMUNITY_USER created with email: " + email);
     }
 }
