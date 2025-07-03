@@ -32,8 +32,10 @@ public class InterestSeeder implements ApplicationListener<ContextRefreshedEvent
         }
 
         String[] interests = new String[] {
-                "Technology", "Health", "Finance", "Education", "Travel",
-                "Food", "Sports", "Entertainment", "Environment", "Politics"
+                "Adoptar",
+                "Apoyar como casa cuna (cuido de animales temporalmente)",
+                "Apoyar en actividades de la Municipalidad, ejemplo: castración, festivales, capacitador(a)",
+                "Donar alimentos", "Recibir capacitación"
         };
 
         for (String interest : interests) {
