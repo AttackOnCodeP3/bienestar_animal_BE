@@ -78,11 +78,16 @@ public class AuthRestController {
         Optional<Role> volunteerRole = roleRepository.findByName(RoleEnum.VOLUNTEER_USER);
 
         if (communityRole.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Community role not found");
+            return ResponseEntity.badRequest().body("Community role not found");
         }
 
-        if (request.isWantsToBeVolunteer() && volunteerRole.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Volunteer role not found");
+        if (request.isWantsToBeVolunteer()) {
+            if (volunteerRole.isEmpty()) {
+                return ResponseEntity.badRequest().body("Volunteer role not found");
+            }
+            if (request.getMunicipalityId() == null) {
+                return ResponseEntity.badRequest().body("Municipality is required for volunteers");
+            }
         }
 
         User user = new User();
@@ -92,29 +97,28 @@ public class AuthRestController {
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setPhoneNumber(request.getPhoneNumber());
         user.setIdentificationCard(request.getIdentificationCard());
-        user.setNeighborhood(Neighborhood.builder().id(request.getNeighborhoodId()).build());
         user.setBirthDate(request.getBirthDate());
+        user.setNeighborhood(Neighborhood.builder().id(request.getNeighborhoodId()).build());
 
         if (request.getMunicipalityId() != null) {
             user.setMunicipality(Municipality.builder().id(request.getMunicipalityId()).build());
         }
 
         user.addRole(communityRole.get());
-        if (request.isWantsToBeVolunteer() && volunteerRole.isPresent()) {
-            user.addRole(volunteerRole.get());
+        if (request.isWantsToBeVolunteer()) {
+            volunteerRole.ifPresent(user::addRole);
         }
 
-        Set<Interest> interests = new HashSet<>();
-        if (request.getInterestIds() != null && !request.getInterestIds().isEmpty()) {
-            interests = new HashSet<>(interestRepository.findAllById(request.getInterestIds()));
-            if (interests.size() != request.getInterestIds().size()) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("One or more interests not found");
+        Set<Long> interestIds = request.getInterestIds();
+        if (interestIds != null && !interestIds.isEmpty()) {
+            Set<Interest> interests = new HashSet<>(interestRepository.findAllById(interestIds));
+            if (interests.size() != interestIds.size()) {
+                return ResponseEntity.badRequest().body("One or more interests not found");
             }
+            user.setInterests(interests);
         }
-        user.setInterests(interests);
 
         User savedUser = userRepository.save(user);
         return ResponseEntity.ok(savedUser);
     }
-
 }
