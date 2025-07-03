@@ -5,7 +5,6 @@ import com.project.demo.logic.entity.canton.CantonRepository;
 import com.project.demo.logic.entity.district.DistrictRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
-import com.project.demo.logic.seeds.MunicipalitySeeder;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;

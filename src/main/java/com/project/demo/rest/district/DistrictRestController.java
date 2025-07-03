@@ -57,7 +57,7 @@ public class DistrictRestController {
         }
     }
 
-    @GetMapping("{districtId}/neighborhoods")
+    @GetMapping("/{districtId}/neighborhoods")
     public ResponseEntity<?> getByDistrictId(@PathVariable Long districtId, HttpServletRequest request) {
         var neighborhoods = neighborhoodRepository.findByDistrictId(districtId);
         return new GlobalResponseHandler().handleResponse("Neighborhoods of district retrieved successfully",
