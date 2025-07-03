@@ -1,7 +1,5 @@
 package com.project.demo.logic.seeds;
 
-import com.project.demo.logic.entity.canton.Canton;
-import com.project.demo.logic.entity.canton.CantonRepository;
 import com.project.demo.logic.entity.municipality.Municipality;
 import com.project.demo.logic.entity.municipality.MunicipalityRepository;
 import com.project.demo.logic.entity.neighborhood.Neighborhood;
@@ -54,43 +52,49 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
     }
 
     private void createSuperAdministrator() {
-        if (userRepository.count() > 0) {
+        String email = "super.admin@gmail.com";
+
+        if (userRepository.findByEmail(email).isPresent()) {
             logger.info("Super Administrator already exists, skipping seeding.");
             return;
         }
 
-        User superAdmin = new User();
-        superAdmin.setName("Super");
-        superAdmin.setLastname("Admin");
-        superAdmin.setEmail("super.admin@gmail.com");
-        superAdmin.setPassword("superadmin123");
-        superAdmin.setPhoneNumber("1234567890");
-        superAdmin.setBirthDate(LocalDate.of(1990, 1, 1));
-        superAdmin.setIdentificationCard("123456789");
+        Optional<Role> superAdminRole = roleRepository.findByName(RoleEnum.SUPER_ADMIN);
+        Optional<Role> municipalAdminRole = roleRepository.findByName(RoleEnum.MUNICIPAL_ADMIN);
+        Optional<Role> volunteerRole = roleRepository.findByName(RoleEnum.VOLUNTEER_USER);
+        Optional<Role> communityUserRole = roleRepository.findByName(RoleEnum.COMMUNITY_USER);
 
-        Optional<Role> optionalRole = roleRepository.findByName(RoleEnum.SUPER_ADMIN);
-        Optional<User> optionalUser = userRepository.findByEmail(superAdmin.getEmail());
-        Optional<Municipality> optionalMunicipality = municipalityRepository.findById(1L);
-        Optional<Neighborhood> optionalNeighborhood = neighborhoodRepository.findById(1L);
-
-        if (optionalRole.isEmpty() || optionalUser.isPresent() || optionalMunicipality.isEmpty()  || optionalNeighborhood.isEmpty()) {
+        if (superAdminRole.isEmpty() || municipalAdminRole.isEmpty() ||
+                volunteerRole.isEmpty() || communityUserRole.isEmpty()) {
+            logger.warning("One or more required roles not found, skipping super admin creation.");
             return;
         }
 
-        var user = new User();
-        user.setName(superAdmin.getName());
-        user.setLastname(superAdmin.getLastname());
-        user.setEmail(superAdmin.getEmail());
-        user.setBirthDate(superAdmin.getBirthDate());
-        user.setPhoneNumber(superAdmin.getPhoneNumber());
-        user.setIdentificationCard(superAdmin.getIdentificationCard());
-        user.setMunicipality(optionalMunicipality.get());
-        user.setNeighborhood(optionalNeighborhood.get());
-        user.setPassword(passwordEncoder.encode(superAdmin.getPassword()));
-        user.setRole(optionalRole.get());
+        Optional<Municipality> municipalityOpt = municipalityRepository.findById(1L);
+        Optional<Neighborhood> neighborhoodOpt = neighborhoodRepository.findById(1L);
+
+        if (municipalityOpt.isEmpty() || neighborhoodOpt.isEmpty()) {
+            logger.warning("Municipality or Neighborhood not found, skipping super admin creation.");
+            return;
+        }
+
+        User user = new User();
+        user.setName("Super");
+        user.setLastname("Admin");
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode("superadmin123"));
+        user.setPhoneNumber("1234567890");
+        user.setBirthDate(LocalDate.of(1990, 1, 1));
+        user.setIdentificationCard("123456789");
+        user.setMunicipality(municipalityOpt.get());
+        user.setNeighborhood(neighborhoodOpt.get());
+
+        user.addRole(superAdminRole.get());
+        user.addRole(municipalAdminRole.get());
+        user.addRole(volunteerRole.get());
+        user.addRole(communityUserRole.get());
 
         userRepository.save(user);
-
-        logger.info("Super Administrator created with email: " + superAdmin.getEmail());
+        logger.info("Super Administrator created with email: " + email);
     }
 }
