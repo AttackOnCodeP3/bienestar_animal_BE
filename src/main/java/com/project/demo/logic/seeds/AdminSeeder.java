@@ -90,7 +90,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         user.setIdentificationCard("999999999");
         user.setMunicipality(municipality.get());
         user.setNeighborhood(neighborhood.get());
-        
+
         allRoles.forEach(user::addRole);
 
         userRepository.save(user);
