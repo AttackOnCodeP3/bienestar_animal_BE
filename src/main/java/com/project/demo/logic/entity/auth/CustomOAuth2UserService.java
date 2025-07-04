@@ -50,6 +50,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         String name = oAuth2User.getAttribute("given_name");
         String lastname = oAuth2User.getAttribute("family_name");
 
+
         User user = userRepository.findByEmail(email).orElseGet(() -> {
             Role defaultRole = roleRepository.findByName(RoleEnum.COMMUNITY_USER)
                     .orElseThrow(() -> new RuntimeException("USER role not found"));
@@ -59,7 +60,10 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             newUser.setName(name);
             newUser.setLastname(lastname);
             newUser.setPassword(passwordEncoder.encode("SOCIAL_LOGIN"));
+            newUser.setUsedSocialLogin(true);
+            newUser.setRequiresPasswordChange(false);
             newUser.addRole(defaultRole);
+
 
             logger.info("User automatically created from social login: {}", email);
 

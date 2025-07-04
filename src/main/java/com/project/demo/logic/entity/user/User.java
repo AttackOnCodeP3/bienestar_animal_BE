@@ -1,6 +1,4 @@
 package com.project.demo.logic.entity.user;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.demo.logic.entity.interest.Interest;
 import com.project.demo.logic.entity.municipality.Municipality;
 import com.project.demo.logic.entity.neighborhood.Neighborhood;
@@ -29,7 +27,7 @@ public class User implements UserDetails {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "identification_card", unique = true, nullable = false)
+    @Column(name = "identification_card", unique = true)
     private String identificationCard;
 
     @Column(nullable = false)
@@ -41,14 +39,14 @@ public class User implements UserDetails {
     @Column(unique = true, nullable = false)
     private String email;
 
-    @Column(name = "phone_number", length = 15, nullable = false)
+    @Column(name = "phone_number", length = 15)
     private String phoneNumber;
 
-    @Column(name = "birth_date", nullable = false)
+    @Column(name = "birth_date")
     private LocalDate birthDate;
 
     @Column(name = "is_nursery_home", nullable = false)
-    private boolean isNurseryHome = false;
+    private boolean nurseryHome = false;
 
     @Column(name = "temporary_password")
     private String temporaryPassword;
@@ -78,8 +76,14 @@ public class User implements UserDetails {
     private Set<Interest> interests;
 
     @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "neighborhood_id", nullable = false)
+    @JoinColumn(name = "neighborhood_id")
     private Neighborhood neighborhood;
+
+    @Column(name = "is_social_login_completed", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean socialLoginCompleted = false;
+
+    @Column(name = "used_social_login", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
+    private boolean usedSocialLogin = false;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")

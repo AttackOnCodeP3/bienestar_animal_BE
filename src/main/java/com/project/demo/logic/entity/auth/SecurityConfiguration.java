@@ -1,6 +1,5 @@
 package com.project.demo.logic.entity.auth;
 
-import com.project.demo.logic.constants.general.GeneralConstants;
 import com.project.demo.logic.constants.security.PublicEndpointsConstants;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -78,7 +77,7 @@ public class SecurityConfiguration {
                 // Configura la política de sesión para que sea stateless,
                 // ya que el sistema se basa en tokens JWT en lugar de sesiones de servidor.
                 .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                        .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
 
                 // Establece el proveedor de autenticación, normalmente para validar credenciales y cargar usuarios.

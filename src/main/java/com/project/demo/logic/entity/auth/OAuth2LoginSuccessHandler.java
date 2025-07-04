@@ -15,28 +15,18 @@ import java.io.IOException;
 /**
  * Custom authentication success handler for OAuth2 login.
  * <p>
- * Responsible for generating a JWT for the authenticated user and redirecting the client to the frontend
- * with the token as a query parameter.
+ * Responsible for redirecting the user to a specific URL after successful authentication.
  * @author dgutierrez
  */
 @Component
 @RequiredArgsConstructor
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    private final JwtService jwtService;
     private final UserRepository userRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
                                         Authentication authentication) throws IOException {
-        OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
-        String email = oAuth2User.getAttribute("email");
-
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
-
-        String token = jwtService.generateToken(user);
-
-        response.sendRedirect(GeneralConstants.SUCCESS_URL_AUTHENTICATION_GOOGLE + token);
+        response.sendRedirect(GeneralConstants.SUCCESS_URL_AUTHENTICATION_GOOGLE);
     }
 }
