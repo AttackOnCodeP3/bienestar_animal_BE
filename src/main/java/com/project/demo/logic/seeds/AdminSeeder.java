@@ -16,6 +16,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -62,9 +64,11 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
             return;
         }
 
-        Optional<Role> role = roleRepository.findByName(RoleEnum.SUPER_ADMIN);
-        if (role.isEmpty()) {
-            logger.warning("SUPER_ADMIN role not found.");
+        List<Role> allRoles = new ArrayList<>();
+        roleRepository.findAll().forEach(allRoles::add);
+
+        if (allRoles.isEmpty()) {
+            logger.warning("No roles found in the database.");
             return;
         }
 
@@ -86,10 +90,11 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         user.setIdentificationCard("999999999");
         user.setMunicipality(municipality.get());
         user.setNeighborhood(neighborhood.get());
-        user.addRole(role.get());
+        
+        allRoles.forEach(user::addRole);
 
         userRepository.save(user);
-        logger.info("SUPER_ADMIN user created with email: " + email);
+        logger.info("SUPER_ADMIN user created with all roles and email: " + email);
     }
 
     private void createMunicipalAdmin() {
