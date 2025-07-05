@@ -41,6 +41,12 @@ public class AuthSocialRestController {
     private final UserRepository userRepository;
     private final JwtService jwtService;
 
+    /**
+     * Handles the success of a social login.
+     * @param authentication the authentication object containing user details
+     * @return ResponseEntity with LoginResponse containing the JWT token and user details
+     * @author dgutierrez
+     */
     @GetMapping("/success")
     public ResponseEntity<LoginResponse> onSocialLoginSuccess(Authentication authentication) {
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
@@ -59,6 +65,12 @@ public class AuthSocialRestController {
         return ResponseEntity.ok(response);
     }
 
+    /**
+     * Completes the user profile after social login.
+     * @param request the request containing user details to complete the profile
+     * @return ResponseEntity with LoginResponse containing the JWT token and user details
+     * @author dgutierrez
+     */
     @PutMapping("/complete-profile")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<LoginResponse> completeProfile(
