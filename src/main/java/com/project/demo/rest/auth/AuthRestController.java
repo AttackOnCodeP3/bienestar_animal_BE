@@ -30,7 +30,6 @@ import java.util.Set;
 @RestController
 public class AuthRestController {
 
-
     @Autowired
     private UserRepository userRepository;
 
