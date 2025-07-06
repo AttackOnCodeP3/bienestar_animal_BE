@@ -2,13 +2,14 @@ name: Scheduled Merge Desarrollo to QA
 
 on:
   schedule:
-    # Esto es para que se ejecute todos los días a las 23:00 UTC (que es a las 7pm et o sea 5pm costa rica)
     - cron: "0 23 * * *"
   workflow_dispatch:
 
 jobs:
   merge:
     runs-on: ubuntu-latest
+    env:
+      GIT_TOKEN: ${{ secrets.PAT_TOKEN }}
     steps:
       - name: Checkout QA branch
         uses: actions/checkout@v4
@@ -19,6 +20,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Set up authenticated git
+        run: git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/AttackOnCodeP3/bienestar_animal_BE.git
 
       - name: Merge Desarrollo into QA
         run: |
