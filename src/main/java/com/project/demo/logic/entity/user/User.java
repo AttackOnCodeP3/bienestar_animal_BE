@@ -55,7 +55,7 @@ public class User implements UserDetails {
     private boolean requiresPasswordChange;
 
     @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
+    private boolean active = true;
 
     @Column(nullable = false)
     private String password;
@@ -111,24 +111,56 @@ public class User implements UserDetails {
     )
     private Set<Role> roles = new HashSet<>();
 
+    /**
+     * Indicates whether the user's account has not expired.
+     * If this method returns false, Spring Security will prevent login
+     * and throw an AccountExpiredException.
+     *
+     * @return true if the account is valid (not expired), false otherwise
+     * @author dgutierrez
+     */
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
+    /**
+     * Indicates whether the user's account is not locked.
+     * If this method returns false, Spring Security will prevent login
+     * and throw a LockedException.
+     *
+     * @return true if the account is not locked, false otherwise
+     * @author dgutierrez
+     */
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
+    /**
+     * Indicates whether the user's credentials (password) are not expired.
+     * If this method returns false, Spring Security will prevent login
+     * and throw a CredentialsExpiredException.
+     *
+     * @return true if the credentials are valid (not expired), false otherwise
+     * @author dgutierrez
+     */
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
+    /**
+     * Indicates whether the user's account is enabled.
+     * If this method returns false, Spring Security will prevent login
+     * and throw a DisabledException.
+     *
+     * @return true if the account is active/enabled, false otherwise
+     * @author dgutierrez
+     */
     @Override
     public boolean isEnabled() {
-        return true;
+        return active;
     }
 
     @Override
