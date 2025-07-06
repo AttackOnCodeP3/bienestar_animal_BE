@@ -14,8 +14,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
-
 
 @Table(name = "user")
 @Entity
@@ -85,13 +85,16 @@ public class User implements UserDetails {
     @Column(name = "used_social_login", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean usedSocialLogin = false;
 
+    @Column(name = "last_login_date")
+    private LocalDateTime lastLoginDate;
+
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
-    private Date createdAt;
+    private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
-    private Date updatedAt;
+    private LocalDateTime updatedAt;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -61,6 +62,11 @@ public class AuthRestController {
         loginResponse.setExpiresIn(jwtService.getExpirationTime());
 
         Optional<User> foundedUser = userRepository.findByEmail(user.getEmail());
+
+        foundedUser.ifPresent(u -> {
+            u.setLastLoginDate(LocalDateTime.now());
+            userRepository.save(u);
+        });
 
         foundedUser.ifPresent(loginResponse::setAuthUser);
 

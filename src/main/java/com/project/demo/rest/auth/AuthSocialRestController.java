@@ -23,6 +23,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
@@ -54,6 +55,9 @@ public class AuthSocialRestController {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Usuario no encontrado después del login social."));
+
+        user.setLastLoginDate(LocalDateTime.now());
+        userRepository.save(user);
 
         String token = jwtService.generateToken(user);
 
@@ -133,6 +137,7 @@ public class AuthSocialRestController {
         }
 
         user.setSocialLoginCompleted(true);
+        user.setLastLoginDate(LocalDateTime.now());
 
         User savedUser = userRepository.save(user);
 
