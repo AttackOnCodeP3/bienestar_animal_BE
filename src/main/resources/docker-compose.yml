@@ -7,8 +7,8 @@ services:
       - MYSQL_DATABASE=proyectoSCV2
       - MYSQL_USER=infos
       - MYSQL_PASSWORD=infos
-    volumes:
-      - mariadb_volume:/var/lib/mysql
+#    volumes:
+ #     - ./data:/var/lib/mysql
     networks:
       - mariadb_network
     ports:

@@ -6,5 +6,5 @@ package com.project.demo.logic.constants.general;
  * @author dgutierrez
  */
 public class GeneralConstants {
-    public static final String SUCCESS_URL_AUTHENTICATION_GOOGLE = "http://localhost:4200/login-success?token=";
+    public static final String SUCCESS_URL_AUTHENTICATION_GOOGLE = "http://localhost:4200/auth/social-callback";
 }
