@@ -8,13 +8,12 @@ on:
 jobs:
   merge:
     runs-on: ubuntu-latest
-    env:
-      GIT_TOKEN: ${{ secrets.PAT_TOKEN }}
     steps:
       - name: Checkout QA branch
         uses: actions/checkout@v4
         with:
           ref: QA
+          token: ${{ secrets.PAT_TOKEN }}
 
       - name: Set up Git user
         run: |
