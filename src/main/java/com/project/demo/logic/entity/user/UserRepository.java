@@ -2,6 +2,9 @@ package com.project.demo.logic.entity.user;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,4 +19,12 @@ public interface UserRepository extends JpaRepository<User, Long>  {
     Optional<User> findByLastname(String lastname);
 
     Optional<User> findByEmail(String email);
+
+    @Query("""
+    SELECT u FROM User u
+    WHERE :roleId NOT IN (
+        SELECT r.id FROM u.roles r
+    )
+""")
+    Page<User> findAllExcludingUsersWithRoleId(@Param("roleId") Integer roleId, Pageable pageable);
 }
