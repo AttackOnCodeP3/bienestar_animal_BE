@@ -1,5 +1,6 @@
 package com.project.demo.rest.user;
 
+import com.project.demo.common.BooleanUtils;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
 import com.project.demo.logic.entity.interest.Interest;
@@ -105,19 +106,18 @@ public class UserRestController {
 
         User user = foundUserOpt.get();
 
-        // Actualización de campos básicos
         user.setIdentificationCard(updateUserRequestDTO.getIdentificationCard());
         user.setName(updateUserRequestDTO.getName());
         user.setLastname(updateUserRequestDTO.getLastname());
         user.setEmail(updateUserRequestDTO.getEmail());
         user.setPhoneNumber(updateUserRequestDTO.getPhoneNumber());
         user.setBirthDate(updateUserRequestDTO.getBirthDate());
-        user.setNurseryHome(Boolean.TRUE.equals(updateUserRequestDTO.getNurseryHome()));
-        user.setRequiresPasswordChange(Boolean.TRUE.equals(updateUserRequestDTO.getRequiresPasswordChange()));
-        user.setActive(Boolean.TRUE.equals(updateUserRequestDTO.getActive()));
-        user.setRegisteredByCensusTaker(Boolean.TRUE.equals(updateUserRequestDTO.getRegisteredByCensusTaker()));
-        user.setSocialLoginCompleted(Boolean.TRUE.equals(updateUserRequestDTO.getSocialLoginCompleted()));
-        user.setUsedSocialLogin(Boolean.TRUE.equals(updateUserRequestDTO.getUsedSocialLogin()));
+        user.setNurseryHome(BooleanUtils.isTrue(updateUserRequestDTO.getNurseryHome()));
+        user.setRequiresPasswordChange(BooleanUtils.isTrue(updateUserRequestDTO.getRequiresPasswordChange()));
+        user.setActive(BooleanUtils.isTrue(updateUserRequestDTO.getActive()));
+        user.setRegisteredByCensusTaker(BooleanUtils.isTrue(updateUserRequestDTO.getRegisteredByCensusTaker()));
+        user.setSocialLoginCompleted(BooleanUtils.isTrue(updateUserRequestDTO.getSocialLoginCompleted()));
+        user.setUsedSocialLogin(BooleanUtils.isTrue(updateUserRequestDTO.getUsedSocialLogin()));
 
         if (updateUserRequestDTO.getMunicipalityId() != null) {
             Municipality municipality = municipalityRepository.findById(updateUserRequestDTO.getMunicipalityId())
