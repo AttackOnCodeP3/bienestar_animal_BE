@@ -26,7 +26,7 @@ jobs:
       - name: Merge Desarrollo into QA
         run: |
           git fetch origin Desarrollo
-          git merge origin/Desarrollo --no-ff -m "Automated merge from Desarrollo to QA"
+          git merge origin/Desarrollo --no-ff -m "Automated merge from Desarrollo to QA" --allow-unrelated-histories
 
       - name: Push changes
         run: git push origin QA
