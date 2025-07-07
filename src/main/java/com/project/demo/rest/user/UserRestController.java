@@ -1,5 +1,7 @@
 package com.project.demo.rest.user;
 
+import com.project.demo.logic.entity.assignment.UserMunicipalityAssignment;
+import com.project.demo.logic.entity.assignment.UserMunicipalityAssignmentRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
 import com.project.demo.logic.entity.interest.Interest;
@@ -52,6 +54,9 @@ public class UserRestController {
 
     @Autowired
     private MunicipalityRepository municipalityRepository;
+
+    @Autowired
+    private UserMunicipalityAssignmentRepository userMunicipalityAssignmentRepository;
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
@@ -122,7 +127,15 @@ public class UserRestController {
         if (updateUserRequestDTO.getMunicipalityId() != null) {
             Municipality municipality = municipalityRepository.findById(updateUserRequestDTO.getMunicipalityId())
                     .orElseThrow(() -> new EntityNotFoundException("Municipality not found"));
-            user.setMunicipality(municipality);
+
+            userMunicipalityAssignmentRepository.findByUserId(userId)
+                    .ifPresent(assignment -> userMunicipalityAssignmentRepository.delete(assignment));
+
+            var assignment = UserMunicipalityAssignment.builder()
+                    .municipality(municipality)
+                    .user(user)
+                    .build();
+            userMunicipalityAssignmentRepository.save(assignment);
         }
 
         if (updateUserRequestDTO.getNeighborhoodId() != null) {

@@ -1,5 +1,7 @@
 package com.project.demo.rest.auth;
 
+import com.project.demo.logic.entity.assignment.UserMunicipalityAssignment;
+import com.project.demo.logic.entity.assignment.UserMunicipalityAssignmentRepository;
 import com.project.demo.logic.entity.auth.AuthenticationService;
 import com.project.demo.logic.entity.auth.JwtService;
 import com.project.demo.logic.entity.interest.Interest;
@@ -43,6 +45,9 @@ public class AuthRestController {
 
     @Autowired
     private InterestRepository interestRepository;
+
+    @Autowired
+    private UserMunicipalityAssignmentRepository userMunicipalityAssignmentRepository;
 
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
@@ -107,7 +112,11 @@ public class AuthRestController {
         user.setNeighborhood(Neighborhood.builder().id(request.getNeighborhoodId()).build());
 
         if (request.getMunicipalityId() != null) {
-            user.setMunicipality(Municipality.builder().id(request.getMunicipalityId()).build());
+            var assignment = UserMunicipalityAssignment.builder()
+                    .user(user)
+                    .municipality(Municipality.builder().id(request.getMunicipalityId()).build())
+                    .build();
+            userMunicipalityAssignmentRepository.save(assignment);
         }
 
         user.addRole(communityRole.get());

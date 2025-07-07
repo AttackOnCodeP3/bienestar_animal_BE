@@ -30,10 +30,6 @@ public class UserMunicipalityAssignment {
     @JoinColumn(name = "municipality_id", nullable = false)
     private Municipality municipality;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private RoleEnum role;
-
     @CreationTimestamp
     @Column(name = "assigned_at", updatable = false)
     private LocalDateTime assignedAt;

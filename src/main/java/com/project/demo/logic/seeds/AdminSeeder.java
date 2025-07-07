@@ -1,5 +1,7 @@
 package com.project.demo.logic.seeds;
 
+import com.project.demo.logic.entity.assignment.UserMunicipalityAssignment;
+import com.project.demo.logic.entity.assignment.UserMunicipalityAssignmentRepository;
 import com.project.demo.logic.entity.municipality.Municipality;
 import com.project.demo.logic.entity.municipality.MunicipalityRepository;
 import com.project.demo.logic.entity.neighborhood.Neighborhood;
@@ -28,6 +30,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final UserRepository userRepository;
     private final MunicipalityRepository municipalityRepository;
     private final NeighborhoodRepository neighborhoodRepository;
+    private final UserMunicipalityAssignmentRepository userMunicipalityAssignmentRepository;
 
     private final PasswordEncoder passwordEncoder;
 
@@ -39,13 +42,15 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
             UserRepository  userRepository,
             PasswordEncoder passwordEncoder,
             MunicipalityRepository municipalityRepository,
-            NeighborhoodRepository neighborhoodRepository
+            NeighborhoodRepository neighborhoodRepository,
+            UserMunicipalityAssignmentRepository userMunicipalityAssignmentRepository
     ) {
         this.roleRepository = roleRepository;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.municipalityRepository = municipalityRepository;
         this.neighborhoodRepository = neighborhoodRepository;
+        this.userMunicipalityAssignmentRepository = userMunicipalityAssignmentRepository;
     }
 
     @Override
@@ -88,12 +93,18 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         user.setPhoneNumber("88888888");
         user.setBirthDate(LocalDate.of(1980, 1, 1));
         user.setIdentificationCard("999999999");
-        user.setMunicipality(municipality.get());
         user.setNeighborhood(neighborhood.get());
 
         allRoles.forEach(user::addRole);
 
         userRepository.save(user);
+
+        var assignment = UserMunicipalityAssignment.builder()
+                .user(user)
+                .municipality(municipality.get())
+                .build();
+        userMunicipalityAssignmentRepository.save(assignment);
+
         logger.info("SUPER_ADMIN user created with all roles and email: " + email);
     }
 
@@ -127,11 +138,19 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         user.setPhoneNumber("87777777");
         user.setBirthDate(LocalDate.of(1985, 5, 10));
         user.setIdentificationCard("888888888");
-        user.setMunicipality(municipality.get());
         user.setNeighborhood(neighborhood.get());
+
         user.addRole(role.get());
 
         userRepository.save(user);
+
+        var assignment = UserMunicipalityAssignment.builder()
+                .user(user)
+                .municipality(municipality.get())
+                .build();
+
+        userMunicipalityAssignmentRepository.save(assignment);
+
         logger.info("MUNICIPAL_ADMIN user created with email: " + email);
     }
 
@@ -167,13 +186,20 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         user.setPhoneNumber("86666666");
         user.setBirthDate(LocalDate.of(1992, 3, 15));
         user.setIdentificationCard("777777777");
-        user.setMunicipality(municipality.get());
         user.setNeighborhood(neighborhood.get());
 
         user.addRole(volunteerRole.get());
         user.addRole(communityRole.get());
 
         userRepository.save(user);
+
+        var assignment = UserMunicipalityAssignment.builder()
+                .user(user)
+                .municipality(municipality.get())
+                .build();
+
+        userMunicipalityAssignmentRepository.save(assignment);
+
         logger.info("VOLUNTEER_USER with COMMUNITY_USER role created with email: " + email);
     }
 
@@ -207,11 +233,19 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         user.setPhoneNumber("85555555");
         user.setBirthDate(LocalDate.of(1995, 6, 20));
         user.setIdentificationCard("666666666");
-        user.setMunicipality(municipality.get());
         user.setNeighborhood(neighborhood.get());
+
         user.addRole(role.get());
 
         userRepository.save(user);
+
+        var assignment = UserMunicipalityAssignment.builder()
+                .user(user)
+                .municipality(municipality.get())
+                .build();
+
+        userMunicipalityAssignmentRepository.save(assignment);
+
         logger.info("COMMUNITY_USER created with email: " + email);
     }
 }

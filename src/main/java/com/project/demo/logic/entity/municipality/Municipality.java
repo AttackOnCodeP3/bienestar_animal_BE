@@ -39,10 +39,6 @@ public class Municipality {
     @ManyToOne(fetch = FetchType.EAGER)
     private Canton canton;
 
-    @OneToMany(mappedBy = "municipality", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<User> users = new ArrayList<>();
-
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private LocalDateTime createdAt;

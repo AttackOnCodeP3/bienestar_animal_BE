@@ -63,10 +63,6 @@ public class User implements UserDetails {
     @Column(name = "registered_by_census_taker", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean registeredByCensusTaker = false;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "municipality_id")
-    private Municipality municipality;
-
     @ManyToMany
     @JoinTable(
             name = "user_interest",
