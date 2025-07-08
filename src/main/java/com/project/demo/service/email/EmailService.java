@@ -15,11 +15,12 @@ public class EmailService {
     @Value("${sendgrid.api.key}")
     private String sendGridApiKey;
 
-    @Value("${sendgrid.from.email}")
-    private String fromEmail;
+    @Value("${sendgrid.sender.email}")
+    private String senderEmail;
 
     public void sendEmail(String to, String subject, String body) throws IOException {
-        Email from = new Email(fromEmail);
+        Email from = new Email(senderEmail);
+
         Email toEmail = new Email(to);
         Content content = new Content("text/plain", body);
         Mail mail = new Mail(from, subject, toEmail, content);

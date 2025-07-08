@@ -69,7 +69,9 @@ public class SecurityConfiguration {
                                 PublicEndpointsConstants.MUNICIPALITIES,
                                 PublicEndpointsConstants.CANTONS,
                                 PublicEndpointsConstants.DISTRICTS,
-                                PublicEndpointsConstants.NEIGHBORHOODS
+                                PublicEndpointsConstants.NEIGHBORHOODS,
+                                PublicEndpointsConstants.FORGOTPW
+
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

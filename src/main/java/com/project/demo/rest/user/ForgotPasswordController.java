@@ -20,7 +20,7 @@ public class ForgotPasswordController {
         if (sent) {
             return ResponseEntity.ok("Si existe un usuario con ese correo, se ha enviado una contraseña temporal a su correo.");
         } else {
-            return ResponseEntity.ok("Si existe un usuario con ese correo, se ha enviado una contraseña temporal a su correo.");
+            return ResponseEntity.ok("NO existe un usuario con ese correo, se ha enviado una contraseña temporal a su correo.");
         }
     }
 }

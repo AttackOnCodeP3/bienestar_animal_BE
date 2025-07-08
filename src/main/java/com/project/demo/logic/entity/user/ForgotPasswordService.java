@@ -27,7 +27,7 @@ public class ForgotPasswordService {
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             String tempPassword = generateTemporaryPassword();
-            user.setPassword(passwordEncoder.encode(tempPassword));
+            user.setTemporaryPassword(passwordEncoder.encode(tempPassword));
             userRepository.save(user);
             emailService.sendEmail(email, "Contraseña Temporal - Bienestar Animal",
                     "Tu contraseña temporal es: " + tempPassword);
