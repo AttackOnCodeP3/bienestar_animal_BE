@@ -45,7 +45,6 @@ public class Municipality {
     @Column(name = "responsible_email")
     private String responsibleEmail;
 
-    @Column()
     private String logo;
 
     @Enumerated(EnumType.STRING)
