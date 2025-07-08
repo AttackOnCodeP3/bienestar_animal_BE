@@ -1,6 +1,7 @@
 package com.project.demo.logic.entity.municipality;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
-public interface MunicipalityRepository extends JpaRepository<Municipality,Long> {
+public interface MunicipalityRepository extends JpaRepository<Municipality, Long>, JpaSpecificationExecutor<Municipality> {
 }

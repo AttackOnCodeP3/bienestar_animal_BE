@@ -4,6 +4,7 @@ import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.canton.CantonRepository;
 import com.project.demo.logic.entity.municipality.Municipality;
 import com.project.demo.logic.entity.municipality.MunicipalityRepository;
+import com.project.demo.logic.entity.municipality.MunicipalityStatusEnum;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.Order;
@@ -52,6 +53,7 @@ public class MunicipalitySeeder implements ApplicationListener<ContextRefreshedE
                 .phone("2274-5000")
                 .address("Provincia de Cartago, Tres Rios, 30301")
                 .canton(optionalCanton.get())
+                .status(MunicipalityStatusEnum.ACTIVE)
                 .build();
 
         municipalityRepository.save(municipality);

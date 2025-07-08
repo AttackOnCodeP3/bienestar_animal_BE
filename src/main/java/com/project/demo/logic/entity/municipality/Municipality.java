@@ -36,6 +36,21 @@ public class Municipality {
     @Column(unique = true, nullable = false)
     private String email;
 
+    @Column(name = "responsible_name")
+    private String responsibleName;
+
+    @Column(name = "responsible_role")
+    private String responsibleRole;
+
+    @Column(name = "responsible_email")
+    private String responsibleEmail;
+
+    private String logo;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private MunicipalityStatusEnum status = MunicipalityStatusEnum.ACTIVE;
+
     @ManyToOne(fetch = FetchType.EAGER)
     private Canton canton;
 
@@ -43,11 +58,14 @@ public class Municipality {
     @JsonIgnore
     private List<User> users = new ArrayList<>();
 
-    @CreationTimestamp
-    @Column(updatable = false, name = "created_at")
-    private LocalDateTime createdAt;
+    @Column(name = "updated_by")
+    private String updatedBy;
 
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @CreationTimestamp
+    @Column(updatable = false, name = "created_at")
+    private LocalDateTime createdAt;
 }

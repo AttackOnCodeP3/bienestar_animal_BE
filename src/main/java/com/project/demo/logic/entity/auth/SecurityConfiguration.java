@@ -74,8 +74,6 @@ public class SecurityConfiguration {
                         .anyRequest().authenticated()
                 )
 
-                // Configura la política de sesión para que sea stateless,
-                // ya que el sistema se basa en tokens JWT en lugar de sesiones de servidor.
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
                 )
