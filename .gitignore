@@ -18,6 +18,7 @@
 *.zip
 *.tar.gz
 *.rar
+*.sql
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
@@ -42,4 +43,10 @@ build/resources/
 .gradle/8.7/gc.properties
 .gradle/vcs-1/gc.properties
 
+out
+resources/
+
+
 data/
+src/main/resources/init.sql
+
