@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Optional;
 import java.util.Random;
 
@@ -17,26 +18,26 @@ public class ForgotPasswordService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // You will need to implement this service or use your own email service
+
     @Autowired
     private EmailService emailService;
 
-    public boolean resetPasswordAndSendEmail(String email) {
+    public boolean resetPasswordAndSendEmail(String email) throws IOException {
         Optional<User> userOpt = userRepository.findByEmail(email);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             String tempPassword = generateTemporaryPassword();
             user.setPassword(passwordEncoder.encode(tempPassword));
             userRepository.save(user);
-            emailService.sendEmail(email, "Temporary Password",
-                    "Your new temporary password is: " + tempPassword);
+            emailService.sendEmail(email, "Contraseña Temporal - Bienestar Animal",
+                    "Tu contraseña temporal es: " + tempPassword);
             return true;
         }
         return false;
     }
 
     private String generateTemporaryPassword() {
-        // Simple random password generator (customize as needed)
+
         int length = 10;
         String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
         Random rnd = new Random();
