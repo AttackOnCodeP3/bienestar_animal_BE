@@ -3,6 +3,7 @@ package com.project.demo.rest.rol;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
 import com.project.demo.logic.entity.rol.Role;
+import com.project.demo.logic.entity.rol.RoleEnum;
 import com.project.demo.logic.entity.rol.RoleRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +30,7 @@ public class RolRestController {
             HttpServletRequest request) {
 
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<Role> rolePage = roleRepository.findAll(pageable);
+        Page<Role> rolePage = roleRepository.findAllByNameNot(RoleEnum.SUPER_ADMIN, pageable);
 
         Meta meta = new Meta(request.getMethod(), request.getRequestURL().toString());
         meta.setTotalPages(rolePage.getTotalPages());
