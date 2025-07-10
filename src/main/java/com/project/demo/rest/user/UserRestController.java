@@ -124,7 +124,7 @@ public class UserRestController {
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<?> updateUser(
             @PathVariable Long userId,
-            @RequestBody UpdateUserRequestDTO updateUserRequestDTO,
+            @RequestBody UpdateUserRequestDTO dto,
             HttpServletRequest request) {
 
         Optional<User> foundUserOpt = userRepository.findById(userId);
@@ -136,48 +136,66 @@ public class UserRestController {
             );
         }
 
-        User user = foundUserOpt.get();
+        if (dto.getRoleIds() != null && dto.getRoleIds().isEmpty()) {
+            return new GlobalResponseHandler().handleResponse(
+                    "At least one role must be selected",
+                    HttpStatus.BAD_REQUEST,
+                    request
+            );
+        }
 
-        user.setIdentificationCard(updateUserRequestDTO.getIdentificationCard());
-        user.setName(updateUserRequestDTO.getName());
-        user.setLastname(updateUserRequestDTO.getLastname());
-        user.setEmail(updateUserRequestDTO.getEmail());
-        user.setPhoneNumber(updateUserRequestDTO.getPhoneNumber());
-        user.setBirthDate(updateUserRequestDTO.getBirthDate());
-        user.setNurseryHome(BooleanUtils.isTrue(updateUserRequestDTO.getNurseryHome()));
-        user.setRequiresPasswordChange(BooleanUtils.isTrue(updateUserRequestDTO.getRequiresPasswordChange()));
-        user.setActive(BooleanUtils.isTrue(updateUserRequestDTO.getActive()));
-        user.setRegisteredByCensusTaker(BooleanUtils.isTrue(updateUserRequestDTO.getRegisteredByCensusTaker()));
-        user.setSocialLoginCompleted(BooleanUtils.isTrue(updateUserRequestDTO.getSocialLoginCompleted()));
-        user.setUsedSocialLogin(BooleanUtils.isTrue(updateUserRequestDTO.getUsedSocialLogin()));
+        User currentUser = foundUserOpt.get();
 
-        if (updateUserRequestDTO.getMunicipalityId() != null) {
-            Municipality municipality = municipalityRepository.findById(updateUserRequestDTO.getMunicipalityId())
+        Municipality municipality = null;
+        if (dto.getMunicipalityId() != null) {
+            municipality = municipalityRepository.findById(dto.getMunicipalityId())
                     .orElseThrow(() -> new EntityNotFoundException("Municipality not found"));
-            user.setMunicipality(municipality);
         }
 
-        if (updateUserRequestDTO.getNeighborhoodId() != null) {
-            Neighborhood neighborhood = neighborhoodRepository.findById(updateUserRequestDTO.getNeighborhoodId())
+        Neighborhood neighborhood = null;
+        if (dto.getNeighborhoodId() != null) {
+            neighborhood = neighborhoodRepository.findById(dto.getNeighborhoodId())
                     .orElseThrow(() -> new EntityNotFoundException("Neighborhood not found"));
-            user.setNeighborhood(neighborhood);
         }
 
-        if (updateUserRequestDTO.getInterestIds() != null) {
-            Set<Interest> interests = new HashSet<>(interestRepository.findAllById(updateUserRequestDTO.getInterestIds()));
-            user.setInterests(interests);
-        }
+        Set<Interest> interests = dto.getInterestIds() != null
+                ? new HashSet<>(interestRepository.findAllById(dto.getInterestIds()))
+                : currentUser.getInterests();
 
-        if (updateUserRequestDTO.getRoleIds() != null) {
-            Set<Role> roles = new HashSet<>();
-            roleRepository.findAllById(updateUserRequestDTO.getRoleIds()).forEach(roles::add);
-        }
+        Set<Role> roles = dto.getRoleIds() != null
+                ? new HashSet<>(roleRepository.findAllById(dto.getRoleIds()))
+                : currentUser.getRoles();
 
-        userRepository.save(user);
+        User updatedUser = User.builder()
+                .id(currentUser.getId())
+                .identificationCard(dto.getIdentificationCard())
+                .name(dto.getName())
+                .lastname(dto.getLastname())
+                .email(dto.getEmail())
+                .phoneNumber(dto.getPhoneNumber())
+                .birthDate(dto.getBirthDate())
+                .nurseryHome(Boolean.TRUE.equals(dto.getNurseryHome()))
+                .requiresPasswordChange(Boolean.TRUE.equals(dto.getRequiresPasswordChange()))
+                .active(Boolean.TRUE.equals(dto.getActive()))
+                .registeredByCensusTaker(Boolean.TRUE.equals(dto.getRegisteredByCensusTaker()))
+                .socialLoginCompleted(Boolean.TRUE.equals(dto.getSocialLoginCompleted()))
+                .usedSocialLogin(Boolean.TRUE.equals(dto.getUsedSocialLogin()))
+                .municipality(municipality)
+                .neighborhood(neighborhood)
+                .interests(interests)
+                .roles(roles)
+
+                .password(currentUser.getPassword())
+                .temporaryPassword(currentUser.getTemporaryPassword())
+                .lastLoginDate(currentUser.getLastLoginDate())
+                .createdAt(currentUser.getCreatedAt())
+                .build();
+
+        userRepository.save(updatedUser);
 
         return new GlobalResponseHandler().handleResponse(
                 "User updated successfully",
-                user,
+                updatedUser,
                 HttpStatus.OK,
                 request
         );
