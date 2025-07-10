@@ -55,7 +55,7 @@ public class UserRestController {
     private MunicipalityRepository municipalityRepository;
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<?> getAll(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -90,6 +90,7 @@ public class UserRestController {
     }
 
     @PutMapping("/{userId}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<?> updateUser(
             @PathVariable Long userId,
             @RequestBody UpdateUserRequestDTO updateUserRequestDTO,

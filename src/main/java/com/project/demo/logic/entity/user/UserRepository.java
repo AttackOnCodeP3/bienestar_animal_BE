@@ -26,5 +26,5 @@ public interface UserRepository extends JpaRepository<User, Long>  {
         SELECT r.id FROM u.roles r
     )
 """)
-    Page<User> findAllExcludingUsersWithRoleId(@Param("roleId") Integer roleId, Pageable pageable);
+    Page<User> findAllExcludingUsersWithRoleId(@Param("roleId") Long roleId, Pageable pageable);
 }
