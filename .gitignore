@@ -50,3 +50,4 @@ resources/
 data/
 src/main/resources/init.sql
 
+src/main/resources/docker-compose.yml
