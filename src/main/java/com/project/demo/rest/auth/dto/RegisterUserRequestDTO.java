@@ -34,5 +34,7 @@ public class RegisterUserRequestDTO {
 
     private Set<Long> interestIds;
 
+    private Set<Long> roleIds;
+
     private boolean wantsToBeVolunteer;
 }
