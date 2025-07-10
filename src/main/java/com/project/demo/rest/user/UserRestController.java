@@ -80,6 +80,37 @@ public class UserRestController {
                 usersPage.getContent(), HttpStatus.OK, meta);
     }
 
+    /**
+     * Fetches a user by their ID.
+     *
+     * @param userId the ID of the user to fetch
+     * @param request the HTTP request for metadata
+     * @return a ResponseEntity containing the user or an error message
+     * @author dgutierrez
+     */
+    @GetMapping("/{userId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
+    public ResponseEntity<?> getUserById(
+            @PathVariable Long userId,
+            HttpServletRequest request) {
+
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            return new GlobalResponseHandler().handleResponse(
+                    "User id " + userId + " not found",
+                    HttpStatus.NOT_FOUND,
+                    request
+            );
+        }
+
+        return new GlobalResponseHandler().handleResponse(
+                "User retrieved successfully",
+                userOpt.get(),
+                HttpStatus.OK,
+                request
+        );
+    }
+
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<?> addUser(@RequestBody User user, HttpServletRequest request) {
