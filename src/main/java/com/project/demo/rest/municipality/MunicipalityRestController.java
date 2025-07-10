@@ -146,24 +146,49 @@ public class MunicipalityRestController {
 
     @PutMapping("/{municipalityId}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
-    public ResponseEntity<?> update(@PathVariable Long municipalityId, @RequestBody Municipality municipality, HttpServletRequest request) {
-        Optional<Municipality> found = municipalityRepository.findById(municipalityId);
-        if (found.isPresent()) {
-            municipality.setId(municipalityId);
-            Municipality updated = municipalityRepository.save(municipality);
-            return new GlobalResponseHandler().handleResponse(
-                    "Municipality updated successfully",
-                    updated,
-                    HttpStatus.OK,
-                    request
-            );
-        } else {
+    public ResponseEntity<?> update(
+            @PathVariable Long municipalityId,
+            @RequestBody UpdateMunicipalityRequestDTO dto,
+            HttpServletRequest request
+    ) {
+        Optional<Municipality> optional = municipalityRepository.findById(municipalityId);
+
+        if (optional.isEmpty()) {
             return new GlobalResponseHandler().handleResponse(
                     "Municipality not found",
                     HttpStatus.NOT_FOUND,
                     request
             );
         }
+
+        Municipality municipality = optional.get();
+
+        // Actualizar campos simples
+        municipality.setName(dto.getName());
+        municipality.setAddress(dto.getAddress());
+        municipality.setPhone(dto.getPhone());
+        municipality.setEmail(dto.getEmail());
+        municipality.setStatus(dto.getStatus());
+
+        municipality.setResponsibleName(dto.getResponsibleName());
+        municipality.setResponsibleRole(dto.getResponsiblePosition());
+
+        // Actualizar canton si cambia
+        if (dto.getCantonId() != null) {
+            municipality.setCanton(
+                    cantonRepository.findById(dto.getCantonId())
+                            .orElseThrow(() -> new IllegalArgumentException("Canton not found"))
+            );
+        }
+
+        Municipality updated = municipalityRepository.save(municipality);
+
+        return new GlobalResponseHandler().handleResponse(
+                "Municipality updated successfully",
+                updated,
+                HttpStatus.OK,
+                request
+        );
     }
 
     @PatchMapping("/{municipalityId}/status")
