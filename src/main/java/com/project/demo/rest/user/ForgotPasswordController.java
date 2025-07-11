@@ -7,6 +7,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @CrossOrigin
@@ -19,10 +20,9 @@ public class ForgotPasswordController {
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody ForgotPasswordDTO request) throws IOException {
         boolean sent = forgotPasswordService.resetPasswordAndSendEmail(request.getEmail());
-        if (sent) {
-            return ResponseEntity.ok("Si existe un usuario con ese correo, se ha enviado una contraseña temporal a su correo.");
-        } else {
-            return ResponseEntity.ok("NO existe un usuario con ese correo, se ha enviado una contraseña temporal a su correo.");
-        }
+
+        return ResponseEntity.ok().body(Map.of(
+                "message", "Si existe un usuario registrado con ese correo electrónico, se ha enviado una contraseña temporal a su dirección de correo."
+        ));
     }
 }

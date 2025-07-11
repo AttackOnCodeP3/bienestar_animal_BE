@@ -20,23 +20,21 @@ public class EmailService {
 
     public void sendEmail(String to, String subject, String body) throws IOException {
         Email from = new Email(senderEmail);
-
         Email toEmail = new Email(to);
         Content content = new Content("text/plain", body);
         Mail mail = new Mail(from, subject, toEmail, content);
 
         SendGrid sg = new SendGrid(sendGridApiKey);
         Request request = new Request();
-        try {
-            request.setMethod(Method.POST);
-            request.setEndpoint("mail/send");
-            request.setBody(mail.build());
-            Response response = sg.api(request);
-            System.out.println(response.getStatusCode());
-            System.out.println(response.getBody());
-            System.out.println(response.getHeaders());
-        } catch (IOException ex) {
-            throw ex;
-        }
+
+        request.setMethod(Method.POST);
+        request.setEndpoint("mail/send");
+        request.setBody(mail.build());
+
+        Response response = sg.api(request);
+        System.out.println("Status Code: " + response.getStatusCode());
+        System.out.println("Body: " + response.getBody());
+        System.out.println("Headers: " + response.getHeaders());
     }
+
 }
