@@ -3,6 +3,7 @@ package com.project.demo.logic.entity.municipality;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.user.User;
+import com.project.demo.rest.municipality.dto.UpdateMunicipalityRequestDTO;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -47,9 +48,9 @@ public class Municipality {
 
     private String logo;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MunicipalityStatusEnum status = MunicipalityStatusEnum.ACTIVE;
+    @ManyToOne
+    @JoinColumn(name = "status_id")
+    private MunicipalityStatus status;
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Canton canton;
@@ -68,4 +69,23 @@ public class Municipality {
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
     private LocalDateTime createdAt;
+
+    /**
+     * Updates the municipality entity from the provided DTO.
+     *
+     * @param dto    the DTO containing the new values for the municipality
+     * @param status the new status of the municipality
+     * @param canton the canton to which the municipality belongs
+     * @author dgutierrez
+     */
+    public void updateFromDto(UpdateMunicipalityRequestDTO dto, MunicipalityStatus status, Canton canton) {
+        this.name = dto.getName();
+        this.address = dto.getAddress();
+        this.phone = dto.getPhone();
+        this.email = dto.getEmail();
+        this.status = status;
+        this.canton = canton;
+        this.responsibleName = dto.getResponsibleName();
+        this.responsibleRole = dto.getResponsibleRole();
+    }
 }

@@ -1,5 +1,6 @@
 package com.project.demo.logic.seeds;
 
+import com.project.demo.logic.constants.general.GeneralConstants;
 import com.project.demo.logic.entity.rol.Role;
 import com.project.demo.logic.entity.rol.RoleEnum;
 import com.project.demo.logic.entity.rol.RoleRepository;
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-@Order(2)
+@Order(GeneralConstants.ROLE_SEEDER_ORDER)
 @Component
 public class RoleSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final RoleRepository roleRepository;
