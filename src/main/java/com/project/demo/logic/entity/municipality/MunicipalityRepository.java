@@ -26,4 +26,13 @@ public interface MunicipalityRepository extends JpaRepository<Municipality, Long
      * @author dgutierrez
      */
     Optional<Municipality> findByEmail(String email);
+
+    /**
+     * Finds a Municipality by its name.
+     *
+     * @param name the name of the municipality
+     * @return an Optional containing the Municipality if found, or empty if not found
+     * @author dgutierrez
+     */
+    Optional<Municipality> findByName(String name);
 }

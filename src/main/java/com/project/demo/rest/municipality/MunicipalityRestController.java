@@ -13,6 +13,7 @@ import com.project.demo.logic.entity.user.UserRepository;
 import com.project.demo.rest.municipality.dto.*;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
@@ -22,8 +23,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashSet;
+import java.util.Objects;
 import java.util.Optional;
-import org.slf4j.Logger;
+
 @RestController
 @RequestMapping("/municipalities")
 public class MunicipalityRestController {
@@ -48,18 +51,6 @@ public class MunicipalityRestController {
 
     private final Logger logger = LoggerFactory.getLogger(MunicipalityRestController.class);
 
-    /**
-     *
-     * @param name
-     * @param cantonId
-     * @param status
-     * @param page
-     * @param size
-     * @param request
-     * @return
-     * @author gjimienez
-     * {@code @modifiedBy} dgutierrez (12/7/2025) - Add JavaDoc comments and the logger
-     */
     @GetMapping
     public ResponseEntity<?> getAll(
             @RequestParam(required = false) String name,
@@ -92,14 +83,6 @@ public class MunicipalityRestController {
         );
     }
 
-    /**
-     *
-     * @param municipalityId
-     * @param request
-     * @return
-     * @author gjimienez
-     * {@code @modifiedBy} dgutierrez (12/7/2025) - Add JavaDoc comments and the logger
-     */
     @GetMapping("/{municipalityId}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> getById(@PathVariable Long municipalityId, HttpServletRequest request) {
@@ -122,55 +105,17 @@ public class MunicipalityRestController {
         }
     }
 
-    /**
-     * Creates a new municipality and its associated admin user.
-     * <p>
-     * Validates that the canton is not already associated with another municipality,
-     * and that the user email is not already registered. If either check fails, a
-     * BAD_REQUEST response is returned.
-     * <p>
-     * On success, the method creates the municipality, an admin user associated with it,
-     * and returns a CREATED response with the saved municipality.
-     *
-     * @param createMunicipalityRequestDTO the request data used to create the municipality
-     * @param request the incoming HTTP servlet request (used to build metadata)
-     * @return a ResponseEntity with success or error information
-     *
-     * @author gjimienez
-     * {@code @modifiedBy} dgutierrez (12/7/2025) - Added validations for canton and user email uniqueness,
-     *                                       applied builder pattern and structured logging.
-     */
     @PostMapping
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> create(
-            @RequestBody CreateMunicipalityRequestDTO createMunicipalityRequestDTO,
+            @RequestBody CreateMunicipalityRequestDTO dto,
             HttpServletRequest request
     ) {
-        logger.info("Creating municipality with name: {}", createMunicipalityRequestDTO.getName());
-        var globalResponseHandler = new GlobalResponseHandler();
-
-        if (municipalityRepository.findByEmail(createMunicipalityRequestDTO.getEmail()).isPresent()) {
-            return globalResponseHandler.handleResponse(
-                    "A municipality with this email already exists",
-                    HttpStatus.BAD_REQUEST,
-                    request
-            );
-        }
-
-        if (municipalityRepository.existsByCantonId(createMunicipalityRequestDTO.getCantonId())) {
-            return globalResponseHandler.handleResponse(
-                    "A municipality for this canton already exists",
-                    HttpStatus.BAD_REQUEST,
-                    request
-            );
-        }
-
-        if (userRepository.findByEmail(createMunicipalityRequestDTO.getEmail()).isPresent()) {
-            return globalResponseHandler.handleResponse(
-                    "A user with this email already exists",
-                    HttpStatus.BAD_REQUEST,
-                    request
-            );
+        logger.info("Creating municipality with name: {}", dto.getName());
+        try {
+            validarMunicipality(dto.getName(), dto.getEmail(), dto.getCantonId(), null);
+        } catch (IllegalArgumentException ex) {
+            return new GlobalResponseHandler().handleResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request);
         }
 
         Role adminRole = roleRepository.findByName(RoleEnum.MUNICIPAL_ADMIN)
@@ -180,51 +125,44 @@ public class MunicipalityRestController {
                 .findByName(MunicipalityStatusEnum.ACTIVE.getDisplayName())
                 .orElseThrow(() -> new IllegalArgumentException("Municipality status ACTIVE not found"));
 
-        Canton canton = cantonRepository.findById(createMunicipalityRequestDTO.getCantonId())
+        Canton canton = cantonRepository.findById(dto.getCantonId())
                 .orElseThrow(() -> new IllegalArgumentException("Canton not found"));
 
         Municipality municipality = Municipality.builder()
-                .name(createMunicipalityRequestDTO.getName())
-                .address(createMunicipalityRequestDTO.getAddress())
-                .phone(createMunicipalityRequestDTO.getPhone())
-                .email(createMunicipalityRequestDTO.getEmail())
-                .responsibleName(createMunicipalityRequestDTO.getResponsibleName())
-                .responsibleRole(createMunicipalityRequestDTO.getResponsibleRole())
+                .name(dto.getName())
+                .address(dto.getAddress())
+                .phone(dto.getPhone())
+                .email(dto.getEmail())
+                .responsibleName(dto.getResponsibleName())
+                .responsibleRole(dto.getResponsibleRole())
                 .status(activeStatus)
                 .canton(canton)
                 .build();
 
-        Municipality savedMunicipality = municipalityRepository.save(municipality);
+        Municipality saved = municipalityRepository.save(municipality);
 
         User adminUser = User.builder()
-                .name(createMunicipalityRequestDTO.getResponsibleName())
-                .lastname(createMunicipalityRequestDTO.getResponsibleRole())
-                .email(createMunicipalityRequestDTO.getEmail())
-                .password(passwordEncoder.encode("123")) // default password
+                .name(dto.getResponsibleName())
+                .lastname(dto.getResponsibleRole())
+                .email(dto.getEmail())
+                .password(passwordEncoder.encode("123"))
                 .requiresPasswordChange(true)
-                .municipality(savedMunicipality)
+                .municipality(saved)
+                .active(true)
+                .roles(new HashSet<>())
                 .build();
 
         adminUser.addRole(adminRole);
         userRepository.save(adminUser);
 
-        return globalResponseHandler.handleResponse(
+        return new GlobalResponseHandler().handleResponse(
                 "Municipality and admin user created successfully",
-                savedMunicipality,
+                saved,
                 HttpStatus.CREATED,
                 request
         );
     }
 
-    /**
-     *
-     * @param municipalityId
-     * @param dto
-     * @param request
-     * @return
-     * @author gjimienez
-     * {@code @modifiedBy} dgutierrez (12/7/2025) - Add JavaDoc comments and the logger
-     */
     @PutMapping("/{municipalityId}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> update(
@@ -237,6 +175,12 @@ public class MunicipalityRestController {
         Municipality municipality = municipalityRepository.findById(municipalityId)
                 .orElseThrow(() -> new EntityNotFoundException("Municipality not found"));
 
+        try {
+            validarMunicipality(dto.getName(), dto.getEmail(), dto.getCantonId(), municipalityId);
+        } catch (IllegalArgumentException ex) {
+            return new GlobalResponseHandler().handleResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request);
+        }
+
         MunicipalityStatus status = municipalityStatusRepository.findById(dto.getMunicipalityStatusId())
                 .orElseThrow(() -> new EntityNotFoundException("Municipality status not found"));
 
@@ -244,7 +188,6 @@ public class MunicipalityRestController {
                 .orElseThrow(() -> new EntityNotFoundException("Canton not found"));
 
         municipality.updateFromDto(dto, status, canton);
-
         Municipality updated = municipalityRepository.save(municipality);
 
         return new GlobalResponseHandler().handleResponse(
@@ -255,37 +198,21 @@ public class MunicipalityRestController {
         );
     }
 
-    /**
-     *
-     * @param municipalityId
-     * @param updateMunicipalityStatusRequestDTO
-     * @param request
-     * @return
-     * @author gjimienez
-     * {@code @modifiedBy} dgutierrez (12/7/2025) - Add JavaDoc comments and the logger
-     */
     @PatchMapping("/{municipalityId}/status")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> updateStatus(
             @PathVariable Long municipalityId,
-            @RequestBody UpdateMunicipalityStatusRequestDTO updateMunicipalityStatusRequestDTO,
+            @RequestBody UpdateMunicipalityStatusRequestDTO dto,
             HttpServletRequest request
     ) {
         logger.info("Updating status for municipality with ID: {}", municipalityId);
-        Optional<Municipality> optional = municipalityRepository.findById(municipalityId);
-        if (optional.isEmpty()) {
-            return new GlobalResponseHandler().handleResponse(
-                    "Municipality not found",
-                    HttpStatus.NOT_FOUND,
-                    request
-            );
-        }
+        Municipality municipality = municipalityRepository.findById(municipalityId)
+                .orElseThrow(() -> new EntityNotFoundException("Municipality not found"));
 
-        Municipality municipality = optional.get();
-        municipality.setStatus(
-                municipalityStatusRepository.findById(updateMunicipalityStatusRequestDTO.getMunicipalityStatusId())
-                        .orElseThrow(() -> new IllegalArgumentException("Municipality status not found"))
-        );
+        MunicipalityStatus status = municipalityStatusRepository.findById(dto.getMunicipalityStatusId())
+                .orElseThrow(() -> new IllegalArgumentException("Municipality status not found"));
+
+        municipality.setStatus(status);
         municipalityRepository.save(municipality);
 
         return new GlobalResponseHandler().handleResponse(
@@ -296,35 +223,19 @@ public class MunicipalityRestController {
         );
     }
 
-    /**
-     *
-     * @param municipalityId
-     * @param requestDTO
-     * @param request
-     * @return
-     * @author gjimienez
-     * {@code @modifiedBy} dgutierrez (12/7/2025) - Add JavaDoc comments and the logger
-     */
     @PatchMapping("/{municipalityId}/responsible")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> updateResponsible(
             @PathVariable Long municipalityId,
-            @RequestBody UpdateResponsibleRequestDTO requestDTO,
+            @RequestBody UpdateResponsibleRequestDTO dto,
             HttpServletRequest request
     ) {
         logger.info("Updating responsible for municipality with ID: {}", municipalityId);
-        Optional<Municipality> optional = municipalityRepository.findById(municipalityId);
-        if (optional.isEmpty()) {
-            return new GlobalResponseHandler().handleResponse(
-                    "Municipality not found",
-                    HttpStatus.NOT_FOUND,
-                    request
-            );
-        }
+        Municipality municipality = municipalityRepository.findById(municipalityId)
+                .orElseThrow(() -> new EntityNotFoundException("Municipality not found"));
 
-        Municipality municipality = optional.get();
-        municipality.setResponsibleName(requestDTO.getResponsibleName());
-        municipality.setResponsibleRole(requestDTO.getResponsibleRole());
+        municipality.setResponsibleName(dto.getResponsibleName());
+        municipality.setResponsibleRole(dto.getResponsibleRole());
         municipalityRepository.save(municipality);
 
         return new GlobalResponseHandler().handleResponse(
@@ -335,34 +246,18 @@ public class MunicipalityRestController {
         );
     }
 
-    /**
-     *
-     * @param municipalityId
-     * @param requestDTO
-     * @param request
-     * @return
-     * @author gjimienez
-     * {@code @modifiedBy} dgutierrez (12/7/2025) - Add JavaDoc comments and the logger
-     */
     @PatchMapping("/{municipalityId}/logo")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> updateLogo(
             @PathVariable Long municipalityId,
-            @RequestBody UpdateLogoRequestDTO requestDTO,
+            @RequestBody UpdateLogoRequestDTO dto,
             HttpServletRequest request
     ) {
         logger.info("Updating logo for municipality with ID: {}", municipalityId);
-        Optional<Municipality> optional = municipalityRepository.findById(municipalityId);
-        if (optional.isEmpty()) {
-            return new GlobalResponseHandler().handleResponse(
-                    "Municipality not found",
-                    HttpStatus.NOT_FOUND,
-                    request
-            );
-        }
+        Municipality municipality = municipalityRepository.findById(municipalityId)
+                .orElseThrow(() -> new EntityNotFoundException("Municipality not found"));
 
-        Municipality municipality = optional.get();
-        municipality.setLogo(requestDTO.getLogo());
+        municipality.setLogo(dto.getLogo());
         municipalityRepository.save(municipality);
 
         return new GlobalResponseHandler().handleResponse(
@@ -373,14 +268,6 @@ public class MunicipalityRestController {
         );
     }
 
-    /**
-     *
-     * @param municipalityId
-     * @param request
-     * @return
-     * @author gjimienez
-     * {@code @modifiedBy} dgutierrez (12/7/2025) - Add JavaDoc comments and the logger
-     */
     @DeleteMapping("/{municipalityId}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> delete(@PathVariable Long municipalityId, HttpServletRequest request) {
@@ -401,5 +288,40 @@ public class MunicipalityRestController {
                     request
             );
         }
+    }
+
+    /**
+     * Validates the municipality data to ensure no duplicates exist.
+     *
+     * @param name       the name of the municipality
+     * @param email      the email of the municipality
+     * @param cantonId   the ID of the canton
+     * @param idActual   the current ID of the municipality being updated (null if creating)
+     * @author dgutierrez
+     */
+    private void validarMunicipality(String name, String email, Long cantonId, Long idActual) {
+        municipalityRepository.findByName(name).ifPresent(existing -> {
+            if (!Objects.equals(existing.getId(), idActual)) {
+                throw new IllegalArgumentException("A municipality with this name already exists");
+            }
+        });
+
+        municipalityRepository.findByEmail(email).ifPresent(existing -> {
+            if (!Objects.equals(existing.getId(), idActual)) {
+                throw new IllegalArgumentException("A municipality with this email already exists");
+            }
+        });
+
+        boolean cantonUsed = municipalityRepository.existsByCantonId(cantonId);
+        if (cantonUsed && (idActual == null || municipalityRepository.findById(idActual)
+                .map(m -> !m.getCanton().getId().equals(cantonId)).orElse(true))) {
+            throw new IllegalArgumentException("A municipality for this canton already exists");
+        }
+
+        userRepository.findByEmail(email).ifPresent(user -> {
+            if (user.getMunicipality() == null || !Objects.equals(user.getMunicipality().getId(), idActual)) {
+                throw new IllegalArgumentException("A user with this email already exists");
+            }
+        });
     }
 }
