@@ -10,6 +10,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Entity representing the status of a municipality.
+ * This class is used to define different statuses that a municipality can have,
+ * such as active, inactive, etc.
+ * @author dgutierrez
+ */
 @Table(name = "municipality_status")
 @Entity
 @Getter
