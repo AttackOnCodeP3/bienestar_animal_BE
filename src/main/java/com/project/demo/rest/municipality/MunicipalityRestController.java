@@ -1,5 +1,6 @@
 package com.project.demo.rest.municipality;
 
+import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.canton.CantonRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
@@ -11,6 +12,7 @@ import com.project.demo.logic.entity.user.User;
 import com.project.demo.logic.entity.user.UserRepository;
 import com.project.demo.logic.seeds.AdminSeeder;
 import com.project.demo.rest.municipality.dto.*;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -157,40 +159,21 @@ public class MunicipalityRestController {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> update(
             @PathVariable Long municipalityId,
-            @RequestBody UpdateMunicipalityRequestDTO updateMunicipalityRequestDTO,
+            @RequestBody UpdateMunicipalityRequestDTO dto,
             HttpServletRequest request
     ) {
         logger.info("Updating municipality with ID: " + municipalityId);
-        Optional<Municipality> optional = municipalityRepository.findById(municipalityId);
 
-        if (optional.isEmpty()) {
-            return new GlobalResponseHandler().handleResponse(
-                    "Municipality not found",
-                    HttpStatus.NOT_FOUND,
-                    request
-            );
-        }
+        Municipality municipality = municipalityRepository.findById(municipalityId)
+                .orElseThrow(() -> new EntityNotFoundException("Municipality not found"));
 
-        Municipality municipality = optional.get();
+        MunicipalityStatus status = municipalityStatusRepository.findById(dto.getMunicipalityStatusId())
+                .orElseThrow(() -> new EntityNotFoundException("Municipality status not found"));
 
-        municipality.setName(updateMunicipalityRequestDTO.getName());
-        municipality.setAddress(updateMunicipalityRequestDTO.getAddress());
-        municipality.setPhone(updateMunicipalityRequestDTO.getPhone());
-        municipality.setEmail(updateMunicipalityRequestDTO.getEmail());
-        municipality.setStatus(
-                municipalityStatusRepository.findById(updateMunicipalityRequestDTO.getMunicipalityStatusId())
-                        .orElseThrow(() -> new IllegalArgumentException("Municipality status not found"))
-        );
+        Canton canton = cantonRepository.findById(dto.getCantonId())
+                .orElseThrow(() -> new EntityNotFoundException("Canton not found"));
 
-        municipality.setResponsibleName(updateMunicipalityRequestDTO.getResponsibleName());
-        municipality.setResponsibleRole(updateMunicipalityRequestDTO.getResponsiblePosition());
-
-        if (updateMunicipalityRequestDTO.getCantonId() != null) {
-            municipality.setCanton(
-                    cantonRepository.findById(updateMunicipalityRequestDTO.getCantonId())
-                            .orElseThrow(() -> new IllegalArgumentException("Canton not found"))
-            );
-        }
+        municipality.updateFromDto(dto, status, canton);
 
         Municipality updated = municipalityRepository.save(municipality);
 
