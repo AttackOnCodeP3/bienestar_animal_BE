@@ -7,5 +7,5 @@ import lombok.Setter;
 @Getter
 @Setter
 public class UpdateMunicipalityStatusRequestDTO {
-    private MunicipalityStatusEnum status;
+    private Long municipalityStatusId;
 }

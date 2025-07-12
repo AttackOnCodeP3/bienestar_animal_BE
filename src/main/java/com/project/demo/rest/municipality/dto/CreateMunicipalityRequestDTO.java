@@ -12,5 +12,5 @@ public class CreateMunicipalityRequestDTO {
     private String email;
     private Long cantonId;
     private String responsibleName;
-    private String responsiblePosition;
+    private String responsibleRole;
 }

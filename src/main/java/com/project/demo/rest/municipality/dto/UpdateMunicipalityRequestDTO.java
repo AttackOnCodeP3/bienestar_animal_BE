@@ -1,6 +1,5 @@
 package com.project.demo.rest.municipality.dto;
 
-import com.project.demo.logic.entity.municipality.MunicipalityStatusEnum;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,6 +12,6 @@ public class UpdateMunicipalityRequestDTO {
     private String email;
     private Long cantonId;
     private String responsibleName;
-    private String responsiblePosition;
-    private MunicipalityStatusEnum status;
+    private String responsibleRole;
+    private Long municipalityStatusId;
 }
