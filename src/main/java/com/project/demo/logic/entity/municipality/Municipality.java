@@ -1,6 +1,6 @@
 package com.project.demo.logic.entity.municipality;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+    import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.user.User;
 import jakarta.persistence.*;
@@ -47,9 +47,9 @@ public class Municipality {
 
     private String logo;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private MunicipalityStatusEnum status = MunicipalityStatusEnum.ACTIVE;
+    @ManyToOne
+    @JoinColumn(name = "status_id")
+    private MunicipalityStatus status;
 
     @ManyToOne(fetch = FetchType.EAGER)
     private Canton canton;

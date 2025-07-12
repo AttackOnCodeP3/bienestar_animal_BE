@@ -1,5 +1,6 @@
 package com.project.demo.logic.seeds;
 
+import com.project.demo.logic.constants.general.GeneralConstants;
 import com.project.demo.logic.entity.municipality.Municipality;
 import com.project.demo.logic.entity.municipality.MunicipalityRepository;
 import com.project.demo.logic.entity.neighborhood.Neighborhood;
@@ -21,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
 
-@Order(5)
+@Order(GeneralConstants.ADMIN_SEEDER_ORDER)
 @Component
 public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final RoleRepository roleRepository;

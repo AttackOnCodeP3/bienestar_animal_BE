@@ -14,5 +14,5 @@ public class UpdateMunicipalityRequestDTO {
     private Long cantonId;
     private String responsibleName;
     private String responsiblePosition;
-    private MunicipalityStatusEnum status;
+    private Long municipalityStatusId;
 }

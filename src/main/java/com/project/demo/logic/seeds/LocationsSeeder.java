@@ -1,5 +1,6 @@
 package com.project.demo.logic.seeds;
 
+import com.project.demo.logic.constants.general.GeneralConstants;
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.canton.CantonRepository;
 import com.project.demo.logic.entity.district.District;
@@ -14,7 +15,7 @@ import org.springframework.stereotype.Component;
 import java.util.*;
 import java.util.logging.Logger;
 
-@Order(1)
+@Order(GeneralConstants.LOCATIONS_SEEDER_ORDER)
 @Component
 public class LocationsSeeder implements ApplicationListener<ContextRefreshedEvent> {
 

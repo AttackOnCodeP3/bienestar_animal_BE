@@ -3,17 +3,16 @@ package com.project.demo.rest.municipality;
 import com.project.demo.logic.entity.canton.CantonRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
-import com.project.demo.logic.entity.municipality.Municipality;
-import com.project.demo.logic.entity.municipality.MunicipalityRepository;
-import com.project.demo.logic.entity.municipality.MunicipalitySpecifications;
-import com.project.demo.logic.entity.municipality.MunicipalityStatusEnum;
+import com.project.demo.logic.entity.municipality.*;
 import com.project.demo.logic.entity.rol.Role;
 import com.project.demo.logic.entity.rol.RoleEnum;
 import com.project.demo.logic.entity.rol.RoleRepository;
 import com.project.demo.logic.entity.user.User;
 import com.project.demo.logic.entity.user.UserRepository;
+import com.project.demo.logic.seeds.AdminSeeder;
 import com.project.demo.rest.municipality.dto.*;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -23,6 +22,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
+import java.util.logging.Logger;
 
 @RestController
 @RequestMapping("/municipalities")
@@ -43,6 +43,11 @@ public class MunicipalityRestController {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private MunicipalityStatusRepository municipalityStatusRepository;
+
+    private final Logger logger = Logger.getLogger(MunicipalityRestController.class.getName());
+
     @GetMapping
     public ResponseEntity<?> getAll(
             @RequestParam(required = false) String name,
@@ -52,6 +57,7 @@ public class MunicipalityRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request
     ) {
+        logger.info("Fetching municipalities with filters: name=" + name + ", cantonId=" + cantonId + ", status=" + status);
         Pageable pageable = PageRequest.of(page - 1, size);
         Specification<Municipality> spec = Specification
                 .where(MunicipalitySpecifications.hasNameContaining(name))
@@ -77,6 +83,7 @@ public class MunicipalityRestController {
     @GetMapping("/{municipalityId}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> getById(@PathVariable Long municipalityId, HttpServletRequest request) {
+        logger.info("Fetching municipality with ID: " + municipalityId);
         Optional<Municipality> optional = municipalityRepository.findById(municipalityId);
 
         if (optional.isPresent()) {
@@ -98,6 +105,7 @@ public class MunicipalityRestController {
     @PostMapping
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> create(@RequestBody CreateMunicipalityRequestDTO requestDTO, HttpServletRequest request) {
+        logger.info("Creating municipality with name: " + requestDTO.getName());
         boolean exists = municipalityRepository.findAll().stream()
                 .anyMatch(m -> m.getCanton().getId().equals(requestDTO.getCantonId()));
         if (exists) {
@@ -115,7 +123,8 @@ public class MunicipalityRestController {
                 .email(requestDTO.getEmail())
                 .responsibleName(requestDTO.getResponsibleName())
                 .responsibleRole(requestDTO.getResponsiblePosition())
-                .status(MunicipalityStatusEnum.ACTIVE)
+                .status(municipalityStatusRepository.findByName(MunicipalityStatusEnum.ACTIVE.name())
+                        .orElseThrow(() -> new IllegalArgumentException("Municipality status ACTIVE not found")))
                 .canton(cantonRepository.findById(requestDTO.getCantonId())
                         .orElseThrow(() -> new IllegalArgumentException("Canton not found")))
                 .build();
@@ -126,7 +135,7 @@ public class MunicipalityRestController {
         adminUser.setName(requestDTO.getResponsibleName());
         adminUser.setLastname(requestDTO.getResponsiblePosition());
         adminUser.setEmail(requestDTO.getEmail());
-        adminUser.setPassword(passwordEncoder.encode("123")); // contraseña por defecto
+        adminUser.setPassword(passwordEncoder.encode("123")); // password by default
         adminUser.setRequiresPasswordChange(true);
         adminUser.setMunicipality(savedMunicipality);
 
@@ -148,9 +157,10 @@ public class MunicipalityRestController {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> update(
             @PathVariable Long municipalityId,
-            @RequestBody UpdateMunicipalityRequestDTO dto,
+            @RequestBody UpdateMunicipalityRequestDTO updateMunicipalityRequestDTO,
             HttpServletRequest request
     ) {
+        logger.info("Updating municipality with ID: " + municipalityId);
         Optional<Municipality> optional = municipalityRepository.findById(municipalityId);
 
         if (optional.isEmpty()) {
@@ -163,20 +173,21 @@ public class MunicipalityRestController {
 
         Municipality municipality = optional.get();
 
-        // Actualizar campos simples
-        municipality.setName(dto.getName());
-        municipality.setAddress(dto.getAddress());
-        municipality.setPhone(dto.getPhone());
-        municipality.setEmail(dto.getEmail());
-        municipality.setStatus(dto.getStatus());
+        municipality.setName(updateMunicipalityRequestDTO.getName());
+        municipality.setAddress(updateMunicipalityRequestDTO.getAddress());
+        municipality.setPhone(updateMunicipalityRequestDTO.getPhone());
+        municipality.setEmail(updateMunicipalityRequestDTO.getEmail());
+        municipality.setStatus(
+                municipalityStatusRepository.findById(updateMunicipalityRequestDTO.getMunicipalityStatusId())
+                        .orElseThrow(() -> new IllegalArgumentException("Municipality status not found"))
+        );
 
-        municipality.setResponsibleName(dto.getResponsibleName());
-        municipality.setResponsibleRole(dto.getResponsiblePosition());
+        municipality.setResponsibleName(updateMunicipalityRequestDTO.getResponsibleName());
+        municipality.setResponsibleRole(updateMunicipalityRequestDTO.getResponsiblePosition());
 
-        // Actualizar canton si cambia
-        if (dto.getCantonId() != null) {
+        if (updateMunicipalityRequestDTO.getCantonId() != null) {
             municipality.setCanton(
-                    cantonRepository.findById(dto.getCantonId())
+                    cantonRepository.findById(updateMunicipalityRequestDTO.getCantonId())
                             .orElseThrow(() -> new IllegalArgumentException("Canton not found"))
             );
         }
@@ -195,9 +206,10 @@ public class MunicipalityRestController {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> updateStatus(
             @PathVariable Long municipalityId,
-            @RequestBody UpdateMunicipalityStatusRequestDTO requestDTO,
+            @RequestBody UpdateMunicipalityStatusRequestDTO updateMunicipalityStatusRequestDTO,
             HttpServletRequest request
     ) {
+        logger.info("Updating status for municipality with ID: " + municipalityId);
         Optional<Municipality> optional = municipalityRepository.findById(municipalityId);
         if (optional.isEmpty()) {
             return new GlobalResponseHandler().handleResponse(
@@ -208,7 +220,10 @@ public class MunicipalityRestController {
         }
 
         Municipality municipality = optional.get();
-        municipality.setStatus(requestDTO.getStatus());
+        municipality.setStatus(
+                municipalityStatusRepository.findById(updateMunicipalityStatusRequestDTO.getMunicipalityStatusId())
+                        .orElseThrow(() -> new IllegalArgumentException("Municipality status not found"))
+        );
         municipalityRepository.save(municipality);
 
         return new GlobalResponseHandler().handleResponse(
@@ -226,6 +241,7 @@ public class MunicipalityRestController {
             @RequestBody UpdateResponsibleRequestDTO requestDTO,
             HttpServletRequest request
     ) {
+        logger.info("Updating responsible for municipality with ID: " + municipalityId);
         Optional<Municipality> optional = municipalityRepository.findById(municipalityId);
         if (optional.isEmpty()) {
             return new GlobalResponseHandler().handleResponse(
@@ -255,6 +271,7 @@ public class MunicipalityRestController {
             @RequestBody UpdateLogoRequestDTO requestDTO,
             HttpServletRequest request
     ) {
+        logger.info("Updating logo for municipality with ID: " + municipalityId);
         Optional<Municipality> optional = municipalityRepository.findById(municipalityId);
         if (optional.isEmpty()) {
             return new GlobalResponseHandler().handleResponse(
@@ -279,6 +296,7 @@ public class MunicipalityRestController {
     @DeleteMapping("/{municipalityId}")
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> delete(@PathVariable Long municipalityId, HttpServletRequest request) {
+        logger.info("Deleting municipality with ID: " + municipalityId);
         Optional<Municipality> found = municipalityRepository.findById(municipalityId);
         if (found.isPresent()) {
             municipalityRepository.deleteById(municipalityId);
