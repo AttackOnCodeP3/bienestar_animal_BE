@@ -37,7 +37,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
 
     public AdminSeeder(
             RoleRepository roleRepository,
-            UserRepository  userRepository,
+            UserRepository userRepository,
             PasswordEncoder passwordEncoder,
             MunicipalityRepository municipalityRepository,
             NeighborhoodRepository neighborhoodRepository

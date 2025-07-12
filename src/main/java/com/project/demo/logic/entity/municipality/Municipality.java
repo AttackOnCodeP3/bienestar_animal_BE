@@ -1,10 +1,10 @@
 package com.project.demo.logic.entity.municipality;
 
-    import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.user.User;
-    import com.project.demo.rest.municipality.dto.UpdateMunicipalityRequestDTO;
-    import jakarta.persistence.*;
+import com.project.demo.rest.municipality.dto.UpdateMunicipalityRequestDTO;
+import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -72,7 +72,8 @@ public class Municipality {
 
     /**
      * Updates the municipality entity from the provided DTO.
-     * @param dto the DTO containing the new values for the municipality
+     *
+     * @param dto    the DTO containing the new values for the municipality
      * @param status the new status of the municipality
      * @param canton the canton to which the municipality belongs
      * @author dgutierrez

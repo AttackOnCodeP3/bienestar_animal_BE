@@ -21,11 +21,4 @@ public enum MunicipalityStatusEnum {
         this.description = description;
     }
 
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    public String getDescription() {
-        return description;
-    }
 }
