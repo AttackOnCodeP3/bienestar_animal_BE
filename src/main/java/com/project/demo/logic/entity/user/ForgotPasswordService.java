@@ -50,4 +50,26 @@ public class ForgotPasswordService {
             sb.append(chars.charAt(rnd.nextInt(chars.length())));
         return sb.toString();
     }
+
+    public boolean passwordReset(Long userId, String currentPassword, String newPassword, String confirmPassword) {
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isPresent()) {
+            User user = userOpt.get();
+            if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+                return false;
+            }
+            if (!newPassword.equals(confirmPassword)) {
+                return false;
+            }
+            user.setPassword(passwordEncoder.encode(newPassword));
+            user.setRequiresPasswordChange(false);
+            user.setTemporaryPassword(null);
+            userRepository.save(user);
+            return true;
+        }
+        return false;
+    }
+
+
+
 }
