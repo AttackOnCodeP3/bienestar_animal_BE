@@ -9,6 +9,10 @@ package com.project.demo.logic.constants.security;
  * OAUTH2: Endpoint prefix used by Spring Security for handling OAuth2 authorization requests
  * LOGIN: Additional login-related paths handled internally by Spring Security
  * @author dgutierrez
+ * 
+ * modified by
+ * @autor nav
+ * API: Endpoint prefix for public API access
  */
 public class PublicEndpointsConstants {
     public static final String AUTH = "/auth/**";
@@ -21,4 +25,5 @@ public class PublicEndpointsConstants {
     public static final String CANTONS = "/cantons/**";
     public static final String DISTRICTS = "/districts/**";
     public static final String NEIGHBORHOODS = "/neighborhoods/**";
+    public static final String API = "/api/**";
 }
