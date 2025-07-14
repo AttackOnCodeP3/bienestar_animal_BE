@@ -1,4 +1,6 @@
 package com.project.demo.rest.model;
+import com.project.demo.rest.model.dto.UploadPictureResponseDTO;
+import com.project.demo.rest.model.dto.CreateTaskResponseDTO;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -6,16 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.*;
 import com.project.demo.service.Tripo3DService.Tripo3DService;
 import lombok.extern.slf4j.Slf4j;
+
 
 
 @Slf4j
@@ -45,12 +44,9 @@ public class ModelRestController {
 
      
 @PostMapping("/uploadPicture")
-public ResponseEntity<Map<String, Object>> uploadPicture(@RequestParam("file") MultipartFile file) {
-    Map<String, Object> response = new HashMap<>();
+public ResponseEntity<UploadPictureResponseDTO> uploadPicture(@RequestParam("file") MultipartFile file) {
     if (file == null || file.isEmpty()) {
-        response.put("success", false);
-        response.put("message", "Please upload file");
-        return ResponseEntity.badRequest().body(response);
+        return ResponseEntity.badRequest().body(new UploadPictureResponseDTO(false, "File is required and cannot be empty", null));
     }
     try {
         Path tempFile = Files.createTempFile("upload-", file.getOriginalFilename());
@@ -58,15 +54,10 @@ public ResponseEntity<Map<String, Object>> uploadPicture(@RequestParam("file") M
 
         String publicImageUrl = tripo3DService.uploadToImgur(tempFile);
         Files.delete(tempFile);
-        response.put("success", true);
-        response.put("public_image_url", publicImageUrl);
-        response.put("message", "Image uploaded successfully and public URL obtained");
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(new UploadPictureResponseDTO(true, "File uploaded successfully", publicImageUrl));
         
     } catch (Exception e) {
-        response.put("success", false);
-        response.put("message", "Error: " + e.getMessage());
-        return ResponseEntity.status(500).body(response);
+        return ResponseEntity.ok(new UploadPictureResponseDTO(false, "Error uploading file: " + e.getMessage(), null));
     }
 }
 /**
@@ -81,16 +72,11 @@ public ResponseEntity<Map<String, Object>> uploadPicture(@RequestParam("file") M
  * */
  
 @PostMapping("/createTaskV25")
-public ResponseEntity<Map<String, Object>> createTaskV25(@RequestParam("image_url") String imageUrl) {
-    Map<String, Object> response = new HashMap<>();
-    
+public ResponseEntity<CreateTaskResponseDTO> createTaskV25(@RequestParam("image_url") String imageUrl) {
+    if(imageUrl == null || imageUrl.trim().isEmpty()) {
+        return ResponseEntity.badRequest().body(new CreateTaskResponseDTO(false, "image_url is required and cannot be empty", null, null, null,null));
+    }
     try {
-        if (imageUrl == null || imageUrl.trim().isEmpty()) {
-            response.put("success", false);
-            response.put("message", "image_url is required and cannot be empty");
-            return ResponseEntity.badRequest().body(response);
-        }
-        
         String taskResponse = tripo3DService.createImageToModelTaskV25(imageUrl);
         log.info("Task response: " + taskResponse);
         
@@ -99,36 +85,38 @@ public ResponseEntity<Map<String, Object>> createTaskV25(@RequestParam("image_ur
         
         if (taskJson.has("task_id")) {
             String taskId = taskJson.get("task_id").asText();
-            response.put("success", true);
-            response.put("task_id", taskId);
-            response.put("message", "Task created successfully with v2.5");
-            response.put("image_url", imageUrl);
+       JsonNode modelMesh = taskJson.get("model_mesh");
+            JsonNode renderedImage = taskJson.get("rendered_image");
             
-            if (taskJson.has("model_mesh")) {
-                response.put("model_mesh", taskJson.get("model_mesh"));
-            }
-            if (taskJson.has("rendered_image")) {
-                response.put("rendered_image", taskJson.get("rendered_image"));
-            }
-            
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(new CreateTaskResponseDTO(
+                true,
+                "Task created successfully",
+                taskId,
+                imageUrl,
+                modelMesh,
+                renderedImage
+            ));
         } else {
-            response.put("success", false);
-            response.put("message", "Cannot get task_id from response");
-            response.put("raw_response", taskJson);
-            return ResponseEntity.status(500).body(response);
+            return ResponseEntity.status(500).body(new CreateTaskResponseDTO(
+                false,
+                "Task creation failed, no task_id in response",
+                null,
+                imageUrl,
+                null,
+                null
+            ));
         }
         
     } catch (Exception e) {
-        response.put("success", false);
-        response.put("message", "Error: " + e.getMessage());
-        response.put("image_url", imageUrl);
-        
-        log.error("Error creating v2.5 task for image_url: " + imageUrl);
-        log.error("Error details: " + e.getMessage());
-        log.error("Error creating task", e);
-        
-        return ResponseEntity.status(500).body(response);
+       log.error("Error creating task: ", e);
+        return ResponseEntity.status(500).body((new CreateTaskResponseDTO(
+            false,
+            "Error creating task: " + e.getMessage(),
+            null,
+            imageUrl,
+            null,
+            null
+        )));
     }
 }
 }

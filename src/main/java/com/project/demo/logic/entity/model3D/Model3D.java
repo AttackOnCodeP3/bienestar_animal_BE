@@ -1,18 +1,16 @@
-package com.project.demo.logic.model3D;
+package com.project.demo.logic.entity.model3D;
 
 import java.security.Timestamp;
 import java.time.LocalDateTime;
 
+import com.project.demo.logic.entity.animal.Animal;
+import com.project.demo.logic.entity.state.StateGeneration;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import jakarta.persistence.*;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import jakarta.persistence.*;
 
 
 /**
