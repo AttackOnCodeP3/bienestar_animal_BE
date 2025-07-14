@@ -7,6 +7,10 @@ package com.project.demo.logic.constants.general;
  * These constants define the execution order for different seeders during
  * the application's data initialization phase. Lower values are executed first.
  * @author dgutierrez
+ * 
+ * modified by 
+ * @author nav
+ * State Generation Seeder added
  */
 public class GeneralConstants {
 
@@ -53,4 +57,11 @@ public class GeneralConstants {
      * Creates default administrator users or system-level accounts.
      */
     public static final int ADMIN_SEEDER_ORDER = 6;
+/**
+ * Execution order for the StateGeneration seeder.
+ * Creates default state generation statuses.
+ */
+
+public static final int STATE_GENERATION_SEEDER_ORDER = 7;
+
 }
