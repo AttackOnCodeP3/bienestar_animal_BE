@@ -2,6 +2,7 @@ package com.project.demo.rest.user;
 
 import com.project.demo.logic.entity.user.ForgotPasswordService;
 import com.project.demo.rest.user.dto.ForgotPasswordDTO;
+import com.project.demo.rest.user.dto.PasswordResetDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -28,11 +29,13 @@ public class ForgotPasswordController {
 
 
     @PostMapping("/password-reset")
-    public ResponseEntity<?> passwordReset(@RequestParam Long userId,
-                                           @RequestParam String currentPassword,
-                                           @RequestParam String newPassword,
-                                           @RequestParam String confirmPassword) {
-        boolean reset = forgotPasswordService.passwordReset(userId, currentPassword, newPassword, confirmPassword);
+    public ResponseEntity<?> passwordReset(@RequestBody PasswordResetDTO request) {
+        boolean reset = forgotPasswordService.passwordReset(
+                request.getUserId(),
+                request.getCurrentPassword(),
+                request.getNewPassword(),
+                request.getConfirmPassword()
+        );
 
         if (reset) {
             return ResponseEntity.ok().body(Map.of("message", "Contraseña actualizada correctamente."));
