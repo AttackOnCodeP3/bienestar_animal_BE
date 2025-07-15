@@ -42,6 +42,7 @@ build/resources/
 .gradle/8.7/fileHashes/resourceHashesCache.bin
 .gradle/8.7/gc.properties
 .gradle/vcs-1/gc.properties
+.gradle/file-system.probe
 
 out
 resources/
