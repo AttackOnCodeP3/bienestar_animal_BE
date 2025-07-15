@@ -34,14 +34,15 @@ public class Model3D {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(name = "photo_original_url", length = 255)
+    private String photoOriginalUrl;
+
     @Column(name = "url_modelo", length = 255)
     private String urlModelo;
 
-    @Column(name = "fecha_generacion")
-    private Timestamp fechaGeneracion;
-
+//TODO: changee nullable value
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "animal_id", referencedColumnName = "id", nullable = false)
+    @JoinColumn(name = "animal_id", referencedColumnName = "id", nullable = true)
     private Animal animal;
 
     @ManyToOne(fetch = FetchType.LAZY)

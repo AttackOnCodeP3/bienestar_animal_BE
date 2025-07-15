@@ -61,9 +61,6 @@ public class Animal {
     @Column(name = "register_by_census_id")
     private Integer registerByCensusId;
 
-    @Column(name = "photo_original_url")
-    private String photoOriginalUrl;
-
     @Column(name = "coordenadas_gps")
     private String coordenadasGps;
 
