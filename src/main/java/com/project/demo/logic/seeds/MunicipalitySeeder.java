@@ -10,7 +10,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Order(GeneralConstants.MUNICIPALITY_SEEDER_ORDER)
 @Component
@@ -19,7 +20,7 @@ public class MunicipalitySeeder implements ApplicationListener<ContextRefreshedE
     private final CantonRepository cantonRepository;
     private final MunicipalityStatusRepository municipalityStatusRepository;
 
-    private final Logger logger = Logger.getLogger(MunicipalitySeeder.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(MunicipalitySeeder.class);
 
     public MunicipalitySeeder(
             MunicipalityRepository municipalityRepository,
@@ -46,12 +47,12 @@ public class MunicipalitySeeder implements ApplicationListener<ContextRefreshedE
         Optional<MunicipalityStatus> optionalStatus = municipalityStatusRepository.findByName(MunicipalityStatusEnum.ACTIVE.getDisplayName());
 
         if (optionalCanton.isEmpty()) {
-            logger.warning("MunicipalitySeeder: Canton with ID 1 not found, cannot create municipality.");
+            logger.error("MunicipalitySeeder: Canton with ID 1 not found, cannot create municipality.");
             return;
         }
 
         if (optionalStatus.isEmpty()) {
-            logger.warning("MunicipalitySeeder: Status 'ACTIVE' not found, cannot create municipality.");
+            logger.error("MunicipalitySeeder: Status 'ACTIVE' not found, cannot create municipality.");
             return;
         }
 

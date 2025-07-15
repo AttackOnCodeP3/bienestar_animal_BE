@@ -1,4 +1,6 @@
 package com.project.demo.logic.entity.user;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.project.demo.logic.entity.community_animal.CommunityAnimal;
 import com.project.demo.logic.entity.interest.Interest;
 import com.project.demo.logic.entity.municipality.Municipality;
 import com.project.demo.logic.entity.neighborhood.Neighborhood;
@@ -109,6 +111,10 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<CommunityAnimal> communityAnimals;
 
     /**
      * Indicates whether the user's account has not expired.
