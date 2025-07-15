@@ -16,7 +16,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -69,68 +68,5 @@ public class SanitaryControlTypeRestController {
                 HttpStatus.OK,
                 request
         );
-    }
-
-    @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<?> create(@RequestBody SanitaryControlType sanitaryControlType, HttpServletRequest request) {
-        logger.info("Creating sanitary control type: {}", sanitaryControlType.getName());
-        sanitaryControlTypeRepository.save(sanitaryControlType);
-        return new GlobalResponseHandler().handleResponse(
-                "Sanitary control type created successfully",
-                sanitaryControlType,
-                HttpStatus.CREATED,
-                request
-        );
-    }
-
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody SanitaryControlType sanitaryControlType, HttpServletRequest request) {
-        logger.info("Updating sanitary control type with id: {}", id);
-        Optional<SanitaryControlType> opt = sanitaryControlTypeRepository.findById(id);
-        if (opt.isEmpty()) {
-            logger.warn("Sanitary control type with id {} not found", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Sanitary control type id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
-                    request
-            );
-        }
-        SanitaryControlType current = opt.get();
-        current.setName(sanitaryControlType.getName());
-        current.setDescription(sanitaryControlType.getDescription());
-        sanitaryControlTypeRepository.save(current);
-
-        return new GlobalResponseHandler().handleResponse(
-                "Sanitary control type updated successfully",
-                current,
-                HttpStatus.OK,
-                request
-        );
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
-    public ResponseEntity<?> delete(@PathVariable Long id, HttpServletRequest request) {
-        logger.info("Deleting sanitary control type with id: {}", id);
-        Optional<SanitaryControlType> opt = sanitaryControlTypeRepository.findById(id);
-        if (opt.isPresent()) {
-            sanitaryControlTypeRepository.deleteById(id);
-            logger.info("Sanitary control type with id {} deleted", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Sanitary control type deleted successfully",
-                    opt.get(),
-                    HttpStatus.OK,
-                    request
-            );
-        } else {
-            logger.warn("Sanitary control type with id {} not found", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Sanitary control type id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
-                    request
-            );
-        }
     }
 }
