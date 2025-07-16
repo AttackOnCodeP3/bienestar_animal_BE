@@ -31,11 +31,13 @@ public class Animal {
     @Column(name = "estimated_age", nullable = false)
     private EstimatedAgeEnum estimatedAge;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "physical_condition", nullable = false)
-    private String physicalCondition;
+    private PhysicalConditionEnum physicalCondition;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "behavior", nullable = false)
-    private String behavior;
+    private BehaviorEnum behavior;
 
     @Column
     private String observations;
