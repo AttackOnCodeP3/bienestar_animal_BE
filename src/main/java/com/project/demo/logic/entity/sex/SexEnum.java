@@ -10,7 +10,7 @@ import lombok.Getter;
 public enum SexEnum {
 
     MALE("Masculino"),
-    FEMALE("Femenino"),;
+    FEMALE("Femenino");
 
     private final String name;
 
