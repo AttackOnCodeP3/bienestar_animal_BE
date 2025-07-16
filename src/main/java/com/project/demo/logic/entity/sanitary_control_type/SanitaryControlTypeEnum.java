@@ -8,7 +8,6 @@ import lombok.Getter;
  */
 @Getter
 public enum SanitaryControlTypeEnum {
-    VACCINATION("Vacunación", "Vacunación contra enfermedades"),
     DEWORMING("Desparasitación", "Tratamiento para eliminar parásitos intestinales"),
     FLEA_AND_TICK_CONTROL("Control de pulgas y garrapatas", "Tratamiento para controlar pulgas y garrapatas"),
     NEUTERING("Esterilización", "Procedimiento quirúrgico para esterilizar animales");

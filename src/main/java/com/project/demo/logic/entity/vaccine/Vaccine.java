@@ -1,8 +1,8 @@
-package com.project.demo.logic.entity.species;
+package com.project.demo.logic.entity.vaccine;
+
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.project.demo.logic.entity.race.Race;
-import com.project.demo.logic.entity.vaccine.Vaccine;
+import com.project.demo.logic.entity.species.Species;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -10,38 +10,33 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-/**
- * Entity representing a species.
- * This class is used to define the basic structure of a species entity.
- * @author dgutierrez
- */
-@Table(name = "species")
 @Entity
+@Table(name = "vaccine")
 @Getter
 @Setter
 @Builder
-@RequiredArgsConstructor
+@NoArgsConstructor
 @AllArgsConstructor
-public class Species {
+public class Vaccine {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
+    @Column(nullable = false, unique = true)
     private String name;
 
     private String description;
 
-    @ManyToMany(mappedBy = "species")
-    @JsonIgnore
-    private Set<Vaccine> vaccines = new HashSet<>();
-
-    @OneToMany(mappedBy = "species", cascade = CascadeType.ALL)
-    @JsonIgnore
-    private List<Race> races;
+    @ManyToMany
+    @JoinTable(
+            name = "species_vaccine",
+            joinColumns = @JoinColumn(name = "vaccine_id"),
+            inverseJoinColumns = @JoinColumn(name = "species_id")
+    )
+    @Builder.Default
+    private Set<Species> species = new HashSet<>();
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")

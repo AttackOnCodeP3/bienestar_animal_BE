@@ -69,22 +69,31 @@ public class GeneralConstants {
     public static final int SPECIES_SEEDER_ORDER = 8;
 
     /**
+     * Execution order for the Vaccine Seeder.
+     * Seeds data related to vaccines, including types, dosages,
+     * and administration protocols.
+     * This is important for managing animal health
+     * and vaccination records.
+     */
+    public static final int VACCINE_SEEDER_ORDER = 9;
+
+    /**
      * Execution order for the Race Seeder.
      * Seeds data related to different breeds or races
      * of animals, which may include characteristics,
      * classifications, and other relevant information.
      */
-    public static final int RACE_SEEDER_ORDER = 9;
+    public static final int RACE_SEEDER_ORDER = 10;
 
     /**
      * Execution order for the Municipality seeder.
      * Loads core municipality data used in the application.
      */
-    public static final int MUNICIPALITY_SEEDER_ORDER = 10;
+    public static final int MUNICIPALITY_SEEDER_ORDER = 11;
 
     /**
      * Execution order for the Admin seeder.
      * Creates default administrator users or system-level accounts.
      */
-    public static final int ADMIN_SEEDER_ORDER = 11;
+    public static final int ADMIN_SEEDER_ORDER = 12;
 }
