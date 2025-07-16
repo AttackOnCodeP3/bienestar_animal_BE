@@ -19,7 +19,6 @@ import java.util.logging.Logger;
 public class RoleSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final RoleRepository roleRepository;
 
-
     private final Logger logger = Logger.getLogger(RoleSeeder.class.getName());
 
     public RoleSeeder(RoleRepository roleRepository) {
@@ -38,12 +37,20 @@ public class RoleSeeder implements ApplicationListener<ContextRefreshedEvent> {
             return;
         }
 
-        RoleEnum[] roleNames = new RoleEnum[] { RoleEnum.COMMUNITY_USER, RoleEnum.VOLUNTEER_USER, RoleEnum.MUNICIPAL_ADMIN, RoleEnum.SUPER_ADMIN };
+        RoleEnum[] roleNames = new RoleEnum[] {
+                RoleEnum.COMMUNITY_USER,
+                RoleEnum.VOLUNTEER_USER,
+                RoleEnum.MUNICIPAL_ADMIN,
+                RoleEnum.SUPER_ADMIN,
+                RoleEnum.CENSISTA_USER
+        };
+
         Map<RoleEnum, String> roleDescriptionMap = Map.of(
                 RoleEnum.COMMUNITY_USER, "Rol de usuario comunitario",
                 RoleEnum.VOLUNTEER_USER, "Rol de usuario voluntario",
                 RoleEnum.MUNICIPAL_ADMIN, "Rol de administrador municipal",
-                RoleEnum.SUPER_ADMIN, "Rol de superadministrador"
+                RoleEnum.SUPER_ADMIN, "Rol de superadministrador",
+                RoleEnum.CENSISTA_USER, "Rol de usuario censista"
         );
 
         Arrays.stream(roleNames).forEach((roleName) -> {

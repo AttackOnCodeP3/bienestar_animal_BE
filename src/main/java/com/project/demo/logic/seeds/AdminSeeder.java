@@ -34,7 +34,6 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
 
     private final Logger logger = Logger.getLogger(AdminSeeder.class.getName());
 
-
     public AdminSeeder(
             RoleRepository roleRepository,
             UserRepository userRepository,
@@ -55,6 +54,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         createMunicipalAdmin();
         createVolunteerUser();
         createCommunityUser();
+        createCensistaUser();
     }
 
     private void createSuperAdmin() {
@@ -214,5 +214,43 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
 
         userRepository.save(user);
         logger.info("COMMUNITY_USER created with email: " + email);
+    }
+
+    private void createCensistaUser() {
+        final String email = "censista.user@gmail.com";
+
+        if (userRepository.findByEmail(email).isPresent()) {
+            logger.info("Censista user already exists, skipping creation.");
+            return;
+        }
+
+        Optional<Role> censistaRole = roleRepository.findByName(RoleEnum.CENSISTA_USER);
+        if (censistaRole.isEmpty()) {
+            logger.warning("CENSISTA_USER role not found.");
+            return;
+        }
+
+        Optional<Municipality> municipality = municipalityRepository.findById(1L);
+        Optional<Neighborhood> neighborhood = neighborhoodRepository.findById(1L);
+
+        if (municipality.isEmpty() || neighborhood.isEmpty()) {
+            logger.warning("Municipality or neighborhood not found.");
+            return;
+        }
+
+        User user = new User();
+        user.setName("Censista");
+        user.setLastname("Demo");
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode("123"));
+        user.setPhoneNumber("84444444");
+        user.setBirthDate(LocalDate.of(1990, 7, 10));
+        user.setIdentificationCard("555555555");
+        user.setMunicipality(municipality.get());
+        user.setNeighborhood(neighborhood.get());
+        user.addRole(censistaRole.get());
+
+        userRepository.save(user);
+        logger.info("CENSISTA_USER created with email: " + email);
     }
 }
