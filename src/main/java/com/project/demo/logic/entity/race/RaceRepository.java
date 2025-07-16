@@ -14,7 +14,7 @@ import java.util.Optional;
 public interface RaceRepository extends JpaRepository<Race, Long> {
 
     /**
-     * * @author dgutierrez
+     * @author dgutierrez
      */
     Optional<Race> findByNameAndSpecies(String name, Species species);
 
