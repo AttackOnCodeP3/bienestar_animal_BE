@@ -1,5 +1,6 @@
 package com.project.demo.logic.entity.sanitary_control;
 
+import com.project.demo.logic.entity.sanitary_control_response.SanitaryControlResponse;
 import com.project.demo.logic.entity.sanitary_control_type.SanitaryControlType;
 import jakarta.persistence.*;
 import lombok.*;
@@ -53,6 +54,10 @@ public class SanitaryControl {
     @ManyToOne
     @JoinColumn(name = "sanitary_control_type_id", nullable = false)
     private SanitaryControlType sanitaryControlType;
+
+    @ManyToOne
+    @JoinColumn(name = "sanitary_control_response_id")
+    private SanitaryControlResponse sanitaryControlResponse;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
