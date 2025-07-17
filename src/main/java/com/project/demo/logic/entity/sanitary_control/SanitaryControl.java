@@ -28,7 +28,7 @@ public class SanitaryControl {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "last_application_date", nullable = false)
+    @Column(name = "last_application_date")
     private LocalDate lastApplicationDate;
 
     /**
@@ -46,17 +46,17 @@ public class SanitaryControl {
     private boolean validityStatus;
 
 
-    @Column(name = "product_used", nullable = false)
+    @Column(name = "product_used")
     private String productUsed;
 
     private String observations;
 
     @ManyToOne
-    @JoinColumn(name = "sanitary_control_type_id", nullable = false)
+    @JoinColumn(name = "sanitary_control_type_id")
     private SanitaryControlType sanitaryControlType;
 
     @ManyToOne
-    @JoinColumn(name = "sanitary_control_response_id")
+    @JoinColumn(name = "sanitary_control_response_id", nullable = false)
     private SanitaryControlResponse sanitaryControlResponse;
 
     @CreationTimestamp
