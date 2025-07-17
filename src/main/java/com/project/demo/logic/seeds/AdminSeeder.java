@@ -20,7 +20,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Order(GeneralConstants.ADMIN_SEEDER_ORDER)
 @Component
@@ -32,7 +33,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
 
     private final PasswordEncoder passwordEncoder;
 
-    private final Logger logger = Logger.getLogger(AdminSeeder.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(AdminSeeder.class);
 
 
     public AdminSeeder(
@@ -69,7 +70,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         roleRepository.findAll().forEach(allRoles::add);
 
         if (allRoles.isEmpty()) {
-            logger.warning("No roles found in the database.");
+            logger.error("No roles found in the database.");
             return;
         }
 
@@ -77,7 +78,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         Optional<Neighborhood> neighborhood = neighborhoodRepository.findById(1L);
 
         if (municipality.isEmpty() || neighborhood.isEmpty()) {
-            logger.warning("Municipality or neighborhood not found.");
+            logger.error("Municipality or neighborhood not found.");
             return;
         }
 
@@ -108,7 +109,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
 
         Optional<Role> role = roleRepository.findByName(RoleEnum.MUNICIPAL_ADMIN);
         if (role.isEmpty()) {
-            logger.warning("MUNICIPAL_ADMIN role not found.");
+            logger.error("MUNICIPAL_ADMIN role not found.");
             return;
         }
 
@@ -116,7 +117,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         Optional<Neighborhood> neighborhood = neighborhoodRepository.findById(1L);
 
         if (municipality.isEmpty() || neighborhood.isEmpty()) {
-            logger.warning("Municipality or neighborhood not found.");
+            logger.error("Municipality or neighborhood not found.");
             return;
         }
 
@@ -148,7 +149,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         Optional<Role> communityRole = roleRepository.findByName(RoleEnum.COMMUNITY_USER);
 
         if (volunteerRole.isEmpty() || communityRole.isEmpty()) {
-            logger.warning("VOLUNTEER_USER or COMMUNITY_USER role not found.");
+            logger.error("VOLUNTEER_USER or COMMUNITY_USER role not found.");
             return;
         }
 
@@ -156,7 +157,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         Optional<Neighborhood> neighborhood = neighborhoodRepository.findById(1L);
 
         if (municipality.isEmpty() || neighborhood.isEmpty()) {
-            logger.warning("Municipality or neighborhood not found.");
+            logger.error("Municipality or neighborhood not found.");
             return;
         }
 
@@ -188,7 +189,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
 
         Optional<Role> role = roleRepository.findByName(RoleEnum.COMMUNITY_USER);
         if (role.isEmpty()) {
-            logger.warning("COMMUNITY_USER role not found.");
+            logger.error("COMMUNITY_USER role not found.");
             return;
         }
 
@@ -196,7 +197,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         Optional<Neighborhood> neighborhood = neighborhoodRepository.findById(1L);
 
         if (municipality.isEmpty() || neighborhood.isEmpty()) {
-            logger.warning("Municipality or neighborhood not found.");
+            logger.error("Municipality or neighborhood not found.");
             return;
         }
 
