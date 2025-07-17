@@ -1,6 +1,5 @@
 package com.project.demo.logic.entity.animal;
 
-import com.project.demo.logic.entity.animal_type.AnimalType;
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.sex.Sex;
 import com.project.demo.logic.entity.species.Species;
@@ -22,9 +21,9 @@ import java.time.LocalDateTime;
 @Table(name = "abandoned_animal")
 @Getter
 @Setter
-@Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class AbandonedAnimal {
 
     @Id
@@ -78,7 +77,7 @@ public class AbandonedAnimal {
     private User createdBy;
 
     @Column(name = "is_synchronized", nullable = false)
-    private boolean synchronizedFlag;
+    private boolean synchronizedFlag = false;
 
     @Column(name = "is_abandoned", nullable = false)
     private boolean isAbandoned = true;

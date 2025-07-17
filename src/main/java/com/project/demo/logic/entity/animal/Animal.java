@@ -55,46 +55,13 @@ public class Animal {
     @JoinColumn(name = "race_id", nullable = false)
     private Race race;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "estimated_age", nullable = false)
-    private EstimatedAgeEnum estimatedAge;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "physical_condition", nullable = false)
-    private PhysicalConditionEnum physicalCondition;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "behavior", nullable = false)
-    private BehaviorEnum behavior;
-
-    @Column
-    private String observations;
-
-    @Column(name = "photo_url")
-    private String photoUrl;
-
-    @Column
-    private Double latitude;
-
-    @Column
-    private Double longitude;
-
     @ManyToOne
     @JoinColumn(name = "canton_id", nullable = false)
     private Canton canton;
 
-    @Column(nullable = false)
-    private String district;
-
-    @Column(nullable = false)
-    private String neighborhood;
-
     @ManyToOne
     @JoinColumn(name = "created_by")
     private User createdBy;
-
-    @Column(name = "is_abandoned", nullable = false)
-    private boolean isAbandoned;
 
     @Column(name = "synchronized", nullable = false)
     private boolean synchronizedFlag;
