@@ -12,14 +12,16 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Order(GeneralConstants.ROLE_SEEDER_ORDER)
 @Component
 public class RoleSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final RoleRepository roleRepository;
 
-    private final Logger logger = Logger.getLogger(RoleSeeder.class.getName());
+
+    private final Logger logger = LoggerFactory.getLogger(RoleSeeder.class);
 
     public RoleSeeder(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
