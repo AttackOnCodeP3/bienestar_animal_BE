@@ -227,7 +227,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
 
         Optional<Role> censistaRole = roleRepository.findByName(RoleEnum.CENSISTA_USER);
         if (censistaRole.isEmpty()) {
-            logger.warning("CENSISTA_USER role not found.");
+            logger.warn("CENSISTA_USER role not found.");
             return;
         }
 
@@ -235,7 +235,7 @@ public class AdminSeeder implements ApplicationListener<ContextRefreshedEvent> {
         Optional<Neighborhood> neighborhood = neighborhoodRepository.findById(1L);
 
         if (municipality.isEmpty() || neighborhood.isEmpty()) {
-            logger.warning("Municipality or neighborhood not found.");
+            logger.warn("Municipality or neighborhood not found.");
             return;
         }
 
