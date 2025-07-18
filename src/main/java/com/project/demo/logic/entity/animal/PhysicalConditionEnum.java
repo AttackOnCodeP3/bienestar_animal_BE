@@ -8,7 +8,9 @@ import java.util.stream.Stream;
 
 /**
  * Enum representing the physical condition of an animal.
- * Allows friendly string conversion from JSON.
+ * The keys are in English for internal usage, but displayed in Spanish.
+ * Includes JSON serialization/deserialization with display names.
+ *
  * @author gjimenez
  */
 @Getter
@@ -36,6 +38,6 @@ public enum PhysicalConditionEnum {
         return Stream.of(PhysicalConditionEnum.values())
                 .filter(e -> e.displayName.equalsIgnoreCase(value))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid physical condition: " + value));
+                .orElseThrow(() -> new IllegalArgumentException("Condición física inválida: " + value));
     }
 }
