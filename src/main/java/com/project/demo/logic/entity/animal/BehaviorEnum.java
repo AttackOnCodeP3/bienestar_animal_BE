@@ -13,13 +13,13 @@ import java.util.stream.Stream;
  */
 @Getter
 public enum BehaviorEnum {
-    ACOSTADO("Acostado"),
-    DE_PIE("De pie"),
-    SENTADO("Sentado"),
-    CAMINANDO("Caminando"),
-    ASUSTADO("Asustado"),
-    AGRESIVO("Agresivo"),
-    DESCANSANDO("Descansando");
+    LYING_DOWN("Acostado"),
+    STANDING("De pie"),
+    SITTING("Sentado"),
+    WALKING("Caminando"),
+    SCARED("Asustado"),
+    AGGRESSIVE("Agresivo"),
+    RESTING("Descansando");
 
     private final String displayName;
 

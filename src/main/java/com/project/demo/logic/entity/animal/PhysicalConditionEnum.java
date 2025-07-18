@@ -15,12 +15,12 @@ import java.util.stream.Stream;
  */
 @Getter
 public enum PhysicalConditionEnum {
-    SALUDABLE("Saludable"),
-    DESNUTRIDO("Desnutrido"),
-    HERIDO("Herido"),
-    ENFERMO("Enfermo"),
-    MUY_DELGADO("Muy delgado"),
-    CON_PARASITOS_VISIBLES("Con parásitos visibles");
+    HEALTHY("Saludable"),
+    MALNOURISHED("Desnutrido"),
+    WOUNDED("Herido"),
+    SICK("Enfermo"),
+    SKINNY("Muy delgado"),
+    PARASITES("Con parásitos visibles");
 
     private final String displayName;
 
