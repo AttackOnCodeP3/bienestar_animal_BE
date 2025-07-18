@@ -23,6 +23,7 @@ import java.util.List;
  * This class is used to define the basic structure of an animal entity.
  *
  * @author dgutierrez
+ * @updatedBy gjimenez
  */
 @SuperBuilder
 @Getter
@@ -33,6 +34,7 @@ import java.util.List;
 @Table(name = "animal")
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Animal {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -51,14 +53,6 @@ public class Animal {
     @JoinColumn(name = "race_id", nullable = false)
     private Race race;
 
-    @CreationTimestamp
-    @Column(updatable = false, name = "created_at")
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
     @ManyToOne
     @JoinColumn(name = "sex_id", nullable = false)
     private Sex sex;
@@ -73,6 +67,14 @@ public class Animal {
     @OneToMany
     @JoinColumn(name = "animal_id", nullable = false)
     private List<SanitaryControl> sanitaryControls = new ArrayList<>();
+
+    @CreationTimestamp
+    @Column(updatable = false, name = "created_at")
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @Transient
     public AgeDTO getAge() {
