@@ -1,8 +1,6 @@
 package com.project.demo.rest.animal;
 
 import com.project.demo.logic.entity.animal.*;
-import com.project.demo.logic.entity.animal_type.AnimalType;
-import com.project.demo.logic.entity.animal_type.AnimalTypeRepository;
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.sex.Sex;
@@ -37,9 +35,6 @@ public class AbandonedAnimalRestController {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private AnimalTypeRepository animalTypeRepository;
-
     @PostMapping
     @PreAuthorize("hasRole('CENSISTA_USER')")
     public ResponseEntity<?> registerAbandonedAnimal(
@@ -56,9 +51,6 @@ public class AbandonedAnimalRestController {
                 .orElseThrow(() -> new EntityNotFoundException("Species not found: " + dto.getSpecies()));
 
         Sex sex = dto.getSex() != null ? sexRepository.findByName(dto.getSex()).orElse(null) : null;
-
-        AnimalType abandonedType = animalTypeRepository.findByName("Animal abandonado")
-                .orElseThrow(() -> new EntityNotFoundException("AnimalType 'Animal abandonado' not found"));
 
         AbandonedAnimal animal = AbandonedAnimal.builder()
                 .species(species)

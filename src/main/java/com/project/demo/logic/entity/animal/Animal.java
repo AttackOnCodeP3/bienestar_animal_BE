@@ -2,12 +2,10 @@ package com.project.demo.logic.entity.animal;
 
 import com.project.demo.logic.entity.animal.dto.AgeDTO;
 import com.project.demo.logic.entity.animal_type.AnimalType;
-import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.race.Race;
 import com.project.demo.logic.entity.sanitary_control.SanitaryControl;
 import com.project.demo.logic.entity.sex.Sex;
 import com.project.demo.logic.entity.species.Species;
-import com.project.demo.logic.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -56,25 +54,6 @@ public class Animal {
     private Race race;
 
     @ManyToOne
-    @JoinColumn(name = "canton_id", nullable = false)
-    private Canton canton;
-
-    @ManyToOne
-    @JoinColumn(name = "created_by")
-    private User createdBy;
-
-    @Column(name = "synchronized", nullable = false)
-    private boolean synchronizedFlag;
-
-    @CreationTimestamp
-    @Column(updatable = false, name = "created_at")
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @ManyToOne
     @JoinColumn(name = "sex_id", nullable = false)
     private Sex sex;
 
@@ -88,6 +67,14 @@ public class Animal {
     @OneToMany
     @JoinColumn(name = "animal_id", nullable = false)
     private List<SanitaryControl> sanitaryControls = new ArrayList<>();
+
+    @CreationTimestamp
+    @Column(updatable = false, name = "created_at")
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
 
     @Transient
     public AgeDTO getAge() {
