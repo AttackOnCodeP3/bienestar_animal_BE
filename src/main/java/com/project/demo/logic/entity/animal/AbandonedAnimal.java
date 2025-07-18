@@ -62,12 +62,6 @@ public class AbandonedAnimal {
     @Column(name = "photo_url")
     private String photoUrl;
 
-    @Column
-    private Double latitude;
-
-    @Column
-    private Double longitude;
-
     @ManyToOne
     @JoinColumn(name = "canton_id", nullable = false)
     private Canton canton;
