@@ -1,4 +1,6 @@
 package com.project.demo.rest.user.dto;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
