@@ -39,10 +39,21 @@ public class Model3DService {
      * @return Optional containing the Model3D if found
      * @author nav
      */
-    public Optional<Model3DResponseDTO> findByAnimalId(Long animalId) {
-        return model3DRepository.findByAnimalId(animalId)
-            .map(this::convertToDTO);
+ public Optional<Model3DResponseDTO> findByAnimalId(Long animalId) {
+    log.info("Searching for Model3D with animal ID: {}", animalId);
+    try {
+        Optional<Model3D> result = model3DRepository.findByAnimalId(animalId);
+        if (result.isPresent()) {
+            log.info("Found Model3D for animal ID: {}", animalId);
+        } else {
+            log.info("No Model3D found for animal ID: {}", animalId);
+        }
+        return result.map(this::convertToDTO);
+    } catch (Exception e) {
+        log.error("Error searching for Model3D with animal ID: {} - Error: {}", animalId, e.getMessage(), e);
+        throw e;
     }
+}
 
     /**
      * Converts Model3D entity to DTO.

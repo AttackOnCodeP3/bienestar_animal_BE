@@ -44,34 +44,41 @@ public class ModelRestController {
         this.animalRepository = animalRepository;
     }
 
-    @GetMapping("/animal/{animalId}")
-    public ResponseEntity<?> getModel3DByAnimalId(@PathVariable Long animalId) {
-        try {
-            Optional<Model3DResponseDTO> model3DOptional = model3DService.findByAnimalId(animalId);
-            
-            if (model3DOptional.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
-            
-            Model3DResponseDTO model3D = model3DOptional.get();
-            
-            // Create response structure similar to other endpoints
-            Meta meta = new Meta("GET", "/model3d-animal/animal/" + animalId);
-            
-            return new GlobalResponseHandler().handleResponse(
-                "3D model retrieved successfully", 
-                model3D, 
-                HttpStatus.OK, 
-                meta
-            );
-            
-        } catch (Exception e) {
-            log.error("Error retrieving 3D model for animal ID: {}", animalId, e);
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(createErrorResponse("Error retrieving 3D model: " + e.getMessage(), null));
+@GetMapping("/animal/{animalId}")
+public ResponseEntity<?> getModel3DByAnimalId(@PathVariable Long animalId) {
+    try {
+        log.info("Attempting to find 3D model for animal ID: {}", animalId);
+        
+        Optional<Animal> animalOpt = animalRepository.findById(animalId);
+        if (animalOpt.isEmpty()) {
+            log.warn("Animal not found with ID: {}", animalId);
+            return ResponseEntity.notFound().build();
         }
+        
+        Optional<Model3DResponseDTO> model3DOptional = model3DService.findByAnimalId(animalId);
+        if (model3DOptional.isEmpty()) {
+            log.info("No 3D model found for animal ID: {}", animalId);
+            return ResponseEntity.notFound().build();
+        }
+        
+        Model3DResponseDTO model3D = model3DOptional.get();
+        log.info("Successfully found 3D model for animal ID: {}", animalId);
+        
+        Meta meta = new Meta("GET", "/model3d-animal/animal/" + animalId);
+        
+        return new GlobalResponseHandler().handleResponse(
+            "3D model retrieved successfully", 
+            model3D, 
+            HttpStatus.OK, 
+            meta
+        );
+        
+    } catch (Exception e) {
+        log.error("Error retrieving 3D model for animal ID: {} - Error: {}", animalId, e.getMessage(), e);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+            .body(createErrorResponse("Error retrieving 3D model: " + e.getMessage(), null));
     }
-
+}
     /**
      * Endpoint to create a task for image to model conversion using v2.5 of the service.
      * This endpoint allows users to create a task for converting an image to a 3D model
