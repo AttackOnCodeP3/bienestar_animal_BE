@@ -43,3 +43,5 @@ build/resources/
 .gradle/vcs-1/gc.properties
 
 data/
+out/production/resources/application.properties
+out/production/resources/docker-compose.yml
