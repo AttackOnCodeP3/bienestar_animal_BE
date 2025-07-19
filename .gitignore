@@ -44,3 +44,5 @@ build/resources/
 .gradle/file-system.probe
 
 data/
+out/production/resources/application.properties
+out/production/resources/docker-compose.yml

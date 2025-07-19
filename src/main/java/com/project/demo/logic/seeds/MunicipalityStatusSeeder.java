@@ -10,8 +10,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
-import java.util.logging.Logger;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Seeder for MunicipalityStatus entities.
@@ -25,7 +25,7 @@ import java.util.logging.Logger;
 public class MunicipalityStatusSeeder implements ApplicationListener<ContextRefreshedEvent> {
 
     private final MunicipalityStatusRepository municipalityStatusRepository;
-    private final Logger logger = Logger.getLogger(MunicipalityStatusSeeder.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(MunicipalityStatusSeeder.class);
 
     public MunicipalityStatusSeeder(MunicipalityStatusRepository statusRepository) {
         this.municipalityStatusRepository = statusRepository;
@@ -52,7 +52,7 @@ public class MunicipalityStatusSeeder implements ApplicationListener<ContextRefr
                         .build();
 
                 municipalityStatusRepository.save(status);
-                logger.info("MunicipalityStatusSeeder: Status " + statusEnum.getDisplayName() + " created successfully.");
+                logger.info("MunicipalityStatusSeeder: Status {} created successfully.", statusEnum.getDisplayName());
             }
         }
     }

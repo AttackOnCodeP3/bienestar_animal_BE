@@ -19,7 +19,6 @@ public class PublicEndpointsConstants {
     public static final String OAUTH2 = "/oauth2/**";
     public static final String LOGIN = "/login/**";
 
-    //TODO: DGUTIERREZ: Move these to require at least a hardcoded access token
     public static final String INTERESTS = "/interests/**";
     public static final String MUNICIPALITIES = "/municipalities/**";
     public static final String CANTONS = "/cantons/**";

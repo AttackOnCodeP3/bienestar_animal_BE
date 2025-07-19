@@ -12,7 +12,8 @@ import org.springframework.stereotype.Component;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Order(GeneralConstants.ROLE_SEEDER_ORDER)
 @Component
@@ -20,7 +21,7 @@ public class RoleSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final RoleRepository roleRepository;
 
 
-    private final Logger logger = Logger.getLogger(RoleSeeder.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(RoleSeeder.class);
 
     public RoleSeeder(RoleRepository roleRepository) {
         this.roleRepository = roleRepository;
@@ -38,12 +39,20 @@ public class RoleSeeder implements ApplicationListener<ContextRefreshedEvent> {
             return;
         }
 
-        RoleEnum[] roleNames = new RoleEnum[] { RoleEnum.COMMUNITY_USER, RoleEnum.VOLUNTEER_USER, RoleEnum.MUNICIPAL_ADMIN, RoleEnum.SUPER_ADMIN };
+        RoleEnum[] roleNames = new RoleEnum[] {
+                RoleEnum.COMMUNITY_USER,
+                RoleEnum.VOLUNTEER_USER,
+                RoleEnum.MUNICIPAL_ADMIN,
+                RoleEnum.SUPER_ADMIN,
+                RoleEnum.CENSISTA_USER
+        };
+
         Map<RoleEnum, String> roleDescriptionMap = Map.of(
                 RoleEnum.COMMUNITY_USER, "Rol de usuario comunitario",
                 RoleEnum.VOLUNTEER_USER, "Rol de usuario voluntario",
                 RoleEnum.MUNICIPAL_ADMIN, "Rol de administrador municipal",
-                RoleEnum.SUPER_ADMIN, "Rol de superadministrador"
+                RoleEnum.SUPER_ADMIN, "Rol de superadministrador",
+                RoleEnum.CENSISTA_USER, "Rol de usuario censista"
         );
 
         Arrays.stream(roleNames).forEach((roleName) -> {
