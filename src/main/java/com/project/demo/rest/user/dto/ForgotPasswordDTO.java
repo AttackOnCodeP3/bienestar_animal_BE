@@ -1,5 +1,7 @@
 package com.project.demo.rest.user.dto;
 
+@Getter
+@Setter
 public class ForgotPasswordDTO {
     private String email;
 
