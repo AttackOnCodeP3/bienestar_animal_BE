@@ -1,4 +1,4 @@
-package com.project.demo.service.Tripo3DService;
+package com.project.demo.service.model;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,7 +39,6 @@ public class Tripo3DService {
     private static final String DEFAULT_TEXTURE = "standard";
     private static final String DEFAULT_ORIENTATION = "default";
     private static final String DEFAULT_STYLE = "person:person2cartoon";
-
 
     public Tripo3DService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.build();

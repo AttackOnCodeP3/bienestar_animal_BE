@@ -25,5 +25,6 @@ public class PublicEndpointsConstants {
     public static final String CANTONS = "/cantons/**";
     public static final String DISTRICTS = "/districts/**";
     public static final String NEIGHBORHOODS = "/neighborhoods/**";
-    public static final String API = "/api/**";
+    public static final String MODEL3D_ANIMAL = "/model3d-animal/**";
+
 }

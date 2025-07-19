@@ -1,17 +1,12 @@
 package com.project.demo.logic.entity.model3D;
-
 import java.security.Timestamp;
 import java.time.LocalDateTime;
-
 import com.project.demo.logic.entity.animal.Animal;
 import com.project.demo.logic.entity.state.StateGeneration;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
-
-
 import jakarta.persistence.*;
-
 
 /**
  * Represents a 3D model entity associated with an animal, including its generation state,
@@ -40,9 +35,8 @@ public class Model3D {
     @Column(name = "url_modelo", length = 255)
     private String urlModelo;
 
-//TODO: changee nullable value
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "animal_id", referencedColumnName = "id", nullable = true)
+    @JoinColumn(name = "animal_id", referencedColumnName = "id", nullable = false)
     private Animal animal;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -56,5 +50,4 @@ public class Model3D {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
- 
 }
