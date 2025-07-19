@@ -113,5 +113,11 @@ public class GeneralConstants {
  */
 
 public static final int STATE_GENERATION_SEEDER_ORDER = 14;
+    /**
+     * Execution order for the Community Animal Seeder.
+     * Seeds data related to community animals
+     */
+
+public static final int COMMUNITY_ANIMAL_SEEDER_ORDER = 15;
 
 }
