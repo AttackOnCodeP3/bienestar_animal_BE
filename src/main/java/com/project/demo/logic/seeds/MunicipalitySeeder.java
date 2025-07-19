@@ -1,31 +1,35 @@
 package com.project.demo.logic.seeds;
 
+import com.project.demo.logic.constants.general.GeneralConstants;
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.canton.CantonRepository;
-import com.project.demo.logic.entity.municipality.Municipality;
-import com.project.demo.logic.entity.municipality.MunicipalityRepository;
+import com.project.demo.logic.entity.municipality.*;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Order(4)
+@Order(GeneralConstants.MUNICIPALITY_SEEDER_ORDER)
 @Component
 public class MunicipalitySeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final MunicipalityRepository municipalityRepository;
     private final CantonRepository cantonRepository;
+    private final MunicipalityStatusRepository municipalityStatusRepository;
 
-    private final Logger logger = Logger.getLogger(MunicipalitySeeder.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(MunicipalitySeeder.class);
 
     public MunicipalitySeeder(
             MunicipalityRepository municipalityRepository,
-            CantonRepository cantonRepository
+            CantonRepository cantonRepository,
+            MunicipalityStatusRepository municipalityStatusRepository
     ) {
         this.municipalityRepository = municipalityRepository;
         this.cantonRepository = cantonRepository;
+        this.municipalityStatusRepository = municipalityStatusRepository;
     }
 
     @Override
@@ -40,22 +44,29 @@ public class MunicipalitySeeder implements ApplicationListener<ContextRefreshedE
         }
 
         Optional<Canton> optionalCanton = cantonRepository.findById(1L);
+        Optional<MunicipalityStatus> optionalStatus = municipalityStatusRepository.findByName(MunicipalityStatusEnum.ACTIVE.getDisplayName());
 
         if (optionalCanton.isEmpty()) {
-            logger.warning("MunicipalitySeeder: Canton with ID 1 not found, cannot create municipality.");
+            logger.error("MunicipalitySeeder: Canton with ID 1 not found, cannot create municipality.");
             return;
         }
 
-        var municipality = Municipality.builder().id(1L)
+        if (optionalStatus.isEmpty()) {
+            logger.error("MunicipalitySeeder: Status 'ACTIVE' not found, cannot create municipality.");
+            return;
+        }
+
+        Municipality municipality = Municipality.builder()
                 .name("La Unión-Cartago")
                 .email("comunicaciones@munilaunion.cl")
                 .phone("2274-5000")
                 .address("Provincia de Cartago, Tres Rios, 30301")
                 .canton(optionalCanton.get())
+                .status(optionalStatus.get())
                 .build();
 
         municipalityRepository.save(municipality);
 
-        logger.info("MunicipalitySeeder:" + municipality.getName() + " created successfully.");
+        logger.info("MunicipalitySeeder: " + municipality.getName() + " created successfully.");
     }
 }

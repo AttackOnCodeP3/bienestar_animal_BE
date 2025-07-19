@@ -1,5 +1,6 @@
 package com.project.demo.logic.seeds;
 
+import com.project.demo.logic.constants.general.GeneralConstants;
 import com.project.demo.logic.entity.interest.Interest;
 import com.project.demo.logic.entity.interest.InterestRepository;
 import org.springframework.context.ApplicationListener;
@@ -7,14 +8,15 @@ import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Order(3)
+@Order(GeneralConstants.INTEREST_SEEDER_ORDER)
 @Component
 public class InterestSeeder implements ApplicationListener<ContextRefreshedEvent> {
     private final InterestRepository interestRepository;
 
-    private final Logger logger = Logger.getLogger(InterestSeeder.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(InterestSeeder.class);
 
     public InterestSeeder(InterestRepository interestRepository) {
         this.interestRepository = interestRepository;

@@ -1,12 +1,12 @@
 package com.project.demo.logic.entity.user;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.project.demo.logic.entity.community_animal.CommunityAnimal;
 import com.project.demo.logic.entity.interest.Interest;
 import com.project.demo.logic.entity.municipality.Municipality;
 import com.project.demo.logic.entity.neighborhood.Neighborhood;
 import com.project.demo.logic.entity.rol.Role;
 import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
@@ -22,6 +22,8 @@ import java.util.*;
 @Getter
 @Setter
 @RequiredArgsConstructor
+@Builder
+@AllArgsConstructor
 public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -57,7 +59,6 @@ public class User implements UserDetails {
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
-    @Column(nullable = false)
     private String password;
 
     @Column(name = "registered_by_census_taker", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
@@ -110,6 +111,10 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles = new HashSet<>();
+
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
+    @JsonIgnore
+    private List<CommunityAnimal> communityAnimals;
 
     /**
      * Indicates whether the user's account has not expired.

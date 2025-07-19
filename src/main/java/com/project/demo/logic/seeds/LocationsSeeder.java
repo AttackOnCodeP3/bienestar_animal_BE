@@ -1,5 +1,6 @@
 package com.project.demo.logic.seeds;
 
+import com.project.demo.logic.constants.general.GeneralConstants;
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.canton.CantonRepository;
 import com.project.demo.logic.entity.district.District;
@@ -12,13 +13,14 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.logging.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Order(1)
+@Order(GeneralConstants.LOCATIONS_SEEDER_ORDER)
 @Component
 public class LocationsSeeder implements ApplicationListener<ContextRefreshedEvent> {
 
-    private final Logger logger = Logger.getLogger(LocationsSeeder.class.getName());
+    private final Logger logger = LoggerFactory.getLogger(LocationsSeeder.class);
     private final CantonRepository cantonRepository;
     private final DistrictRepository districtRepository;
     private final NeighborhoodRepository neighborhoodRepository;
