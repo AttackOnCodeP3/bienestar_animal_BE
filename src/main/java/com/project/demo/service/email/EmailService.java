@@ -9,6 +9,16 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 
+/**
+ * Service for sending emails using SendGrid.
+ * <p>
+ * This service provides functionality to send plain text emails
+ * by utilizing the SendGrid API. The API key and sender email
+ * are injected from the application's configuration properties.
+ * </p>
+ *
+ * @author @aBlancoC
+ */
 @Service
 public class EmailService {
 
