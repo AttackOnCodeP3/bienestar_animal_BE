@@ -17,6 +17,7 @@ public class PublicEndpointsConstants {
     public static final String FORGOTPW = "/users/forgot-password**";
     public static final String CHANGEPW = "/users/password-reset**";
     //TODO: DGUTIERREZ: Move these to require at least a hardcoded access token
+
     public static final String INTERESTS = "/interests/**";
     public static final String MUNICIPALITIES = "/municipalities/**";
     public static final String CANTONS = "/cantons/**";
