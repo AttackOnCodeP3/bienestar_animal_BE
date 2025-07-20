@@ -68,6 +68,7 @@ public class Animal {
 
     private Double longitude;
 
+    @Builder.Default
     @OneToMany(mappedBy = "animal", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SanitaryControl> sanitaryControls = new ArrayList<>();
 

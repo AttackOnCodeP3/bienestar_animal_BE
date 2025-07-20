@@ -1,6 +1,8 @@
 package com.project.demo.rest.community_animal;
 
 import com.project.demo.common.PaginationUtils;
+import com.project.demo.logic.entity.animal_type.AnimalTypeEnum;
+import com.project.demo.logic.entity.animal_type.AnimalTypeRepository;
 import com.project.demo.logic.entity.auth.JwtService;
 import com.project.demo.logic.entity.community_animal.CommunityAnimal;
 import com.project.demo.logic.entity.community_animal.CommunityAnimalRepository;
@@ -9,7 +11,6 @@ import com.project.demo.logic.entity.http.Meta;
 import com.project.demo.logic.entity.race.Race;
 import com.project.demo.logic.entity.race.RaceRepository;
 import com.project.demo.logic.entity.sanitary_control.SanitaryControl;
-import com.project.demo.logic.entity.sanitary_control.SanitaryControlRepository;
 import com.project.demo.logic.entity.sanitary_control_response.SanitaryControlResponse;
 import com.project.demo.logic.entity.sanitary_control_response.SanitaryControlResponseRepository;
 import com.project.demo.logic.entity.sanitary_control_type.SanitaryControlType;
@@ -55,8 +56,6 @@ public class CommunityAnimalRestController {
 
     @Autowired private VaccineRepository vaccineRepository;
 
-    @Autowired private SanitaryControlRepository sanitaryControlRepository;
-
     @Autowired private SanitaryControlTypeRepository sanitaryControlTypeRepository;
 
     @Autowired private SanitaryControlResponseRepository sanitaryControlResponseRepository;
@@ -65,7 +64,10 @@ public class CommunityAnimalRestController {
 
     @Autowired private UserRepository userRepository;
 
+    @Autowired private AnimalTypeRepository animalTypeRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(CommunityAnimalRestController.class);
+
 
     @PostMapping
     @PreAuthorize("hasRole('COMMUNITY_USER')")
@@ -90,6 +92,9 @@ public class CommunityAnimalRestController {
             Sex sex = sexRepository.findById(dto.getSexId())
                     .orElseThrow(() -> new RuntimeException("Sex not found"));
 
+            var animalType = animalTypeRepository.findByName(AnimalTypeEnum.COMMUNITY_ANIMAL.getName())
+                    .orElseThrow(() -> new RuntimeException("Animal type not found"));
+
             CommunityAnimal animal = CommunityAnimal.builder()
                     .name(dto.getName())
                     .weight(dto.getWeight())
@@ -99,6 +104,7 @@ public class CommunityAnimalRestController {
                     .sex(sex)
                     .latitude(dto.getLatitude())
                     .longitude(dto.getLongitude())
+                    .animalType(animalType)
                     .user(user)
                     .build();
 
@@ -114,12 +120,13 @@ public class CommunityAnimalRestController {
                             .productUsed(ctrlDto.getProductUsed())
                             .sanitaryControlType(type)
                             .sanitaryControlResponse(response)
-                            .animal(animal)
                             .build();
                 }).toList();
 
                 animal.setSanitaryControls(sanitaryControls);
+                sanitaryControls.forEach(control -> control.setAnimal(animal));
             }
+
 
             CommunityAnimal savedAnimal = communityAnimalRepository.save(animal);
 
