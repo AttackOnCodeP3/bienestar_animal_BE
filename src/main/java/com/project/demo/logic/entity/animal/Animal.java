@@ -64,14 +64,11 @@ public class Animal {
     @JoinColumn(name = "animal_type_id", nullable = false)
     private AnimalType animalType;
 
-    @Column
     private Double latitude;
 
-    @Column
     private Double longitude;
 
-    @OneToMany
-    @JoinColumn(name = "animal_id", nullable = false)
+    @OneToMany(mappedBy = "animal", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SanitaryControl> sanitaryControls = new ArrayList<>();
 
     @CreationTimestamp

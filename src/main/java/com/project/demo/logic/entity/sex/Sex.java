@@ -7,6 +7,10 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entity class representing gender of something.
+ * @author dgutierrez
+ */
 @Table(name = "sex")
 @Entity
 @Getter

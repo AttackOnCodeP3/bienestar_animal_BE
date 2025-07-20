@@ -1,5 +1,7 @@
 package com.project.demo.logic.entity.sanitary_control;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.project.demo.logic.entity.animal.Animal;
 import com.project.demo.logic.entity.sanitary_control_response.SanitaryControlResponse;
 import com.project.demo.logic.entity.sanitary_control_type.SanitaryControlType;
 import jakarta.persistence.*;
@@ -49,7 +51,10 @@ public class SanitaryControl {
     @Column(name = "product_used")
     private String productUsed;
 
-    private String observations;
+    @ManyToOne
+    @JoinColumn(name = "animal_id", nullable = false)
+    @JsonIgnore
+    private Animal animal;
 
     @ManyToOne
     @JoinColumn(name = "sanitary_control_type_id")
