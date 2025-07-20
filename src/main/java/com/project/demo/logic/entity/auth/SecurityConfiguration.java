@@ -70,7 +70,7 @@ public class SecurityConfiguration {
                                 PublicEndpointsConstants.CANTONS,
                                 PublicEndpointsConstants.DISTRICTS,
                                 PublicEndpointsConstants.NEIGHBORHOODS,
-                                PublicEndpointsConstants.FORGOTPW
+                                PublicEndpointsConstants.FORGOT_PASSWORD
 
                         ).permitAll()
                         .anyRequest().authenticated()

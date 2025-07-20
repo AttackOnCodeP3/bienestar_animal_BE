@@ -14,7 +14,7 @@ public class PublicEndpointsConstants {
     public static final String AUTH = "/auth/**";
     public static final String OAUTH2 = "/oauth2/**";
     public static final String LOGIN = "/login/**";
-    public static final String FORGOTPW = "/users/forgot-password/**";
+    public static final String FORGOT_PASSWORD = "/users/forgot-password/**";
     public static final String CHANGEPW = "/users/password-reset/**";
     //TODO: DGUTIERREZ: Move these to require at least a hardcoded access token
 
