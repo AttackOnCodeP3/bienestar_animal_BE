@@ -1,7 +1,6 @@
 package com.project.demo.logic.entity.animal;
 
 import com.project.demo.logic.entity.animal.dto.AgeDTO;
-import com.project.demo.logic.entity.animal_type.AnimalType;
 import com.project.demo.logic.entity.race.Race;
 import com.project.demo.logic.entity.sanitary_control.SanitaryControl;
 import com.project.demo.logic.entity.sex.Sex;
