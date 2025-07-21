@@ -66,18 +66,12 @@ public class Animal {
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
-    @ManyToOne
-    @JoinColumn(name = "animal_type_id", nullable = false)
-    private AnimalType animalType;
-
-    @Column
     private Double latitude;
 
-    @Column
     private Double longitude;
 
-    @OneToMany
-    @JoinColumn(name = "animal_id", nullable = false)
+    @Builder.Default
+    @OneToMany(mappedBy = "animal", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SanitaryControl> sanitaryControls = new ArrayList<>();
 
     @OneToMany(mappedBy = "animal", fetch = FetchType.LAZY)

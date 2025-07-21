@@ -124,4 +124,90 @@ public class GlobalResponseHandler {
 
         return new ResponseEntity<>(response, status);
     }
+
+    // -----------------------------------------------------------------------
+    // Common pre-wrapped response methods (no need to specify status manually)
+    // -----------------------------------------------------------------------
+
+    /**
+     * Returns a 400 Bad Request response.
+     *
+     * @param message the error message
+     * @param request the HTTP request
+     * @return the standardized response entity
+     *
+     * @author dgutierrez
+     */
+    public ResponseEntity<HttpResponse<Object>> badRequest(String message, HttpServletRequest request) {
+        return handleResponse(message, HttpStatus.BAD_REQUEST, request);
+    }
+
+    /**
+     * Returns a 401 Unauthorized response.
+     *
+     * @param message the error message
+     * @param request the HTTP request
+     * @return the standardized response entity
+     *
+     * @author dgutierrez
+     */
+    public ResponseEntity<HttpResponse<Object>> unauthorized(String message, HttpServletRequest request) {
+        return handleResponse(message, HttpStatus.UNAUTHORIZED, request);
+    }
+
+    /**
+     * Returns a 404 Not Found response.
+     *
+     * @param message the error message
+     * @param request the HTTP request
+     * @return the standardized response entity
+     *
+     * @author dgutierrez
+     */
+    public ResponseEntity<HttpResponse<Object>> notFound(String message, HttpServletRequest request) {
+        return handleResponse(message, HttpStatus.NOT_FOUND, request);
+    }
+
+    /**
+     * Returns a 500 Internal Server Error response.
+     *
+     * @param message the error message
+     * @param request the HTTP request
+     * @return the standardized response entity
+     *
+     * @author dgutierrez
+     */
+    public ResponseEntity<HttpResponse<Object>> internalError(String message, HttpServletRequest request) {
+        return handleResponse(message, HttpStatus.INTERNAL_SERVER_ERROR, request);
+    }
+
+    /**
+     * Returns a 200 OK response with body.
+     *
+     * @param message the response message
+     * @param body the response body
+     * @param request the HTTP request
+     * @param <T> the type of the response body
+     * @return the standardized response entity
+     *
+     * @author dgutierrez
+     */
+    public <T> ResponseEntity<HttpResponse<T>> success(String message, T body, HttpServletRequest request) {
+        return handleResponse(message, body, HttpStatus.OK, request);
+    }
+
+    /**
+     * Returns a 201 Created response with body.
+     *
+     * @param message the response message
+     * @param body the response body
+     * @param request the HTTP request
+     * @param <T> the type of the response body
+     * @return the standardized response entity
+     *
+     * @author dgutierrez
+     */
+    public <T> ResponseEntity<HttpResponse<T>> created(String message, T body, HttpServletRequest request) {
+        return handleResponse(message, body, HttpStatus.CREATED, request);
+    }
 }

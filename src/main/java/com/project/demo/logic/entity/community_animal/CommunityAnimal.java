@@ -1,5 +1,6 @@
 package com.project.demo.logic.entity.community_animal;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.demo.logic.entity.animal.Animal;
 import com.project.demo.logic.entity.user.User;
 import jakarta.persistence.*;
@@ -25,6 +26,7 @@ public class CommunityAnimal extends Animal {
 
     @ManyToOne
     @JoinColumn(name = "owner_user_id", nullable = false)
+    @JsonIgnore
     private User user;
 
     @CreationTimestamp
