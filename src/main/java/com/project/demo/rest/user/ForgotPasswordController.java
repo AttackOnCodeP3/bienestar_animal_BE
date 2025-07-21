@@ -17,7 +17,7 @@ import java.util.Map;
  * @author @aBlancoC
  */
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/users/password")
 public class ForgotPasswordController {
 
     @Autowired
