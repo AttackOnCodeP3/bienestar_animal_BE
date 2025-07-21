@@ -7,6 +7,13 @@ import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Entity class representing the biological sex of an animal.
+ * This class is used to store and manage information about the sex of animals,
+ * including its name and timestamps for creation and updates.
+ * 
+ * @author dgutierrez
+ */
 @Table(name = "sex")
 @Entity
 @Getter

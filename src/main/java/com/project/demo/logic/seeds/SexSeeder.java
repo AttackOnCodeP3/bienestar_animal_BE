@@ -14,6 +14,10 @@ import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
 
+/**
+ * Seeder class to populate the database with genders
+ * @author dgutierrez
+ */
 @Order(GeneralConstants.SEX_SEEDER_ORDER)
 @Component
 public class SexSeeder implements ApplicationListener<ContextRefreshedEvent> {
