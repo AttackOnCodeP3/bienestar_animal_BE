@@ -55,6 +55,7 @@ public class Municipality {
     @ManyToOne(fetch = FetchType.EAGER)
     private Canton canton;
 
+    @Builder.Default
     @OneToMany(mappedBy = "municipality", cascade = CascadeType.ALL)
     @JsonIgnore
     private List<User> users = new ArrayList<>();
