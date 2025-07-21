@@ -146,7 +146,7 @@ public class CommunityAnimalRestController {
                 }
             }
 
-            CommunityAnimal animal = CommunityAnimal.builder()
+            CommunityAnimal communityAnimal = CommunityAnimal.builder()
                     .name(createAnimalRequestDTO.getName())
                     .weight(createAnimalRequestDTO.getWeight())
                     .birthDate(createAnimalRequestDTO.getBirthDate())
@@ -179,14 +179,14 @@ public class CommunityAnimalRestController {
                             .sanitaryControlResponse(response)
                             .build();
 
-                    control.setAnimal(animal);
+                    control.setAnimal(communityAnimal);
                     sanitaryControls.add(control);
                 }
 
-                animal.setSanitaryControls(sanitaryControls);
+                communityAnimal.setSanitaryControls(sanitaryControls);
             }
 
-            CommunityAnimal savedAnimal = communityAnimalRepository.save(animal);
+            CommunityAnimal communityAnimalSaved = communityAnimalRepository.save(communityAnimal);
 
             if (createAnimalRequestDTO.getVaccineApplications() != null) {
                 List<VaccineApplication> applications = new ArrayList<>();
@@ -197,7 +197,7 @@ public class CommunityAnimalRestController {
                     }
 
                     applications.add(VaccineApplication.builder()
-                            .animal(savedAnimal)
+                            .animal(communityAnimalSaved)
                             .vaccine(vaccine)
                             .applicationDate(appDTO.getApplicationDate())
                             .build());
@@ -206,7 +206,7 @@ public class CommunityAnimalRestController {
                 vaccineApplicationRepository.saveAll(applications);
             }
 
-            return responseHandler.created("Animal comunitario registrado exitosamente.", savedAnimal, request);
+            return responseHandler.created("Animal comunitario registrado exitosamente.", communityAnimalSaved, request);
 
         } catch (Exception e) {
             logger.error("Error al registrar el animal comunitario", e);
