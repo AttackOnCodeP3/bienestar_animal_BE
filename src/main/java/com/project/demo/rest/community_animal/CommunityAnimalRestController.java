@@ -26,6 +26,7 @@ import com.project.demo.logic.entity.vaccine.VaccineRepository;
 import com.project.demo.logic.entity.vaccine_application.VaccineApplication;
 import com.project.demo.logic.entity.vaccine_application.VaccineApplicationRepository;
 import com.project.demo.rest.community_animal.dto.CreateAnimalRequestDTO;
+import com.project.demo.rest.community_animal.dto.SanitaryControlDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -38,6 +39,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -74,90 +76,136 @@ public class CommunityAnimalRestController {
     @Transactional
     public ResponseEntity<?> createCommunityAnimal(
             @RequestHeader("Authorization") String authHeader,
-            @RequestBody CreateAnimalRequestDTO dto,
+            @RequestBody CreateAnimalRequestDTO createAnimalRequestDTO,
             HttpServletRequest request) {
+        var responseHandler = new GlobalResponseHandler();
         try {
             logger.info("Creating new community animal...");
 
             String email = jwtService.extractUsername(authHeader.replace("Bearer ", ""));
-            User user = userRepository.findByEmail(email)
-                    .orElseThrow(() -> new RuntimeException("Authenticated user not found"));
+            User user = userRepository.findByEmail(email).orElse(null);
 
-            Species species = speciesRepository.findById(dto.getSpeciesId())
-                    .orElseThrow(() -> new RuntimeException("Species not found"));
+            if (user == null) {
+                return responseHandler.unauthorized("No se pudo identificar al usuario autenticado.", request);
+            }
 
-            Race race = raceRepository.findById(dto.getRaceId())
-                    .orElseThrow(() -> new RuntimeException("Race not found"));
+            Species species = speciesRepository.findById(createAnimalRequestDTO.getSpeciesId()).orElse(null);
+            if (species == null) {
+                return responseHandler.badRequest("La especie especificada no existe.", request);
+            }
 
-            Sex sex = sexRepository.findById(dto.getSexId())
-                    .orElseThrow(() -> new RuntimeException("Sex not found"));
+            Race race = raceRepository.findById(createAnimalRequestDTO.getRaceId()).orElse(null);
+            if (race == null) {
+                return responseHandler.badRequest("La raza especificada no existe.", request);
+            }
 
-            var animalType = animalTypeRepository.findByName(AnimalTypeEnum.COMMUNITY_ANIMAL.getName())
-                    .orElseThrow(() -> new RuntimeException("Animal type not found"));
+            Sex sex = sexRepository.findById(createAnimalRequestDTO.getSexId()).orElse(null);
+            if (sex == null) {
+                return responseHandler.badRequest("El sexo especificado no existe.", request);
+            }
+
+            var animalType = animalTypeRepository.findByName(AnimalTypeEnum.COMMUNITY_ANIMAL.getName()).orElse(null);
+            if (animalType == null) {
+                return responseHandler.badRequest("El tipo de animal comunitario no se encuentra registrado.", request);
+            }
+
+            if (createAnimalRequestDTO.getSanitaryControls() != null && !createAnimalRequestDTO.getSanitaryControls().isEmpty()) {
+                for (SanitaryControlDTO ctrlDto : createAnimalRequestDTO.getSanitaryControls()) {
+
+                    if (ctrlDto.getSanitaryControlTypeId() == null) {
+                        return responseHandler.badRequest(
+                                "El tipo de control sanitario es obligatorio.",
+                                request
+                        );
+                    }
+
+                    if (ctrlDto.getSanitaryControlResponseId() == null) {
+                        return responseHandler.badRequest(
+                                "La respuesta del control sanitario es obligatoria.",
+                                request
+                        );
+                    }
+
+                    boolean productUsedProvided = ctrlDto.getProductUsed() != null && !ctrlDto.getProductUsed().isBlank();
+                    boolean dateProvided = ctrlDto.getLastApplicationDate() != null;
+
+                    boolean bothAbsent = !productUsedProvided && !dateProvided;
+                    boolean bothPresent = productUsedProvided && dateProvided;
+
+                    if (!bothAbsent && !bothPresent) {
+                        return responseHandler.badRequest(
+                                "Si se proporciona el producto utilizado o la fecha de aplicación en los controles sanitarios, ambos campos deben estar completos.",
+                                request
+                        );
+                    }
+                }
+            }
 
             CommunityAnimal animal = CommunityAnimal.builder()
-                    .name(dto.getName())
-                    .weight(dto.getWeight())
-                    .birthDate(dto.getBirthDate())
+                    .name(createAnimalRequestDTO.getName())
+                    .weight(createAnimalRequestDTO.getWeight())
+                    .birthDate(createAnimalRequestDTO.getBirthDate())
                     .species(species)
                     .race(race)
                     .sex(sex)
-                    .latitude(dto.getLatitude())
-                    .longitude(dto.getLongitude())
+                    .latitude(createAnimalRequestDTO.getLatitude())
+                    .longitude(createAnimalRequestDTO.getLongitude())
                     .animalType(animalType)
                     .user(user)
                     .build();
 
-            if (dto.getSanitaryControls() != null) {
-                List<SanitaryControl> sanitaryControls = dto.getSanitaryControls().stream().map(ctrlDto -> {
-                    SanitaryControlType type = sanitaryControlTypeRepository.findById(ctrlDto.getSanitaryControlTypeId())
-                            .orElseThrow(() -> new RuntimeException("SanitaryControlType not found"));
-                    SanitaryControlResponse response = sanitaryControlResponseRepository.findById(ctrlDto.getSanitaryControlResponseId())
-                            .orElseThrow(() -> new RuntimeException("SanitaryControlResponse not found"));
+            if (createAnimalRequestDTO.getSanitaryControls() != null) {
+                List<SanitaryControl> sanitaryControls = new ArrayList<>();
+                for (SanitaryControlDTO ctrlDto : createAnimalRequestDTO.getSanitaryControls()) {
+                    SanitaryControlType type = sanitaryControlTypeRepository.findById(ctrlDto.getSanitaryControlTypeId()).orElse(null);
+                    if (type == null) {
+                        return responseHandler.badRequest("El tipo de control sanitario especificado no existe.", request);
+                    }
 
-                    return SanitaryControl.builder()
+                    SanitaryControlResponse response = sanitaryControlResponseRepository.findById(ctrlDto.getSanitaryControlResponseId()).orElse(null);
+                    if (response == null) {
+                        return responseHandler.badRequest("La respuesta del control sanitario especificada no existe.", request);
+                    }
+
+                    SanitaryControl control = SanitaryControl.builder()
                             .lastApplicationDate(ctrlDto.getLastApplicationDate())
                             .productUsed(ctrlDto.getProductUsed())
                             .sanitaryControlType(type)
                             .sanitaryControlResponse(response)
                             .build();
-                }).toList();
+
+                    control.setAnimal(animal);
+                    sanitaryControls.add(control);
+                }
 
                 animal.setSanitaryControls(sanitaryControls);
-                sanitaryControls.forEach(control -> control.setAnimal(animal));
             }
-
 
             CommunityAnimal savedAnimal = communityAnimalRepository.save(animal);
 
-            if (dto.getVaccineApplications() != null) {
-                List<VaccineApplication> applications = dto.getVaccineApplications().stream().map(appDTO -> {
-                    Vaccine vaccine = vaccineRepository.findById(appDTO.getVaccineId())
-                            .orElseThrow(() -> new RuntimeException("Vaccine not found"));
-                    return VaccineApplication.builder()
+            if (createAnimalRequestDTO.getVaccineApplications() != null) {
+                List<VaccineApplication> applications = new ArrayList<>();
+                for (var appDTO : createAnimalRequestDTO.getVaccineApplications()) {
+                    Vaccine vaccine = vaccineRepository.findById(appDTO.getVaccineId()).orElse(null);
+                    if (vaccine == null) {
+                        return responseHandler.badRequest("La vacuna especificada no existe.", request);
+                    }
+
+                    applications.add(VaccineApplication.builder()
                             .animal(savedAnimal)
                             .vaccine(vaccine)
                             .applicationDate(appDTO.getApplicationDate())
-                            .build();
-                }).toList();
+                            .build());
+                }
 
                 vaccineApplicationRepository.saveAll(applications);
             }
 
-            return new GlobalResponseHandler().handleResponse(
-                    "Community animal created successfully",
-                    savedAnimal,
-                    HttpStatus.CREATED,
-                    request
-            );
+            return responseHandler.created("Animal comunitario registrado exitosamente.", savedAnimal, request);
 
         } catch (Exception e) {
-            logger.error("Error creating community animal", e);
-            return new GlobalResponseHandler().handleResponse(
-                    "Error creating community animal: " + e.getMessage(),
-                    HttpStatus.INTERNAL_SERVER_ERROR,
-                    request
-            );
+            logger.error("Error al registrar el animal comunitario", e);
+            return responseHandler.internalError("Se produjo un error inesperado al registrar el animal comunitario: " + e.getMessage(), request);
         }
     }
 
