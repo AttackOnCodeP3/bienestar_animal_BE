@@ -60,10 +60,6 @@ public class Animal {
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
-    @ManyToOne
-    @JoinColumn(name = "animal_type_id", nullable = false)
-    private AnimalType animalType;
-
     private Double latitude;
 
     private Double longitude;
