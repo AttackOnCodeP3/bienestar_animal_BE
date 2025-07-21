@@ -57,7 +57,7 @@ public class CommunityAnimalSeeder implements CommandLineRunner {
         if (user == null || species == null || race == null || sex == null || animalType == null) return;
 
         CommunityAnimal animal = CommunityAnimal.builder()
-                .name("Firulais")
+                .name("Maxwell")
                 .weight(12.5)
                 .species(species)
                 .race(race)

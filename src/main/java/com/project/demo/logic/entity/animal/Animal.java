@@ -80,7 +80,6 @@ public class Animal {
     @JoinColumn(name = "animal_id", nullable = false)
     private List<SanitaryControl> sanitaryControls = new ArrayList<>();
 
-    // Relación con Model3D (igual que en la versión anterior)
     @OneToMany(mappedBy = "animal", fetch = FetchType.LAZY)
     private Set<Model3D> model3DAnimals;
 
