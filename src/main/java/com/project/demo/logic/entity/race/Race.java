@@ -1,5 +1,6 @@
 package com.project.demo.logic.entity.race;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.demo.logic.entity.species.Species;
 import jakarta.persistence.*;
 import lombok.*;
@@ -27,6 +28,7 @@ public class Race {
 
     @ManyToOne
     @JoinColumn(name = "species_id")
+    @JsonIgnore
     private Species species;
 
     @CreationTimestamp
