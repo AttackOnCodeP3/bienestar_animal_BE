@@ -39,6 +39,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -107,6 +108,10 @@ public class CommunityAnimalRestController {
             var animalType = animalTypeRepository.findByName(AnimalTypeEnum.COMMUNITY_ANIMAL.getName()).orElse(null);
             if (animalType == null) {
                 return responseHandler.badRequest("El tipo de animal comunitario no se encuentra registrado.", request);
+            }
+
+            if (createAnimalRequestDTO.getBirthDate().isAfter(LocalDate.now())) {
+                return responseHandler.badRequest("La fecha de nacimiento no puede estar en el futuro.", request);
             }
 
             if (createAnimalRequestDTO.getSanitaryControls() != null && !createAnimalRequestDTO.getSanitaryControls().isEmpty()) {
