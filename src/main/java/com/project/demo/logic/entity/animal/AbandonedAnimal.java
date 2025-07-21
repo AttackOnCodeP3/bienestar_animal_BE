@@ -76,9 +76,11 @@ public class AbandonedAnimal {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
+    @Builder.Default
     @Column(name = "is_synchronized", nullable = false)
     private boolean synchronizedFlag = false;
 
+    @Builder.Default
     @Column(name = "is_abandoned", nullable = false)
     private boolean isAbandoned = true;
 

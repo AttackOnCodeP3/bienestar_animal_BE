@@ -112,16 +112,7 @@ public class GlobalResponseHandler {
             HttpStatus status,
             Meta meta
     ) {
-        HttpResponse<T> response;
-
-        if (body instanceof HttpResponse<?> existing) {
-            //noinspection unchecked
-            response = (HttpResponse<T>) existing;
-            response.setMeta(meta);
-        } else {
-            response = new HttpResponse<>(message, body, meta);
-        }
-
+        HttpResponse<T> response = new HttpResponse<>(message, body, meta);
         return new ResponseEntity<>(response, status);
     }
 

@@ -2,7 +2,6 @@ package com.project.demo.logic.entity.animal;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.demo.logic.entity.animal.dto.AgeDTO;
-import com.project.demo.logic.entity.animal_type.AnimalType;
 import com.project.demo.logic.entity.model3D.Model3D;
 import com.project.demo.logic.entity.race.Race;
 import com.project.demo.logic.entity.sanitary_control.SanitaryControl;
