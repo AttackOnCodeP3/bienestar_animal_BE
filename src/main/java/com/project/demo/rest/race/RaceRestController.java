@@ -39,37 +39,39 @@ public class RaceRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
-        logger.info("Fetching all races");
+        logger.info("Invocando getAllRaces - obteniendo todas las razas. Página: {}, Tamaño: {}", page, size);
+        var globalResponseHandler = new GlobalResponseHandler();
 
         Pageable pageable = PaginationUtils.buildPageable(page, size);
         Page<Race> racePage = raceRepository.findAll(pageable);
 
         Meta meta = PaginationUtils.buildMeta(request, racePage);
 
-        return new GlobalResponseHandler().handleResponse(
-                "Races retrieved successfully",
+        return globalResponseHandler.handleResponse(
+                "Razas obtenidas correctamente",
                 racePage.getContent(),
                 HttpStatus.OK,
                 meta
         );
     }
 
-
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getRaceById(@PathVariable Long id, HttpServletRequest request) {
-        logger.info("Fetching race with id: {}", id);
+        logger.info("Invocando getRaceById - buscando raza con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<Race> raceOpt = raceRepository.findById(id);
         if (raceOpt.isEmpty()) {
-            logger.warn("Race with id {} not found", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Race id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
+            logger.warn("Raza con ID {} no encontrada", id);
+            return globalResponseHandler.notFound(
+                    "La raza con ID " + id + " no fue encontrada",
                     request
             );
         }
-        return new GlobalResponseHandler().handleResponse(
-                "Race retrieved successfully",
+
+        return globalResponseHandler.handleResponse(
+                "Raza obtenida correctamente",
                 raceOpt.get(),
                 HttpStatus.OK,
                 request
@@ -84,14 +86,14 @@ public class RaceRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
-        logger.info("Fetching races for species id: {}", speciesId);
+        logger.info("Invocando getRacesBySpeciesId - obteniendo razas para especie con ID: {}", speciesId);
+        var globalResponseHandler = new GlobalResponseHandler();
 
         Optional<Species> speciesOpt = speciesRepository.findById(speciesId);
         if (speciesOpt.isEmpty()) {
-            logger.warn("Species with id {} not found", speciesId);
-            return new GlobalResponseHandler().handleResponse(
-                    "Species id " + speciesId + " not found",
-                    HttpStatus.NOT_FOUND,
+            logger.warn("Especie con ID {} no encontrada", speciesId);
+            return globalResponseHandler.notFound(
+                    "La especie con ID " + speciesId + " no fue encontrada",
                     request
             );
         }
@@ -101,12 +103,11 @@ public class RaceRestController {
 
         Meta meta = PaginationUtils.buildMeta(request, racePage);
 
-        return new GlobalResponseHandler().handleResponse(
-                "Races for species retrieved successfully",
+        return globalResponseHandler.handleResponse(
+                "Razas de la especie obtenidas correctamente",
                 racePage.getContent(),
                 HttpStatus.OK,
                 meta
         );
     }
 }
-

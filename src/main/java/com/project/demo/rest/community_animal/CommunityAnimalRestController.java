@@ -46,27 +46,26 @@ import java.util.List;
 public class CommunityAnimalRestController {
 
     @Autowired private CommunityAnimalRepository communityAnimalRepository;
-
     @Autowired private JwtService jwtService;
-
     @Autowired private SpeciesRepository speciesRepository;
-
     @Autowired private RaceRepository raceRepository;
-
     @Autowired private SexRepository sexRepository;
-
     @Autowired private VaccineRepository vaccineRepository;
-
     @Autowired private SanitaryControlTypeRepository sanitaryControlTypeRepository;
-
     @Autowired private SanitaryControlResponseRepository sanitaryControlResponseRepository;
-
     @Autowired private VaccineApplicationRepository vaccineApplicationRepository;
-
     @Autowired private UserRepository userRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(CommunityAnimalRestController.class);
 
+    /**
+     * Registers a new community animal with optional sanitary and vaccine records.
+     *
+     * @param authHeader Authorization header with JWT token
+     * @param createAnimalRequestDTO The animal registration request body
+     * @param request HTTP servlet request (for metadata/logging)
+     * @return ResponseEntity with success or error message
+     */
     @PostMapping
     @PreAuthorize("hasRole('COMMUNITY_USER')")
     @Transactional
@@ -74,13 +73,13 @@ public class CommunityAnimalRestController {
             @RequestHeader("Authorization") String authHeader,
             @RequestBody CreateAnimalRequestDTO createAnimalRequestDTO,
             HttpServletRequest request) {
+
         var responseHandler = new GlobalResponseHandler();
         try {
-            logger.info("Creating new community animal...");
+            logger.info("Registrando nuevo animal comunitario...");
 
             String email = jwtService.extractUsername(authHeader.replace("Bearer ", ""));
             User user = userRepository.findByEmail(email).orElse(null);
-
             if (user == null) {
                 return responseHandler.unauthorized("No se pudo identificar al usuario autenticado.", request);
             }
@@ -106,30 +105,21 @@ public class CommunityAnimalRestController {
 
             if (createAnimalRequestDTO.getSanitaryControls() != null && !createAnimalRequestDTO.getSanitaryControls().isEmpty()) {
                 for (SanitaryControlDTO ctrlDto : createAnimalRequestDTO.getSanitaryControls()) {
-
                     if (ctrlDto.getSanitaryControlTypeId() == null) {
-                        return responseHandler.badRequest(
-                                "El tipo de control sanitario es obligatorio.",
-                                request
-                        );
+                        return responseHandler.badRequest("El tipo de control sanitario es obligatorio.", request);
                     }
-
                     if (ctrlDto.getSanitaryControlResponseId() == null) {
-                        return responseHandler.badRequest(
-                                "La respuesta del control sanitario es obligatoria.",
-                                request
-                        );
+                        return responseHandler.badRequest("La respuesta del control sanitario es obligatoria.", request);
                     }
 
                     boolean productUsedProvided = ctrlDto.getProductUsed() != null && !ctrlDto.getProductUsed().isBlank();
                     boolean dateProvided = ctrlDto.getLastApplicationDate() != null;
-
                     boolean bothAbsent = !productUsedProvided && !dateProvided;
                     boolean bothPresent = productUsedProvided && dateProvided;
 
                     if (!bothAbsent && !bothPresent) {
                         return responseHandler.badRequest(
-                                "Si se proporciona el producto utilizado o la fecha de aplicación en los controles sanitarios, ambos campos deben estar completos.",
+                                "Si se proporciona el producto utilizado o la fecha de aplicación, ambos campos deben estar completos.",
                                 request
                         );
                     }
@@ -171,7 +161,6 @@ public class CommunityAnimalRestController {
                     control.setAnimal(communityAnimal);
                     sanitaryControls.add(control);
                 }
-
                 communityAnimal.setSanitaryControls(sanitaryControls);
             }
 
@@ -191,7 +180,6 @@ public class CommunityAnimalRestController {
                             .applicationDate(appDTO.getApplicationDate())
                             .build());
                 }
-
                 vaccineApplicationRepository.saveAll(applications);
             }
 
@@ -207,6 +195,8 @@ public class CommunityAnimalRestController {
      * Returns the list of community animals registered by the currently authenticated user.
      *
      * @param authHeader Authorization header containing the JWT token
+     * @param page       Requested page (default 1)
+     * @param size       Page size (default 10)
      * @param request    HTTP request (used for metadata)
      * @return ResponseEntity containing the list of animals
      */
@@ -218,22 +208,31 @@ public class CommunityAnimalRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
-        logger.info("Fetching community animals for authenticated user");
+        var responseHandler = new GlobalResponseHandler();
+        try {
+            logger.info("Obteniendo animales comunitarios del usuario autenticado. Página: {}, Tamaño: {}", page, size);
 
-        String token = authHeader.replace("Bearer ", "");
-        String email = jwtService.extractUsername(token);
+            String token = authHeader.replace("Bearer ", "");
+            String email = jwtService.extractUsername(token);
 
-        Pageable pageable = PaginationUtils.buildPageable(page, size);
-        Page<CommunityAnimal> animalsPage = communityAnimalRepository.findByUser_Email(email, pageable);
+            Pageable pageable = PaginationUtils.buildPageable(page, size);
+            Page<CommunityAnimal> animalsPage = communityAnimalRepository.findByUser_Email(email, pageable);
 
-        Meta meta = PaginationUtils.buildMeta(request, animalsPage);
+            Meta meta = PaginationUtils.buildMeta(request, animalsPage);
 
-        return new GlobalResponseHandler().handleResponse(
-                "Community animals retrieved successfully",
-                animalsPage.getContent(),
-                HttpStatus.OK,
-                meta
-        );
+            return responseHandler.handleResponse(
+                    "Animales comunitarios obtenidos correctamente.",
+                    animalsPage.getContent(),
+                    HttpStatus.OK,
+                    meta
+            );
+
+        } catch (Exception e) {
+            logger.error("Error al obtener animales comunitarios del usuario", e);
+            return responseHandler.internalError(
+                    "Ocurrió un error al intentar obtener los animales comunitarios.",
+                    request
+            );
+        }
     }
 }
-

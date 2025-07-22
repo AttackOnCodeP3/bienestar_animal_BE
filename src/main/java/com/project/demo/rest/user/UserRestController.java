@@ -1,6 +1,7 @@
 package com.project.demo.rest.user;
 
 import com.project.demo.common.BooleanUtils;
+import com.project.demo.common.PaginationUtils;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
 import com.project.demo.logic.entity.interest.Interest;
@@ -15,8 +16,9 @@ import com.project.demo.logic.entity.rol.RoleRepository;
 import com.project.demo.logic.entity.user.User;
 import com.project.demo.logic.entity.user.UserRepository;
 import com.project.demo.rest.user.dto.UpdateUserRequestDTO;
-import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -36,6 +38,9 @@ import java.util.Set;
 @RestController
 @RequestMapping("/users")
 public class UserRestController {
+
+    private static final Logger logger = LoggerFactory.getLogger(UserRestController.class);
+
     @Autowired
     private UserRepository userRepository;
 
@@ -61,50 +66,53 @@ public class UserRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
+        logger.info("Invocación de GET /users - Listar usuarios (página {}, tamaño {})", page, size);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         int safePage = Math.max(0, page - 1);
         Pageable pageable = PageRequest.of(safePage, size);
 
-        Role superAdminRole = roleRepository.findByName(RoleEnum.SUPER_ADMIN)
-                .orElseThrow(() -> new RuntimeException("Rol SUPER_ADMIN no encontrado"));
+        Optional<Role> superAdminRoleOpt = roleRepository.findByName(RoleEnum.SUPER_ADMIN);
+        if (superAdminRoleOpt.isEmpty()) {
+            return globalResponseHandler.notFound(
+                    "El rol SUPER_ADMIN no fue encontrado",
+                    request
+            );
+        }
 
         Page<User> usersPage = userRepository.findAllExcludingUsersWithRoleId(
-                superAdminRole.getId(), pageable);
+                superAdminRoleOpt.get().getId(), pageable);
 
-        Meta meta = new Meta(request.getMethod(), request.getRequestURL().toString());
-        meta.setTotalPages(usersPage.getTotalPages());
-        meta.setTotalElements(usersPage.getTotalElements());
-        meta.setPageNumber(usersPage.getNumber() + 1);
-        meta.setPageSize(usersPage.getSize());
+        Meta meta = PaginationUtils.buildMeta(request, usersPage);
 
-        return new GlobalResponseHandler().handleResponse("Users retrieved successfully",
-                usersPage.getContent(), HttpStatus.OK, meta);
+        return globalResponseHandler.handleResponse(
+                "Usuarios obtenidos correctamente",
+                usersPage.getContent(),
+                HttpStatus.OK,
+                meta
+        );
     }
 
-    /**
-     * Fetches a user by their ID.
-     *
-     * @param userId the ID of the user to fetch
-     * @param request the HTTP request for metadata
-     * @return a ResponseEntity containing the user or an error message
-     * @author dgutierrez
-     */
     @GetMapping("/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<?> getUserById(
             @PathVariable Long userId,
             HttpServletRequest request) {
 
+        logger.info("Invocación de GET /users/{} - Obtener usuario por ID", userId);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<User> userOpt = userRepository.findById(userId);
         if (userOpt.isEmpty()) {
-            return new GlobalResponseHandler().handleResponse(
-                    "User id " + userId + " not found",
+            return globalResponseHandler.handleResponse(
+                    "El usuario con ID " + userId + " no fue encontrado",
                     HttpStatus.NOT_FOUND,
                     request
             );
         }
 
-        return new GlobalResponseHandler().handleResponse(
-                "User retrieved successfully",
+        return globalResponseHandler.handleResponse(
+                "Usuario obtenido correctamente",
                 userOpt.get(),
                 HttpStatus.OK,
                 request
@@ -114,10 +122,19 @@ public class UserRestController {
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<?> addUser(@RequestBody User user, HttpServletRequest request) {
+
+        logger.info("Invocación de POST /users - Crear usuario con correo: {}", user.getEmail());
+        var globalResponseHandler = new GlobalResponseHandler();
+
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         userRepository.save(user);
-        return new GlobalResponseHandler().handleResponse("User updated successfully",
-                user, HttpStatus.OK, request);
+
+        return globalResponseHandler.handleResponse(
+                "Usuario creado correctamente",
+                user,
+                HttpStatus.OK,
+                request
+        );
     }
 
     @PutMapping("/{userId}")
@@ -127,36 +144,51 @@ public class UserRestController {
             @RequestBody UpdateUserRequestDTO dto,
             HttpServletRequest request) {
 
-        Optional<User> foundUserOpt = userRepository.findById(userId);
-        if (foundUserOpt.isEmpty()) {
-            return new GlobalResponseHandler().handleResponse(
-                    "User id " + userId + " not found",
-                    HttpStatus.NOT_FOUND,
+        logger.info("Invocación de PUT /users/{} - Actualizar usuario", userId);
+        var globalResponseHandler = new GlobalResponseHandler();
+
+        Optional<User> userOpt = userRepository.findById(userId);
+        if (userOpt.isEmpty()) {
+            return globalResponseHandler.notFound(
+                    "El usuario con ID " + userId + " no fue encontrado",
                     request
             );
         }
 
         if (dto.getRoleIds() != null && dto.getRoleIds().isEmpty()) {
-            return new GlobalResponseHandler().handleResponse(
-                    "At least one role must be selected",
-                    HttpStatus.BAD_REQUEST,
+            return globalResponseHandler.badRequest(
+                    "Debe asignarse al menos un rol al usuario",
                     request
             );
         }
 
-        User currentUser = foundUserOpt.get();
-
         Municipality municipality = null;
         if (dto.getMunicipalityId() != null) {
             municipality = municipalityRepository.findById(dto.getMunicipalityId())
-                    .orElseThrow(() -> new EntityNotFoundException("Municipality not found"));
+                    .orElse(null);
+
+            if (municipality == null) {
+                return globalResponseHandler.notFound(
+                        "La municipalidad con ID " + dto.getMunicipalityId() + " no fue encontrado",
+                        request
+                );
+            }
         }
 
         Neighborhood neighborhood = null;
         if (dto.getNeighborhoodId() != null) {
             neighborhood = neighborhoodRepository.findById(dto.getNeighborhoodId())
-                    .orElseThrow(() -> new EntityNotFoundException("Neighborhood not found"));
+                    .orElse(null);
+
+            if (neighborhood == null) {
+                return globalResponseHandler.notFound(
+                        "El barrio con ID " + dto.getNeighborhoodId() + " no fue encontrado",
+                        request
+                );
+            }
         }
+
+        User currentUser = userOpt.get();
 
         Set<Interest> interests = dto.getInterestIds() != null
                 ? new HashSet<>(interestRepository.findAllById(dto.getInterestIds()))
@@ -184,7 +216,6 @@ public class UserRestController {
                 .neighborhood(neighborhood)
                 .interests(interests)
                 .roles(roles)
-
                 .password(currentUser.getPassword())
                 .temporaryPassword(currentUser.getTemporaryPassword())
                 .lastLoginDate(currentUser.getLastLoginDate())
@@ -193,8 +224,8 @@ public class UserRestController {
 
         userRepository.save(updatedUser);
 
-        return new GlobalResponseHandler().handleResponse(
-                "User updated successfully",
+        return globalResponseHandler.handleResponse(
+                "Usuario actualizado correctamente",
                 updatedUser,
                 HttpStatus.OK,
                 request
@@ -204,20 +235,32 @@ public class UserRestController {
     @DeleteMapping("/{userId}")
     @PreAuthorize("hasAnyRole('ADMIN', 'SUPER_ADMIN')")
     public ResponseEntity<?> deleteUser(@PathVariable Long userId, HttpServletRequest request) {
-        Optional<User> foundOrder = userRepository.findById(userId);
-        if(foundOrder.isPresent()) {
+
+        logger.info("Invocación de DELETE /users/{} - Eliminar usuario", userId);
+        var globalResponseHandler = new GlobalResponseHandler();
+
+        Optional<User> foundUser = userRepository.findById(userId);
+        if (foundUser.isPresent()) {
             userRepository.deleteById(userId);
-            return new GlobalResponseHandler().handleResponse("User deleted successfully",
-                    foundOrder.get(), HttpStatus.OK, request);
-        } else {
-            return new GlobalResponseHandler().handleResponse("User id " + userId + " not found"  ,
-                    HttpStatus.NOT_FOUND, request);
+            return globalResponseHandler.handleResponse(
+                    "Usuario eliminado correctamente",
+                    foundUser.get(),
+                    HttpStatus.OK,
+                    request
+            );
         }
+
+        return globalResponseHandler.handleResponse(
+                "Usuario con ID " + userId + " no encontrado",
+                HttpStatus.NOT_FOUND,
+                request
+        );
     }
 
     @GetMapping("/me")
     @PreAuthorize("isAuthenticated()")
     public User authenticatedUser() {
+        logger.info("Invocación de GET /users/me - Obtener usuario autenticado");
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return (User) authentication.getPrincipal();
     }

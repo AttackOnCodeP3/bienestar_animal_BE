@@ -55,7 +55,7 @@ public class AdminController {
     public ResponseEntity<?> createUser(@RequestBody RegisterUserRequestDTO dto, HttpServletRequest request) {
         if (dto.getName() == null || dto.getLastname() == null || dto.getEmail() == null) {
             return new GlobalResponseHandler().handleResponse(
-                    "Missing required fields",
+                    "Algunos campos obligatorios están vacíos",
                     null, HttpStatus.BAD_REQUEST, request);
         }
 
@@ -98,7 +98,7 @@ public class AdminController {
         userRepository.save(user);
 
         return new GlobalResponseHandler().handleResponse(
-                "User created successfully",
+                "Usuario creado exitosamente",
                 user, HttpStatus.CREATED, request);
     }
 }

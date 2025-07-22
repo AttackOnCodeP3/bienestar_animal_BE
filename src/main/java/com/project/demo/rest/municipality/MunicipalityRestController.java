@@ -1,5 +1,6 @@
 package com.project.demo.rest.municipality;
 
+import com.project.demo.common.PaginationUtils;
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.canton.CantonRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
@@ -69,11 +70,7 @@ public class MunicipalityRestController {
 
         Page<Municipality> municipalityPage = municipalityRepository.findAll(spec, pageable);
 
-        Meta meta = new Meta(request.getMethod(), request.getRequestURL().toString());
-        meta.setTotalPages(municipalityPage.getTotalPages());
-        meta.setTotalElements(municipalityPage.getTotalElements());
-        meta.setPageNumber(municipalityPage.getNumber() + 1);
-        meta.setPageSize(municipalityPage.getSize());
+        Meta meta = PaginationUtils.buildMeta(request, municipalityPage);
 
         return new GlobalResponseHandler().handleResponse(
                 "Municipalities retrieved successfully",
@@ -299,7 +296,7 @@ public class MunicipalityRestController {
      * @param idActual   the current ID of the municipality being updated (null if creating)
      * @author dgutierrez
      */
-    private void validarMunicipality(String name, String email, Long cantonId, Long idActual) {
+        private void validarMunicipality(String name, String email, Long cantonId, Long idActual) {
         municipalityRepository.findByName(name).ifPresent(existing -> {
             if (!Objects.equals(existing.getId(), idActual)) {
                 throw new IllegalArgumentException("A municipality with this name already exists");
