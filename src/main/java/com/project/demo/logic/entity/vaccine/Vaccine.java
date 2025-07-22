@@ -1,7 +1,5 @@
 package com.project.demo.logic.entity.vaccine;
 
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.project.demo.logic.entity.species.Species;
 import jakarta.persistence.*;
 import lombok.*;

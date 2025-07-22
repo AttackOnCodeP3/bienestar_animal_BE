@@ -59,7 +59,7 @@ public class AbandonedAnimal {
     @Column
     private String observations;
 
-    @Column(name = "photo_url")
+    @Column(name = "photo_url", columnDefinition = "LONGTEXT")
     private String photoUrl;
 
     @Column
@@ -76,9 +76,11 @@ public class AbandonedAnimal {
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
+    @Builder.Default
     @Column(name = "is_synchronized", nullable = false)
     private boolean synchronizedFlag = false;
 
+    @Builder.Default
     @Column(name = "is_abandoned", nullable = false)
     private boolean isAbandoned = true;
 

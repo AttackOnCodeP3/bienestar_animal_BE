@@ -1,7 +1,6 @@
 package com.project.demo.logic.entity.animal;
 
 import com.project.demo.logic.entity.animal.dto.AgeDTO;
-import com.project.demo.logic.entity.animal_type.AnimalType;
 import com.project.demo.logic.entity.race.Race;
 import com.project.demo.logic.entity.sanitary_control.SanitaryControl;
 import com.project.demo.logic.entity.sex.Sex;
@@ -60,18 +59,12 @@ public class Animal {
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
-    @ManyToOne
-    @JoinColumn(name = "animal_type_id", nullable = false)
-    private AnimalType animalType;
-
-    @Column
     private Double latitude;
 
-    @Column
     private Double longitude;
 
-    @OneToMany
-    @JoinColumn(name = "animal_id", nullable = false)
+    @Builder.Default
+    @OneToMany(mappedBy = "animal", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SanitaryControl> sanitaryControls = new ArrayList<>();
 
     @CreationTimestamp

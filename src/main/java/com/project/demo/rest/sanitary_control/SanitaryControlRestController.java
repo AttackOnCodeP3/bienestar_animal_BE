@@ -100,7 +100,6 @@ public class SanitaryControlRestController {
         SanitaryControl current = opt.get();
         current.setLastApplicationDate(sanitaryControl.getLastApplicationDate());
         current.setProductUsed(sanitaryControl.getProductUsed());
-        current.setObservations(sanitaryControl.getObservations());
         current.setSanitaryControlType(sanitaryControl.getSanitaryControlType());
 
         sanitaryControlRepository.save(current);

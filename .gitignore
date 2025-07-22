@@ -52,3 +52,6 @@ data/
 src/main/resources/init.sql
 
 src/main/resources/docker-compose.yml
+data/
+out/production/resources/application.properties
+out/production/resources/docker-compose.yml

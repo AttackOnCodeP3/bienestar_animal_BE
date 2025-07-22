@@ -47,6 +47,7 @@ public class User implements UserDetails {
     @Column(name = "birth_date")
     private LocalDate birthDate;
 
+    @Builder.Default
     @Column(name = "is_nursery_home", nullable = false)
     private boolean nurseryHome = false;
 
@@ -56,11 +57,13 @@ public class User implements UserDetails {
     @Column(name = "requires_password_change", nullable = false)
     private boolean requiresPasswordChange;
 
+    @Builder.Default
     @Column(name = "is_active", nullable = false)
     private boolean active = true;
 
     private String password;
 
+    @Builder.Default
     @Column(name = "registered_by_census_taker", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean registeredByCensusTaker = false;
 
@@ -80,9 +83,11 @@ public class User implements UserDetails {
     @JoinColumn(name = "neighborhood_id")
     private Neighborhood neighborhood;
 
+    @Builder.Default
     @Column(name = "is_social_login_completed", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean socialLoginCompleted = false;
 
+    @Builder.Default
     @Column(name = "used_social_login", nullable = false, columnDefinition = "BOOLEAN DEFAULT FALSE")
     private boolean usedSocialLogin = false;
 
@@ -104,6 +109,7 @@ public class User implements UserDetails {
                 .toList();
     }
 
+    @Builder.Default
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(
             name = "user_roles",
