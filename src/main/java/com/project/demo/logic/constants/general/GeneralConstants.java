@@ -107,6 +107,21 @@ public class GeneralConstants {
      * Creates default administrator users or system-level accounts.
      */
     public static final int ADMIN_SEEDER_ORDER = 13;
+
+    /**
+     * Regular expression for validating secure passwords.
+     * <p>
+     * This regex requires at least 8 characters, one uppercase letter,
+     * one lowercase letter, one digit, and one special character.
+     */
+    public static final String SECURE_PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+
+    /**
+     * Message to display when a password does not meet security requirements.
+     * <p>
+     * This message informs the user about the specific requirements for a secure password.
+     */
+    public static final String SECURE_PASSWORD_MESSAGE = "La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una letra minúscula, un dígito y un carácter especial.";
 /**
  * Execution order for the StateGeneration seeder.
  * Creates default state generation statuses.
