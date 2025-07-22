@@ -85,7 +85,7 @@ public class AuthRestController {
             return responseHandler.badRequest("Email already in use", httpServletRequest);
         }
 
-        if (request.getPassword() == null || !request.getPassword().matches(GeneralConstants.SECURE_PASSWORD_REGEX)) {
+        if (request.getPassword() == null || request.getPassword().length() > 128 || !request.getPassword().matches(GeneralConstants.SECURE_PASSWORD_REGEX)) {
             return responseHandler.badRequest(GeneralConstants.SECURE_PASSWORD_MESSAGE, httpServletRequest);
         }
 
