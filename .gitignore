@@ -18,6 +18,7 @@
 *.zip
 *.tar.gz
 *.rar
+*.sql
 
 # virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
 hs_err_pid*
@@ -43,6 +44,14 @@ build/resources/
 .gradle/vcs-1/gc.properties
 .gradle/file-system.probe
 
+out
+resources/
+
+
+data/
+src/main/resources/init.sql
+
+src/main/resources/docker-compose.yml
 data/
 out/production/resources/application.properties
 out/production/resources/docker-compose.yml

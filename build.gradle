@@ -42,6 +42,13 @@ dependencies {
 	// === Testing ===
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
+
+	// === Twilio ===
+	implementation 'com.twilio.sdk:twilio:8.31.1'
+
+	// === SendGrid ===
+	implementation 'com.sendgrid:sendgrid-java:4.10.1'
+
 }
 
 bootJar {
