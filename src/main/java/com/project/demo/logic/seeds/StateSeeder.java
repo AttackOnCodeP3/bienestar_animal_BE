@@ -1,21 +1,24 @@
 package com.project.demo.logic.seeds;
 
-import com.project.demo.logic.constants.general.GeneralConstants;
-import com.project.demo.logic.entity.state.StateGeneration;
-import com.project.demo.logic.entity.state.StateGenerationRepository;
+import java.util.List;
+import java.util.logging.Logger;
+
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
-import java.util.logging.Logger;
+import com.project.demo.logic.constants.general.GeneralConstants;
+import com.project.demo.logic.entity.state.StateGeneration;
+import com.project.demo.logic.entity.state.StateGenerationRepository;
 
 /**
  * Seeder for StateGeneration entities.
  * <p>
- * This class listens for the application context refresh event and populates the database
- * with predefined state generation statuses if they do not already exist.
+ * This class listens for the application context refresh event and populates
+ * the database with predefined state generation statuses if they do not already
+ * exist.
+ *
  * @author nav
  */
 @Order(GeneralConstants.STATE_GENERATION_SEEDER_ORDER)
@@ -56,11 +59,11 @@ public class StateSeeder implements ApplicationListener<ContextRefreshedEvent> {
         );
 
         stateGenerationRepository.saveAll(states);
-        
+
         states.forEach(state -> {
             logger.info("StateGeneration '" + state.getName() + "' created successfully.");
         });
-        
+
         logger.info("StateGeneration seeded successfully: Pendiente, Generado, Error");
     }
 }

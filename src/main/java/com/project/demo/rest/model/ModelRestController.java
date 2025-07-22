@@ -281,14 +281,13 @@ public ResponseEntity<?> getModel3DByAnimalId(@PathVariable Long animalId) {
      * @return CreateTaskResponseDTO with error details
      */
     private CreateTaskResponseDTO createErrorResponse(String message, String imageUrl) {
-        // Usar el constructor en lugar del builder
-        return new CreateTaskResponseDTO(
+=        return new CreateTaskResponseDTO(
             false,
             message,
-            null,  // taskId
+            null,  
             imageUrl,
-            null,  // modelMesh
-            null   // renderedImage
+            null,  
+            null   
         );
     }
 }

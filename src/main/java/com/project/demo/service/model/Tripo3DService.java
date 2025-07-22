@@ -42,7 +42,7 @@ public class Tripo3DService {
 
     public Tripo3DService(WebClient.Builder webClientBuilder) {
         this.webClient = webClientBuilder.build();
-     
+
     }
 
     /**
@@ -115,10 +115,10 @@ public class Tripo3DService {
                     .retrieve()
                     .bodyToMono(String.class)
                     .block();
-             log.info("Task creation response: " + response);
+            log.info("Task creation response: " + response);
             return response;
         } catch (WebClientResponseException e) {
-           log.error("WebClient error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
+            log.error("WebClient error: " + e.getStatusCode() + " - " + e.getResponseBodyAsString());
             log.error("Status Code: " + e.getStatusCode());
             log.error("Response Headers: " + e.getHeaders());
             if (e.getStatusCode().value() == 401) {
