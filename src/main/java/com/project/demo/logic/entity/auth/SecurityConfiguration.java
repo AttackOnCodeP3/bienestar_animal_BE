@@ -72,9 +72,7 @@ public class SecurityConfiguration {
                                 PublicEndpointsConstants.MUNICIPALITIES,
                                 PublicEndpointsConstants.CANTONS,
                                 PublicEndpointsConstants.DISTRICTS,
-                                PublicEndpointsConstants.NEIGHBORHOODS,
-                                PublicEndpointsConstants.MODEL3D_ANIMAL
-
+                                PublicEndpointsConstants.NEIGHBORHOODS
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
