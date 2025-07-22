@@ -281,7 +281,7 @@ public ResponseEntity<?> getModel3DByAnimalId(@PathVariable Long animalId) {
      * @return CreateTaskResponseDTO with error details
      */
     private CreateTaskResponseDTO createErrorResponse(String message, String imageUrl) {
-=        return new CreateTaskResponseDTO(
+        return new CreateTaskResponseDTO(
             false,
             message,
             null,  
