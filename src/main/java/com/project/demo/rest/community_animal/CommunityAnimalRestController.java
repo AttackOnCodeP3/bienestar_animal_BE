@@ -48,14 +48,23 @@ import java.util.List;
 public class CommunityAnimalRestController {
 
     @Autowired private CommunityAnimalRepository communityAnimalRepository;
+
     @Autowired private JwtService jwtService;
+
     @Autowired private SpeciesRepository speciesRepository;
+
     @Autowired private RaceRepository raceRepository;
+
     @Autowired private SexRepository sexRepository;
+    
     @Autowired private VaccineRepository vaccineRepository;
+
     @Autowired private SanitaryControlTypeRepository sanitaryControlTypeRepository;
+
     @Autowired private SanitaryControlResponseRepository sanitaryControlResponseRepository;
+
     @Autowired private VaccineApplicationRepository vaccineApplicationRepository;
+
     @Autowired private UserRepository userRepository;
 
     @Autowired private AnimalTypeRepository animalTypeRepository;
@@ -246,5 +255,4 @@ public class CommunityAnimalRestController {
             );
         }
     }
-}
 }
