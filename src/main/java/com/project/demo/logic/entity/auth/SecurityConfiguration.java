@@ -22,6 +22,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * - Public endpoints
  * - OAuth2 login support with a custom user service and success handler
  * @author dgutierrez
+ * Updated by 
+ * @author nav
+ * - MODEL3D_ANIMAL added
  */
 @Configuration
 @EnableWebSecurity
