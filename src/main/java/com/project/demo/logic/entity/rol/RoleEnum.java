@@ -1,7 +1,9 @@
 package com.project.demo.logic.entity.rol;
 
 public enum RoleEnum {
-    USER,
-    ADMIN,
-    SUPER_ADMIN
+    COMMUNITY_USER,
+    VOLUNTEER_USER,
+    MUNICIPAL_ADMIN,
+    SUPER_ADMIN,
+    CENSISTA_USER
 }
