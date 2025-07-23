@@ -26,8 +26,11 @@ import org.springframework.web.bind.annotation.*;
 public class AbandonedAnimalRestController {
 
     @Autowired private AbandonedAnimalRepository abandonedAnimalRepository;
+
     @Autowired private SpeciesRepository speciesRepository;
+
     @Autowired private SexRepository sexRepository;
+    
     @Autowired private UserRepository userRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(AbandonedAnimalRestController.class);
