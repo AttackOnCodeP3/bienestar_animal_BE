@@ -1,6 +1,8 @@
 package com.project.demo.rest.community_animal;
 
 import com.project.demo.common.PaginationUtils;
+import com.project.demo.logic.entity.animal_type.AnimalTypeEnum;
+import com.project.demo.logic.entity.animal_type.AnimalTypeRepository;
 import com.project.demo.logic.entity.auth.JwtService;
 import com.project.demo.logic.entity.community_animal.CommunityAnimal;
 import com.project.demo.logic.entity.community_animal.CommunityAnimalRepository;
@@ -65,7 +67,10 @@ public class CommunityAnimalRestController {
 
     @Autowired private UserRepository userRepository;
 
+    @Autowired private AnimalTypeRepository animalTypeRepository;
+
     private static final Logger logger = LoggerFactory.getLogger(CommunityAnimalRestController.class);
+
 
     @PostMapping
     @PreAuthorize("hasRole('COMMUNITY_USER')")
@@ -98,6 +103,11 @@ public class CommunityAnimalRestController {
             Sex sex = sexRepository.findById(createAnimalRequestDTO.getSexId()).orElse(null);
             if (sex == null) {
                 return responseHandler.badRequest("El sexo especificado no existe.", request);
+            }
+
+            var animalType = animalTypeRepository.findByName(AnimalTypeEnum.COMMUNITY_ANIMAL.getName()).orElse(null);
+            if (animalType == null) {
+                return responseHandler.badRequest("El tipo de animal comunitario no se encuentra registrado.", request);
             }
 
             if (createAnimalRequestDTO.getBirthDate().isAfter(LocalDate.now())) {
@@ -145,6 +155,7 @@ public class CommunityAnimalRestController {
                     .sex(sex)
                     .latitude(createAnimalRequestDTO.getLatitude())
                     .longitude(createAnimalRequestDTO.getLongitude())
+                    .animalType(animalType)
                     .user(user)
                     .build();
 
@@ -236,4 +247,3 @@ public class CommunityAnimalRestController {
         );
     }
 }
-

@@ -2,6 +2,7 @@ package com.project.demo.logic.entity.animal;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.demo.logic.entity.animal.dto.AgeDTO;
+import com.project.demo.logic.entity.animal_type.AnimalType;
 import com.project.demo.logic.entity.model3D.Model3D;
 import com.project.demo.logic.entity.race.Race;
 import com.project.demo.logic.entity.sanitary_control.SanitaryControl;
@@ -64,6 +65,10 @@ public class Animal {
 
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
+
+      @ManyToOne
+    @JoinColumn(name = "animal_type_id", nullable = false)
+    private AnimalType animalType;
 
     private Double latitude;
 
