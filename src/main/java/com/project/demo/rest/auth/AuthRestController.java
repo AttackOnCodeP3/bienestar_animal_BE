@@ -49,28 +49,26 @@ public class AuthRestController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> authenticate(@RequestBody User user, HttpServletRequest request) {
-        var responseHandler = new GlobalResponseHandler();
-        try {
-            logger.info("Autenticando usuario con email: {}", user.getEmail());
+    public ResponseEntity<LoginResponse> authenticate(@RequestBody User user) {
+        logger.info("Autenticando usuario con email: {}", user.getEmail());
 
-            User authenticatedUser = authenticationService.authenticate(user);
-            String jwtToken = jwtService.generateToken(authenticatedUser);
+        User authenticatedUser = authenticationService.authenticate(user);
+        String jwtToken = jwtService.generateToken(authenticatedUser);
 
-            authenticatedUser.setLastLoginDate(LocalDateTime.now());
-            userRepository.save(authenticatedUser);
+        LoginResponse loginResponse = new LoginResponse();
+        loginResponse.setToken(jwtToken);
+        loginResponse.setExpiresIn(jwtService.getExpirationTime());
 
-            LoginResponse loginResponse = new LoginResponse();
-            loginResponse.setToken(jwtToken);
-            loginResponse.setExpiresIn(jwtService.getExpirationTime());
-            loginResponse.setAuthUser(authenticatedUser);
+        Optional<User> foundedUser = userRepository.findByEmail(user.getEmail());
 
-            return responseHandler.success("Inicio de sesión exitoso.", loginResponse, request);
+        foundedUser.ifPresent(u -> {
+            u.setLastLoginDate(LocalDateTime.now());
+            userRepository.save(u);
+        });
 
-        } catch (Exception e) {
-            logger.error("Error al autenticar usuario", e);
-            return responseHandler.internalError("Ocurrió un error al autenticar el usuario.", request);
-        }
+        loginResponse.setAuthUser(authenticatedUser);
+
+        return ResponseEntity.ok(loginResponse);
     }
 
     @PostMapping("/signup")
@@ -141,7 +139,7 @@ public class AuthRestController {
             User savedUser = userRepository.save(user);
 
             logger.info("Usuario registrado exitosamente con ID: {}", savedUser.getId());
-            return responseHandler.created("Usuario registrado exitosamente.", savedUser, httpRequest);
+            return ResponseEntity.ok(savedUser);
 
         } catch (Exception e) {
             logger.error("Error al registrar usuario", e);

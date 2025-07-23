@@ -78,8 +78,7 @@ public class AuthSocialRestController {
             response.setAuthUser(user);
             response.setExpiresIn(jwtService.getExpirationTime());
 
-            return responseHandler.success("Inicio de sesión social exitoso.", response, request);
-
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             logger.error("Error durante el login social", e);
             return responseHandler.internalError("Ocurrió un error al procesar el login social.", request);
@@ -171,8 +170,7 @@ public class AuthSocialRestController {
             loginResponse.setAuthUser(savedUser);
             loginResponse.setExpiresIn(jwtService.getExpirationTime());
 
-            return responseHandler.success("Perfil social completado exitosamente.", loginResponse, httpRequest);
-
+            return ResponseEntity.ok(loginResponse);
         } catch (Exception e) {
             logger.error("Error al completar el perfil del usuario social", e);
             return responseHandler.internalError("Ocurrió un error al completar el perfil del usuario.", httpRequest);
