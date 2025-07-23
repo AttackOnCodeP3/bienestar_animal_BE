@@ -16,36 +16,29 @@ import com.project.demo.logic.entity.user.User;
 import com.project.demo.logic.entity.user.UserRepository;
 import com.project.demo.rest.auth.dto.RegisterUserRequestDTO;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
-@RequestMapping("/auth")
 @RestController
+@RequestMapping("/auth")
 public class AuthRestController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private static final Logger logger = LoggerFactory.getLogger(AuthRestController.class);
 
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private InterestRepository interestRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private PasswordEncoder passwordEncoder;
+    @Autowired private RoleRepository roleRepository;
+    @Autowired private InterestRepository interestRepository;
 
     private final AuthenticationService authenticationService;
     private final JwtService jwtService;
@@ -56,84 +49,103 @@ public class AuthRestController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponse> authenticate(@RequestBody User user) {
-        User authenticatedUser = authenticationService.authenticate(user);
+    public ResponseEntity<?> authenticate(@RequestBody User user, HttpServletRequest request) {
+        var responseHandler = new GlobalResponseHandler();
+        try {
+            logger.info("Autenticando usuario con email: {}", user.getEmail());
 
-        String jwtToken = jwtService.generateToken(authenticatedUser);
+            User authenticatedUser = authenticationService.authenticate(user);
+            String jwtToken = jwtService.generateToken(authenticatedUser);
 
-        LoginResponse loginResponse = new LoginResponse();
-        loginResponse.setToken(jwtToken);
-        loginResponse.setExpiresIn(jwtService.getExpirationTime());
+            authenticatedUser.setLastLoginDate(LocalDateTime.now());
+            userRepository.save(authenticatedUser);
 
-        Optional<User> foundedUser = userRepository.findByEmail(user.getEmail());
+            LoginResponse loginResponse = new LoginResponse();
+            loginResponse.setToken(jwtToken);
+            loginResponse.setExpiresIn(jwtService.getExpirationTime());
+            loginResponse.setAuthUser(authenticatedUser);
 
-        foundedUser.ifPresent(u -> {
-            u.setLastLoginDate(LocalDateTime.now());
-            userRepository.save(u);
-        });
+            return responseHandler.success("Inicio de sesión exitoso.", loginResponse, request);
 
-        foundedUser.ifPresent(loginResponse::setAuthUser);
-
-        return ResponseEntity.ok(loginResponse);
+        } catch (Exception e) {
+            logger.error("Error al autenticar usuario", e);
+            return responseHandler.internalError("Ocurrió un error al autenticar el usuario.", request);
+        }
     }
 
     @PostMapping("/signup")
-    public ResponseEntity<?> registerUser(@RequestBody RegisterUserRequestDTO request, HttpServletRequest httpServletRequest) {
+    public ResponseEntity<?> registerUser(
+            @RequestBody RegisterUserRequestDTO request,
+            HttpServletRequest httpRequest) {
+
         var responseHandler = new GlobalResponseHandler();
+        try {
+            logger.info("Intentando registrar nuevo usuario con email: {}", request.getEmail());
 
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            return responseHandler.badRequest("Email already in use", httpServletRequest);
-        }
-
-        if (request.getPassword() == null || request.getPassword().length() > 128 || !request.getPassword().matches(GeneralConstants.SECURE_PASSWORD_REGEX)) {
-            return responseHandler.badRequest(GeneralConstants.SECURE_PASSWORD_MESSAGE, httpServletRequest);
-        }
-
-        Optional<Role> communityRole = roleRepository.findByName(RoleEnum.COMMUNITY_USER);
-        Optional<Role> volunteerRole = roleRepository.findByName(RoleEnum.VOLUNTEER_USER);
-
-        if (communityRole.isEmpty()) {
-            return responseHandler.badRequest("Community role not found", httpServletRequest);
-        }
-
-        if (request.isWantsToBeVolunteer()) {
-            if (volunteerRole.isEmpty()) {
-                return responseHandler.badRequest("Volunteer role not found", httpServletRequest);
+            if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+                return responseHandler.badRequest("El correo electrónico ya está en uso.", httpRequest);
             }
-            if (request.getMunicipalityId() == null) {
-                return responseHandler.badRequest("Municipality is required for volunteers", httpServletRequest);
+
+            if (request.getPassword() == null ||
+                    request.getPassword().length() > 128 ||
+                    !request.getPassword().matches(GeneralConstants.SECURE_PASSWORD_REGEX)) {
+                return responseHandler.badRequest(GeneralConstants.SECURE_PASSWORD_MESSAGE, httpRequest);
             }
-        }
 
-        User user = new User();
-        user.setName(request.getName());
-        user.setLastname(request.getLastname());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setPhoneNumber(request.getPhoneNumber());
-        user.setIdentificationCard(request.getIdentificationCard());
-        user.setBirthDate(request.getBirthDate());
-        user.setNeighborhood(Neighborhood.builder().id(request.getNeighborhoodId()).build());
+            Optional<Role> communityRoleOpt = roleRepository.findByName(RoleEnum.COMMUNITY_USER);
+            Optional<Role> volunteerRoleOpt = roleRepository.findByName(RoleEnum.VOLUNTEER_USER);
 
-        if (request.getMunicipalityId() != null) {
-            user.setMunicipality(Municipality.builder().id(request.getMunicipalityId()).build());
-        }
-
-        user.addRole(communityRole.get());
-        if (request.isWantsToBeVolunteer()) {
-            volunteerRole.ifPresent(user::addRole);
-        }
-
-        Set<Long> interestIds = request.getInterestIds();
-        if (interestIds != null && !interestIds.isEmpty()) {
-            Set<Interest> interests = new HashSet<>(interestRepository.findAllById(interestIds));
-            if (interests.size() != interestIds.size()) {
-                return responseHandler.badRequest("One or more interests not found", httpServletRequest);
+            if (communityRoleOpt.isEmpty()) {
+                return responseHandler.badRequest("No se encontró el rol de usuario comunitario.", httpRequest);
             }
-            user.setInterests(interests);
-        }
 
-        User savedUser = userRepository.save(user);
-        return ResponseEntity.ok(savedUser);
+            if (request.isWantsToBeVolunteer()) {
+                if (volunteerRoleOpt.isEmpty()) {
+                    return responseHandler.badRequest("No se encontró el rol de voluntario.", httpRequest);
+                }
+                if (request.getMunicipalityId() == null) {
+                    return responseHandler.badRequest("La municipalidad es obligatoria para ser voluntario.", httpRequest);
+                }
+            }
+
+            User user = new User();
+            user.setName(request.getName());
+            user.setLastname(request.getLastname());
+            user.setEmail(request.getEmail());
+            user.setPassword(passwordEncoder.encode(request.getPassword()));
+            user.setPhoneNumber(request.getPhoneNumber());
+            user.setIdentificationCard(request.getIdentificationCard());
+            user.setBirthDate(request.getBirthDate());
+            user.setNeighborhood(Neighborhood.builder().id(request.getNeighborhoodId()).build());
+
+            if (request.getMunicipalityId() != null) {
+                user.setMunicipality(Municipality.builder().id(request.getMunicipalityId()).build());
+            }
+
+            Role communityRole = communityRoleOpt.get();
+            user.addRole(communityRole);
+
+            if (request.isWantsToBeVolunteer()) {
+                volunteerRoleOpt.ifPresent(user::addRole);
+            }
+
+            Set<Long> interestIds = request.getInterestIds();
+            if (interestIds != null && !interestIds.isEmpty()) {
+                Set<Interest> interests = new HashSet<>(interestRepository.findAllById(interestIds));
+                if (interests.size() != interestIds.size()) {
+                    return responseHandler.badRequest("Uno o más intereses especificados no existen.", httpRequest);
+                }
+                user.setInterests(interests);
+            }
+
+            User savedUser = userRepository.save(user);
+
+            logger.info("Usuario registrado exitosamente con ID: {}", savedUser.getId());
+            return responseHandler.created("Usuario registrado exitosamente.", savedUser, httpRequest);
+
+        } catch (Exception e) {
+            logger.error("Error al registrar usuario", e);
+            return responseHandler.internalError("Ocurrió un error al registrar el usuario.", httpRequest);
+        }
     }
 }

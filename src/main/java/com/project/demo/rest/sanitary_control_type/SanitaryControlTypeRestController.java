@@ -34,15 +34,16 @@ public class SanitaryControlTypeRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
-        logger.info("Fetching all sanitary control types");
+        logger.info("Invocando getAll - obteniendo todos los tipos de control sanitario. Página: {}, Tamaño: {}", page, size);
+        var globalResponseHandler = new GlobalResponseHandler();
 
         Pageable pageable = PaginationUtils.buildPageable(page, size);
         Page<SanitaryControlType> controlTypesPage = sanitaryControlTypeRepository.findAll(pageable);
 
         Meta meta = PaginationUtils.buildMeta(request, controlTypesPage);
 
-        return new GlobalResponseHandler().handleResponse(
-                "Sanitary control types retrieved successfully",
+        return globalResponseHandler.handleResponse(
+                "Tipos de control sanitario obtenidos correctamente",
                 controlTypesPage.getContent(),
                 HttpStatus.OK,
                 meta
@@ -52,18 +53,21 @@ public class SanitaryControlTypeRestController {
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getById(@PathVariable Long id, HttpServletRequest request) {
-        logger.info("Fetching sanitary control type with id: {}", id);
+
+        logger.info("Invocando getById - obteniendo tipo de control sanitario con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<SanitaryControlType> opt = sanitaryControlTypeRepository.findById(id);
         if (opt.isEmpty()) {
-            logger.warn("Sanitary control type with id {} not found", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Sanitary control type id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
+            logger.warn("Tipo de control sanitario con ID {} no fue encontrado", id);
+            return globalResponseHandler.notFound(
+                    "El tipo de control sanitario con ID " + id + " no fue encontrado",
                     request
             );
         }
-        return new GlobalResponseHandler().handleResponse(
-                "Sanitary control type retrieved successfully",
+
+        return globalResponseHandler.handleResponse(
+                "Tipo de control sanitario obtenido correctamente",
                 opt.get(),
                 HttpStatus.OK,
                 request

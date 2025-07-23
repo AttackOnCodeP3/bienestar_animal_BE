@@ -40,15 +40,16 @@ public class SanitaryControlResponseRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
-        logger.info("Fetching all sanitary control responses");
+        logger.info("Invocando getAll - obteniendo todas las respuestas de control sanitario. Página: {}, Tamaño: {}", page, size);
+        var globalResponseHandler = new GlobalResponseHandler();
 
         Pageable pageable = PaginationUtils.buildPageable(page, size);
         Page<SanitaryControlResponse> responsePage = sanitaryControlResponseRepository.findAll(pageable);
 
         Meta meta = PaginationUtils.buildMeta(request, responsePage);
 
-        return new GlobalResponseHandler().handleResponse(
-                "Sanitary control responses retrieved successfully",
+        return globalResponseHandler.handleResponse(
+                "Respuestas de control sanitario obtenidas correctamente",
                 responsePage.getContent(),
                 HttpStatus.OK,
                 meta
@@ -58,18 +59,21 @@ public class SanitaryControlResponseRestController {
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getById(@PathVariable Long id, HttpServletRequest request) {
-        logger.info("Fetching sanitary control response with id: {}", id);
+
+        logger.info("Invocando getById - obteniendo respuesta de control sanitario con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<SanitaryControlResponse> opt = sanitaryControlResponseRepository.findById(id);
         if (opt.isEmpty()) {
-            logger.warn("Sanitary control response with id {} not found", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Sanitary control response id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
+            logger.warn("Respuesta de control sanitario con ID {} no fue encontrada", id);
+            return globalResponseHandler.notFound(
+                    "La respuesta de control sanitario con ID " + id + " no fue encontrada",
                     request
             );
         }
-        return new GlobalResponseHandler().handleResponse(
-                "Sanitary control response retrieved successfully",
+
+        return globalResponseHandler.handleResponse(
+                "Respuesta de control sanitario obtenida correctamente",
                 opt.get(),
                 HttpStatus.OK,
                 request
