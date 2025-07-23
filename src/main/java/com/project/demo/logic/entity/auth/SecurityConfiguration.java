@@ -22,6 +22,9 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
  * - Public endpoints
  * - OAuth2 login support with a custom user service and success handler
  * @author dgutierrez
+ * Updated by 
+ * @author nav
+ * - MODEL3D_ANIMAL added
  */
 @Configuration
 @EnableWebSecurity
@@ -69,7 +72,9 @@ public class SecurityConfiguration {
                                 PublicEndpointsConstants.MUNICIPALITIES,
                                 PublicEndpointsConstants.CANTONS,
                                 PublicEndpointsConstants.DISTRICTS,
-                                PublicEndpointsConstants.NEIGHBORHOODS
+                                PublicEndpointsConstants.NEIGHBORHOODS,
+                                PublicEndpointsConstants.FORGOT_PASSWORD
+
                         ).permitAll()
                         .anyRequest().authenticated()
                 )

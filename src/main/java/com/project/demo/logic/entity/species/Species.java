@@ -35,6 +35,7 @@ public class Species {
 
     private String description;
 
+    @Builder.Default
     @ManyToMany(mappedBy = "species")
     @JsonIgnore
     private Set<Vaccine> vaccines = new HashSet<>();

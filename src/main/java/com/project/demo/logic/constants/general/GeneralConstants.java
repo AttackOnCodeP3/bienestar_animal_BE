@@ -7,6 +7,10 @@ package com.project.demo.logic.constants.general;
  * These constants define the execution order for different seeders during
  * the application's data initialization phase. Lower values are executed first.
  * @author dgutierrez
+ * 
+ * modified by 
+ * @author nav
+ * State Generation Seeder added
  */
 public class GeneralConstants {
 
@@ -103,4 +107,32 @@ public class GeneralConstants {
      * Creates default administrator users or system-level accounts.
      */
     public static final int ADMIN_SEEDER_ORDER = 13;
+
+    /**
+     * Regular expression for validating secure passwords.
+     * <p>
+     * This regex requires at least 8 characters, one uppercase letter,
+     * one lowercase letter, one digit, and one special character.
+     */
+    public static final String SECURE_PASSWORD_REGEX = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&])[A-Za-z\\d@$!%*?&]{8,}$";
+
+    /**
+     * Message to display when a password does not meet security requirements.
+     * <p>
+     * This message informs the user about the specific requirements for a secure password.
+     */
+    public static final String SECURE_PASSWORD_MESSAGE = "La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una letra minúscula, un dígito y un carácter especial.";
+/**
+ * Execution order for the StateGeneration seeder.
+ * Creates default state generation statuses.
+ */
+
+public static final int STATE_GENERATION_SEEDER_ORDER = 14;
+    /**
+     * Execution order for the Community Animal Seeder.
+     * Seeds data related to community animals
+     */
+
+public static final int COMMUNITY_ANIMAL_SEEDER_ORDER = 15;
+
 }

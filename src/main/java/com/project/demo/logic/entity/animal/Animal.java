@@ -1,7 +1,9 @@
 package com.project.demo.logic.entity.animal;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.project.demo.logic.entity.animal.dto.AgeDTO;
 import com.project.demo.logic.entity.animal_type.AnimalType;
+import com.project.demo.logic.entity.model3D.Model3D;
 import com.project.demo.logic.entity.race.Race;
 import com.project.demo.logic.entity.sanitary_control.SanitaryControl;
 import com.project.demo.logic.entity.sex.Sex;
@@ -17,6 +19,7 @@ import java.time.LocalDateTime;
 import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Entity representing an animal.
@@ -24,6 +27,8 @@ import java.util.List;
  *
  * @author dgutierrez
  * @updatedBy gjimenez
+ * @updated byb nav
+ * relation with model added
  */
 @SuperBuilder
 @Getter
@@ -33,6 +38,7 @@ import java.util.List;
 @Entity
 @Table(name = "animal")
 @Inheritance(strategy = InheritanceType.JOINED)
+@JsonIgnoreProperties({"model3DAnimals"})
 public class Animal {
 
     @Id
@@ -60,7 +66,7 @@ public class Animal {
     @Column(name = "birth_date", nullable = false)
     private LocalDate birthDate;
 
-    @ManyToOne
+      @ManyToOne
     @JoinColumn(name = "animal_type_id", nullable = false)
     private AnimalType animalType;
 
@@ -71,6 +77,9 @@ public class Animal {
     @Builder.Default
     @OneToMany(mappedBy = "animal", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SanitaryControl> sanitaryControls = new ArrayList<>();
+
+    @OneToMany(mappedBy = "animal", fetch = FetchType.LAZY)
+    private Set<Model3D> model3DAnimals;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
