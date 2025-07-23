@@ -50,8 +50,9 @@ public class AuthRestController {
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> authenticate(@RequestBody User user) {
-        User authenticatedUser = authenticationService.authenticate(user);
+        logger.info("Autenticando usuario con email: {}", user.getEmail());
 
+        User authenticatedUser = authenticationService.authenticate(user);
         String jwtToken = jwtService.generateToken(authenticatedUser);
 
         LoginResponse loginResponse = new LoginResponse();
@@ -59,13 +60,13 @@ public class AuthRestController {
         loginResponse.setExpiresIn(jwtService.getExpirationTime());
 
         Optional<User> foundedUser = userRepository.findByEmail(user.getEmail());
-        authenticatedUser.setLastLoginDate(LocalDateTime.now());
-        userRepository.save(authenticatedUser);
 
         foundedUser.ifPresent(u -> {
             u.setLastLoginDate(LocalDateTime.now());
             userRepository.save(u);
         });
+
+        loginResponse.setAuthUser(authenticatedUser);
 
         return ResponseEntity.ok(loginResponse);
     }
