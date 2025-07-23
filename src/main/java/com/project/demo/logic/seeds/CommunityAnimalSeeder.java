@@ -1,5 +1,6 @@
 package com.project.demo.logic.seeds;
 import com.project.demo.logic.constants.general.GeneralConstants;
+import com.project.demo.logic.entity.animal_type.AnimalTypeRepository;
 import com.project.demo.logic.entity.community_animal.CommunityAnimal;
 import com.project.demo.logic.entity.community_animal.CommunityAnimalRepository;
 import com.project.demo.logic.entity.race.Race;
@@ -25,18 +26,20 @@ public class CommunityAnimalSeeder implements CommandLineRunner {
     private final SpeciesRepository speciesRepository;
     private final RaceRepository raceRepository;
     private final SexRepository sexRepository;
+    private final AnimalTypeRepository animalTypeRepository;
 
     public CommunityAnimalSeeder(
             CommunityAnimalRepository communityAnimalRepository,
             UserRepository userRepository,
             SpeciesRepository speciesRepository,
             RaceRepository raceRepository,
-            SexRepository sexRepository) {
+            SexRepository sexRepository, AnimalTypeRepository animalTypeRepository) {
         this.communityAnimalRepository = communityAnimalRepository;
         this.userRepository = userRepository;
         this.speciesRepository = speciesRepository;
         this.raceRepository = raceRepository;
         this.sexRepository = sexRepository;
+        this.animalTypeRepository = animalTypeRepository;
     }
 
     @Override
@@ -47,8 +50,9 @@ public class CommunityAnimalSeeder implements CommandLineRunner {
         Species species = speciesRepository.findAll().stream().findFirst().orElse(null);
         Race race = raceRepository.findAll().stream().findFirst().orElse(null);
         Sex sex = sexRepository.findAll().stream().findFirst().orElse(null);
+        var animalType = animalTypeRepository.findAll().stream().findFirst().orElse(null);
 
-        if (user == null || species == null || race == null || sex == null ) return;
+        if (user == null || species == null || race == null || sex == null || animalType == null) return;
 
         CommunityAnimal animal = CommunityAnimal.builder()
                 .name("Maxwell")
@@ -60,6 +64,7 @@ public class CommunityAnimalSeeder implements CommandLineRunner {
                 .latitude(9.9)
                 .longitude(-84.0)
                 .user(user)
+                .animalType(animalType)
                 .build();
 
         communityAnimalRepository.save(animal);
