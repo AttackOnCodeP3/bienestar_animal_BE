@@ -30,7 +30,7 @@ public class AbandonedAnimalRestController {
     @Autowired private SpeciesRepository speciesRepository;
 
     @Autowired private SexRepository sexRepository;
-    
+
     @Autowired private UserRepository userRepository;
 
     private static final Logger logger = LoggerFactory.getLogger(AbandonedAnimalRestController.class);
