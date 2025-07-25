@@ -92,7 +92,7 @@ public class CommunityAnimalRestController {
         try {
             logger.info("Registrando nuevo animal comunitario...");
 
-            String email = jwtService.extractUsername(authHeader.replace("Bearer ", ""));
+            String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
             User user = userRepository.findByEmail(email).orElse(null);
             if (user == null) {
                 return responseHandler.unauthorized("No se pudo identificar al usuario autenticado.", request);
