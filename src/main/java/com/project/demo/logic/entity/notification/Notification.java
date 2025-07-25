@@ -40,13 +40,16 @@ public class Notification {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "status_id", nullable = false)
-    private NotificationStatus status;
+    @Column(name = "is_read", nullable = false)
+    private boolean isRead = false;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "type_id", nullable = false)
-    private NotificationType type;
+    @JoinColumn(name = "notification_status_id", nullable = false)
+    private NotificationStatus notificationStatus;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "notification_type_id", nullable = false)
+    private NotificationType notificationType;
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")
