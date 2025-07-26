@@ -2,6 +2,7 @@ package com.project.demo.scheduler;
 
 import com.project.demo.logic.constants.scheduling.SchedulerCronConstants;
 import com.project.demo.logic.entity.community_animal.CommunityAnimalRepository;
+import com.project.demo.logic.entity.municipal_preventive_care_configuration.MunicipalPreventiveCareConfigurationRepository;
 import com.project.demo.logic.entity.notification.NotificationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,13 +26,16 @@ public class NotificationGenerationScheduler {
 
     private final NotificationRepository notificationRepository;
     private final CommunityAnimalRepository communityAnimalRepository;
+    private final MunicipalPreventiveCareConfigurationRepository municipalPreventiveCareConfigurationRepository;
 
     public NotificationGenerationScheduler(
             NotificationRepository notificationRepository,
-            CommunityAnimalRepository communityAnimalRepository
+            CommunityAnimalRepository communityAnimalRepository,
+            MunicipalPreventiveCareConfigurationRepository municipalPreventiveCareConfigurationRepository
     ) {
         this.notificationRepository = notificationRepository;
         this.communityAnimalRepository = communityAnimalRepository;
+        this.municipalPreventiveCareConfigurationRepository = municipalPreventiveCareConfigurationRepository;
     }
 
     /**
@@ -41,7 +45,9 @@ public class NotificationGenerationScheduler {
      */
     @Scheduled(cron = SchedulerCronConstants.EVERY_MINUTE, zone = SchedulerCronConstants.ZONE_AMERICA_COSTA_RICA)
     public void runMidnightNotificationTask() {
-        //Se
+        //Necesitaria primero consultar todas las municipalidades, luego consultar las configuraciones de cada una
+        //y luego consultar los animales de cada una de las municipalidades
+        //y generar las notificaciones correspondientes.
         logger.info("Running midnight notification generation task...{}", LocalDateTime.now());
     }
 }
