@@ -17,4 +17,8 @@ public interface CommunityAnimalRepository extends JpaRepository<CommunityAnimal
      * @author dgutierrez
      */
     Page<CommunityAnimal> findByUser_Email(String email, Pageable pageable);
+
+    //Se realiza una busqueda de todos los usuarios animales registrados en la comunidad
+    // que tengan en su ultima
+    //control sanitario, mayor o igual a la fecha del
 }

@@ -40,9 +40,6 @@ public class Notification {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "is_read", nullable = false)
-    private boolean isRead = false;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "notification_status_id", nullable = false)
     private NotificationStatus notificationStatus;
