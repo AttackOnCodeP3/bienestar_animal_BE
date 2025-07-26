@@ -84,7 +84,7 @@ public class MunicipalPreventiveCareConfigurationRestController {
     @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MUNICIPAL_ADMIN')")
     public ResponseEntity<?> update(
             @PathVariable Long id,
-            @RequestBody MunicipalPreventiveCareConfiguration config,
+            @RequestBody MunicipalPreventiveCareConfigurationDTO configDTO,
             HttpServletRequest request) {
 
         logger.info("Invocando update - actualizando configuración preventiva municipal con ID: {}", id);
@@ -100,8 +100,7 @@ public class MunicipalPreventiveCareConfigurationRestController {
         }
 
         MunicipalPreventiveCareConfiguration current = opt.get();
-        current.setValue(config.getValue());
-        current.setMunicipality(config.getMunicipality());
+        current.setValue(configDTO.value());
 
         configurationRepository.save(current);
 

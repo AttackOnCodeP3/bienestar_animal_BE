@@ -6,6 +6,7 @@ import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
 import com.project.demo.logic.entity.notification.Notification;
 import com.project.demo.logic.entity.notification.NotificationRepository;
+import com.project.demo.logic.entity.notification_status.NotificationStatusRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +26,8 @@ public class NotificationRestController {
     private static final Logger logger = LoggerFactory.getLogger(NotificationRestController.class);
 
     @Autowired private NotificationRepository notificationRepository;
+
+    @Autowired private NotificationStatusRepository notificationStatusRepository;
 
     @Autowired private JwtService jwtService;
 
@@ -68,5 +71,74 @@ public class NotificationRestController {
                     request
             );
         }
+    }
+
+    @GetMapping("/count-my-notifications-by-status")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> countMyNotificationsByStatus(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam("statusId") Long statusId,
+            HttpServletRequest request
+    ) {
+        logger.info("Invocando countMyNotificationsByStatus - Status ID: {}", statusId);
+        var globalResponseHandler = new GlobalResponseHandler();
+
+        boolean exists = notificationStatusRepository.existsById(statusId);
+        if (!exists) {
+            logger.warn("Estado con ID {} no encontrado en la base de datos", statusId);
+
+            var availableStatuses = notificationStatusRepository.findAll().stream()
+                    .map(status -> String.format("[id: %d, name: %s]", status.getId(), status.getName()))
+                    .toList();
+
+            return globalResponseHandler.badRequest(
+                    "El ID de estado proporcionado no es válido. Estados válidos: " + availableStatuses,
+                    request
+            );
+        }
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        long count = notificationRepository.countByUser_EmailAndNotificationStatus_Id(email, statusId);
+
+        return globalResponseHandler.handleResponse(
+                "Conteo de notificaciones del usuario por estado obtenido correctamente",
+                count,
+                HttpStatus.OK,
+                request
+        );
+    }
+
+
+    @GetMapping("/count-by-status")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    public ResponseEntity<?> countByStatus(
+            @RequestParam("statusId") Long statusId,
+            HttpServletRequest request
+    ) {
+        logger.info("Invocando countByStatus - Solicitado estado con ID: {}", statusId);
+        var globalResponseHandler = new GlobalResponseHandler();
+
+        boolean exists = notificationStatusRepository.existsById(statusId);
+        if (!exists) {
+            logger.warn("Estado con ID {} no encontrado en la base de datos", statusId);
+
+            var availableStatuses = notificationStatusRepository.findAll().stream()
+                    .map(status -> String.format("[id: %d, name: %s]", status.getId(), status.getName()))
+                    .toList();
+
+            return globalResponseHandler.badRequest(
+                    "El ID de estado proporcionado no es válido. Estados válidos: " + availableStatuses,
+                    request
+            );
+        }
+
+        long count = notificationRepository.countByNotificationStatus_Id(statusId);
+
+        return globalResponseHandler.handleResponse(
+                "Conteo de notificaciones por estado obtenido correctamente",
+                count,
+                HttpStatus.OK,
+                request
+        );
     }
 }
