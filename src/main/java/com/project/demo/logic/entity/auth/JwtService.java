@@ -78,6 +78,19 @@ public class JwtService {
         return extractClaim(token, Claims::getExpiration);
     }
 
+    /**
+     * Extracts the JWT token from the Authorization header.
+     * @param authHeader the Authorization header containing the JWT token
+     * @return the JWT token if present, otherwise null
+     * @author dgutierrez
+     */
+    public String getTokenFromHeader(String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7);
+        }
+        return null;
+    }
+
     private Claims extractAllClaims(String token) {
         return Jwts
                 .parserBuilder()

@@ -57,7 +57,7 @@ public class MunicipalitySeeder implements ApplicationListener<ContextRefreshedE
         }
 
         Municipality municipality = Municipality.builder()
-                .name("La Unión-Cartago")
+                .name(GeneralConstants.NAME_OF_MUNICIPALITY_LA_UNION_CARTAGO_SEEDER)
                 .email("comunicaciones@munilaunion.cl")
                 .phone("2274-5000")
                 .address("Provincia de Cartago, Tres Rios, 30301")
