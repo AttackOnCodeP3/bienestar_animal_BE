@@ -116,22 +116,27 @@ public class GeneralConstants {
     public static final int MUNICIPALITY_SEEDER_ORDER = 14;
 
     /**
+     * Execution order for the Municipal Preventive Care Configuration seeder.
+     */
+    public static final int MUNICIPAL_PREVENTIVE_CARE_CONFIGURATION_SEEDER_ORDER = 15;
+
+    /**
      * Execution order for the Admin seeder.
      * Creates default administrator users or system-level accounts.
      */
-    public static final int ADMIN_SEEDER_ORDER = 15;
+    public static final int ADMIN_SEEDER_ORDER = 16;
 
     /**
      * Execution order for the StateGeneration seeder.
      * Creates default state generation statuses.
      */
-    public static final int STATE_GENERATION_SEEDER_ORDER = 16;
+    public static final int STATE_GENERATION_SEEDER_ORDER = 17;
 
     /**
      * Execution order for the Community Animal Seeder.
      * Seeds data related to community animals
      */
-    public static final int COMMUNITY_ANIMAL_SEEDER_ORDER = 17;
+    public static final int COMMUNITY_ANIMAL_SEEDER_ORDER = 18;
 
     /**
      * Regular expression for validating secure passwords.
@@ -147,4 +152,12 @@ public class GeneralConstants {
      * This message informs the user about the specific requirements for a secure password.
      */
     public static final String SECURE_PASSWORD_MESSAGE = "La contraseña debe tener al menos 8 caracteres, una letra mayúscula, una letra minúscula, un dígito y un carácter especial.";
+
+    /**
+     * Name of the municipality used in the application.
+     * <p>
+     * This is a specific municipality that is often referenced in the application,
+     * such as for administrative purposes or data seeding.
+     */
+    public static final String NAME_OF_MUNICIPALITY_LA_UNION_CARTAGO_SEEDER = "La Unión-Cartago";
 }

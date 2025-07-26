@@ -5,6 +5,7 @@ import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
 import com.project.demo.logic.entity.municipal_preventive_care_configuration.MunicipalPreventiveCareConfiguration;
 import com.project.demo.logic.entity.municipal_preventive_care_configuration.MunicipalPreventiveCareConfigurationRepository;
+import com.project.demo.rest.municipal_preventive_care_configuration.dto.MunicipalPreventiveCareConfigurationDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -24,33 +26,37 @@ public class MunicipalPreventiveCareConfigurationRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(MunicipalPreventiveCareConfigurationRestController.class);
 
-    @Autowired
-    private MunicipalPreventiveCareConfigurationRepository configurationRepository;
+    @Autowired private MunicipalPreventiveCareConfigurationRepository configurationRepository;
 
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MUNICIPAL_ADMIN')")
     public ResponseEntity<?> getAll(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
+
         logger.info("Invocando getAll - obteniendo configuraciones preventivas municipales. Página: {}, Tamaño: {}", page, size);
         var globalResponseHandler = new GlobalResponseHandler();
 
         Pageable pageable = PaginationUtils.buildPageable(page, size);
         Page<MunicipalPreventiveCareConfiguration> configPage = configurationRepository.findAll(pageable);
 
+        List<MunicipalPreventiveCareConfigurationDTO> dtoList = configPage.getContent().stream()
+                .map(MunicipalPreventiveCareConfigurationDTO::fromEntity)
+                .toList();
+
         Meta meta = PaginationUtils.buildMeta(request, configPage);
 
         return globalResponseHandler.handleResponse(
                 "Configuraciones preventivas municipales obtenidas correctamente",
-                configPage.getContent(),
+                dtoList,
                 HttpStatus.OK,
                 meta
         );
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MUNICIPAL_ADMIN')")
     public ResponseEntity<?> getById(@PathVariable Long id, HttpServletRequest request) {
         logger.info("Invocando getById - obteniendo configuración preventiva con ID: {}", id);
         var globalResponseHandler = new GlobalResponseHandler();
@@ -64,17 +70,23 @@ public class MunicipalPreventiveCareConfigurationRestController {
             );
         }
 
+        MunicipalPreventiveCareConfigurationDTO dto = MunicipalPreventiveCareConfigurationDTO.fromEntity(opt.get());
+
         return globalResponseHandler.handleResponse(
                 "Configuración preventiva municipal obtenida correctamente",
-                opt.get(),
+                dto,
                 HttpStatus.OK,
                 request
         );
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('SUPER_ADMIN, MUNICIPAL_ADMIN')")
-    public ResponseEntity<?> update(@PathVariable Long id, @RequestBody MunicipalPreventiveCareConfiguration config, HttpServletRequest request) {
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'MUNICIPAL_ADMIN')")
+    public ResponseEntity<?> update(
+            @PathVariable Long id,
+            @RequestBody MunicipalPreventiveCareConfiguration config,
+            HttpServletRequest request) {
+
         logger.info("Invocando update - actualizando configuración preventiva municipal con ID: {}", id);
         var globalResponseHandler = new GlobalResponseHandler();
 
@@ -88,15 +100,16 @@ public class MunicipalPreventiveCareConfigurationRestController {
         }
 
         MunicipalPreventiveCareConfiguration current = opt.get();
-        current.setVaccinationFrequencyMonths(config.getVaccinationFrequencyMonths());
-        current.setDewormingFrequencyMonths(config.getDewormingFrequencyMonths());
-        current.setFleaFrequencyMonths(config.getFleaFrequencyMonths());
+        current.setValue(config.getValue());
         current.setMunicipality(config.getMunicipality());
 
         configurationRepository.save(current);
+
+        MunicipalPreventiveCareConfigurationDTO dto = MunicipalPreventiveCareConfigurationDTO.fromEntity(current);
+
         return globalResponseHandler.success(
                 "Configuración preventiva municipal actualizada correctamente",
-                current,
+                dto,
                 request
         );
     }
