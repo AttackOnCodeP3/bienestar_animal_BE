@@ -74,7 +74,7 @@ public class NotificationGenerationScheduler {
         this.vaccineApplicationRepository = vaccineApplicationRepository;
     }
 
-    @Scheduled(cron = SchedulerCronConstants.EVERY_30_SECONDS, zone = SchedulerCronConstants.ZONE_AMERICA_COSTA_RICA)
+    @Scheduled(cron = SchedulerCronConstants.EVERY_5_MINUTES, zone = SchedulerCronConstants.ZONE_AMERICA_COSTA_RICA)
     public void runMidnightNotificationTask() {
         logger.info("Ejecutando scheduler de generación de notificaciones: {}", LocalDateTime.now());
 
