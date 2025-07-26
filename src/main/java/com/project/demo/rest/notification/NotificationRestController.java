@@ -6,7 +6,9 @@ import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
 import com.project.demo.logic.entity.notification.Notification;
 import com.project.demo.logic.entity.notification.NotificationRepository;
+import com.project.demo.logic.entity.notification_status.NotificationStatusEnum;
 import com.project.demo.logic.entity.notification_status.NotificationStatusRepository;
+import com.project.demo.rest.notification.dto.NotificationDTO;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,11 +28,12 @@ public class NotificationRestController {
     private static final Logger logger = LoggerFactory.getLogger(NotificationRestController.class);
 
     @Autowired private NotificationRepository notificationRepository;
-
     @Autowired private NotificationStatusRepository notificationStatusRepository;
-
     @Autowired private JwtService jwtService;
 
+    /**
+     * @author dgutierrez
+     */
     @GetMapping("/my-notifications")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getMyNotifications(
@@ -40,18 +43,26 @@ public class NotificationRestController {
             HttpServletRequest request
     ) {
         logger.info("Invocando getMyNotifications - Obteniendo mis notificaciones. Page: {}, Size: {}", page, size);
+
         String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
         Pageable pageable = PageRequest.of(page - 1, size);
+
         Page<Notification> notificationPage = notificationRepository.findByUser_Email(email, pageable);
-        Meta meta = PaginationUtils.buildMeta(request, notificationPage);
+        Page<NotificationDTO> dtoPage = notificationPage.map(NotificationDTO::fromEntity);
+
+        Meta meta = PaginationUtils.buildMeta(request, dtoPage);
+
         return new GlobalResponseHandler().handleResponse(
                 "Mis notificaciones obtenidas correctamente",
-                notificationPage.getContent(),
+                dtoPage.getContent(),
                 HttpStatus.OK,
                 meta
         );
     }
 
+    /**
+     * @author dgutierrez
+     */
     @GetMapping("/{notificationId}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getById(@PathVariable Long notificationId, HttpServletRequest request) {
@@ -59,9 +70,11 @@ public class NotificationRestController {
         Optional<Notification> optional = notificationRepository.findById(notificationId);
 
         if (optional.isPresent()) {
+            NotificationDTO dto = NotificationDTO.fromEntity(optional.get());
+
             return new GlobalResponseHandler().handleResponse(
                     "Notificación obtenida correctamente",
-                    optional.get(),
+                    dto,
                     HttpStatus.OK,
                     request
             );
@@ -73,6 +86,9 @@ public class NotificationRestController {
         }
     }
 
+    /**
+     * @author dgutierrez
+     */
     @GetMapping("/count-my-notifications-by-status")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> countMyNotificationsByStatus(
@@ -108,7 +124,9 @@ public class NotificationRestController {
         );
     }
 
-
+    /**
+     * @author dgutierrez
+     */
     @GetMapping("/count-by-status")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<?> countByStatus(
@@ -137,6 +155,44 @@ public class NotificationRestController {
         return globalResponseHandler.handleResponse(
                 "Conteo de notificaciones por estado obtenido correctamente",
                 count,
+                HttpStatus.OK,
+                request
+        );
+    }
+
+    /**
+     * @author dgutierrez
+     */
+    @PutMapping("/mark-my-notifications-as-read")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> markMyNotificationsAsRead(
+            @RequestHeader("Authorization") String authHeader,
+            HttpServletRequest request
+    ) {
+        logger.info("Invocando markMyNotificationsAsRead - marcando como leídas todas las notificaciones del usuario autenticado");
+
+        var globalResponseHandler = new GlobalResponseHandler();
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+
+        var readStatusOpt = notificationStatusRepository.findByName(NotificationStatusEnum.READ.getName());
+
+        if (readStatusOpt.isEmpty()) {
+            return globalResponseHandler.internalError(
+                    "El estado 'READ' no se encuentra configurado en la base de datos.",
+                    request
+            );
+        }
+
+        var readStatus = readStatusOpt.get();
+
+        var updatedCount = notificationRepository.markAllAsReadForUser(email, readStatus.getId());
+
+        logger.info("Se marcaron {} notificaciones como leídas para el usuario {}", updatedCount, email);
+
+        return globalResponseHandler.handleResponse(
+                "Notificaciones marcadas como leídas correctamente",
+                updatedCount,
                 HttpStatus.OK,
                 request
         );
