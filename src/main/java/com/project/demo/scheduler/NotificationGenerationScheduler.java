@@ -182,10 +182,15 @@ public class NotificationGenerationScheduler {
 
         Notification notif = Notification.builder()
                 .user(animal.getUser())
-                .title("Recordatorio de control sanitario: " + config.getType().getName())
-                .description("Tu animal registrado requiere atención para el tipo: " + config.getType().getName() +
-                        ". Por favor realiza el control correspondiente.")
-                .dateIssued(today)
+                .title("🦴 Recuerdos cariñosos para tu amigo " + animal.getName())
+                .description(
+                        "<p>Hola 👋</p>" +
+                                "<p>Recuerda que tu fiel compañero <strong>" + animal.getName() + "</strong> necesita atención para: <strong>"
+                                + config.getType().getName() + "</strong>.</p>" +
+                                "<p>Mantener sus controles al día es clave para que esté sano y feliz.</p>" +
+                                "<p>¡Nosotros estamos aquí para ayudarte cuando lo necesites!</p>"
+                )
+                .dateIssued(LocalDate.now().toString())
                 .notificationStatus(statusEntity)
                 .notificationType(typeEntity)
                 .build();

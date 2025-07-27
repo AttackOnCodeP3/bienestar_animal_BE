@@ -80,11 +80,11 @@ public class NotificationGenerationRegisterAnimalsScheduler {
                     .stream()
                     .anyMatch(n -> {
                         LocalDate lastIssued = LocalDate.parse(n.getDateIssued());
-                        return lastIssued.plusDays(7).isAfter(LocalDate.now());
+                        return lastIssued.plusDays(SchedulerCronConstants.DAYS_BETWEEN_NOTIFICATIONS).isAfter(LocalDate.now());
                     });
 
             if (wasRecentlyNotified) {
-                logger.info("Usuario {} fue notificado hace menos de 7 días. Se omite.", user.getId());
+                logger.info("Usuario {} fue notificado hace menos de {} días. Se omite.", user.getId(), SchedulerCronConstants.DAYS_BETWEEN_NOTIFICATIONS);
                 continue;
             }
 
