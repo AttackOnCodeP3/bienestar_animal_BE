@@ -3,6 +3,7 @@ package com.project.demo.rest.notification.dto;
 import com.project.demo.logic.entity.notification.Notification;
 import lombok.Builder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Builder
@@ -11,7 +12,7 @@ public record NotificationDTO(
         String title,
         String description,
         String imageUrl,
-        String dateIssued,
+        LocalDate dateIssued,
         String actionUrl,
         String notificationStatusName,
         String notificationTypeName,

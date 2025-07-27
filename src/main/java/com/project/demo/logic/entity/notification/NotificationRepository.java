@@ -8,7 +8,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.Optional;
 
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
@@ -42,30 +41,9 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
      */
     long countByUser_EmailAndNotificationStatus_Id(String email, Long statusId);
 
-    /**
-     * Checks if a notification exists for a user by their ID, notification type name, and date issued.
-     *
-     * @param userId              the ID of the user
-     * @param notificationTypeName the name of the notification type
-     * @param dateIssued          the date when the notification was issued
-     * @return true if a notification exists, false otherwise
-     * @author dgutierrez
-     */
-    boolean existsByUserIdAndNotificationType_NameAndDateIssued(Long userId, String notificationTypeName, String dateIssued);
+    Optional<Notification> findTopByUserIdAndNotificationType_NameAndTitleOrderByDateIssuedDesc(Long userId, String typeName, String title);
 
-    @Query("""
-    SELECT n FROM Notification n
-    WHERE n.user.id = :userId
-      AND n.notificationType.name = :notificationTypeName
-    ORDER BY n.createdAt DESC
-    LIMIT 1
-""")
-    Optional<Notification> findLatestByUserAndType(
-            @Param("userId") Long userId,
-            @Param("notificationTypeName") String typeName
-    );
-
-    List<Notification> findByUserIdAndNotificationType_Name(Long userId, String notificationTypeName);
+    Optional<Notification> findTopByUserIdAndNotificationType_NameOrderByDateIssuedDesc(Long userId, String typeName);
 
     @Transactional
     @Modifying

@@ -16,7 +16,7 @@ public class SchedulerCronConstants {
     public static final String EVERY_MIDNIGHT = "0 0 0 * * *";
 
     public static final String ZONE_AMERICA_COSTA_RICA = "America/Costa_Rica";
-    public static final int DAYS_BETWEEN_NOTIFICATIONS = 7;
+    public static final int DAYS_BETWEEN_NOTIFICATIONS_FOR_REGISTER_COMMUNITY_ANIMALS = 7;
 
     private SchedulerCronConstants() {
     }

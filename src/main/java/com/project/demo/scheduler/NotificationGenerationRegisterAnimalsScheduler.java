@@ -76,31 +76,38 @@ public class NotificationGenerationRegisterAnimalsScheduler {
                 continue;
             }
 
-            boolean wasRecentlyNotified = notificationRepository.findByUserIdAndNotificationType_Name(user.getId(), type.getName())
-                    .stream()
-                    .anyMatch(n -> {
-                        LocalDate lastIssued = LocalDate.parse(n.getDateIssued());
-                        return lastIssued.plusDays(SchedulerCronConstants.DAYS_BETWEEN_NOTIFICATIONS).isAfter(LocalDate.now());
+            notificationRepository.findTopByUserIdAndNotificationType_NameOrderByDateIssuedDesc(user.getId(), type.getName())
+                    .ifPresentOrElse(lastNotif -> {
+                        LocalDate lastIssued = lastNotif.getDateIssued();
+                        if (lastIssued.plusDays(SchedulerCronConstants.DAYS_BETWEEN_NOTIFICATIONS_FOR_REGISTER_COMMUNITY_ANIMALS).isAfter(LocalDate.now())) {
+                            logger.info(
+                                    "Usuario {} ya fue notificado el {}. No se enviará otra hasta pasar {} días.",
+                                    user.getId(),
+                                    lastIssued,
+                                    SchedulerCronConstants.DAYS_BETWEEN_NOTIFICATIONS_FOR_REGISTER_COMMUNITY_ANIMALS
+                            );
+                            return;
+                        }
+                        sendNotification(user, type, status);
+                    }, () -> {
+                        sendNotification(user, type, status);
                     });
-
-            if (wasRecentlyNotified) {
-                logger.info("Usuario {} fue notificado hace menos de {} días. Se omite.", user.getId(), SchedulerCronConstants.DAYS_BETWEEN_NOTIFICATIONS);
-                continue;
-            }
-
-            Notification notif = Notification.builder()
-                    .user(user)
-                    .title("Registra tu(s) animal(es) comunitario(s)")
-                    .description("Aún no has registrado animales en el sistema. Hazlo para recibir alertas de salud.")
-                    .dateIssued(LocalDate.now().toString())
-                    .notificationStatus(status)
-                    .notificationType(type)
-                    .build();
-
-            notificationRepository.save(notif);
-            logger.info("Notificación enviada a usuario {}", user.getId());
         }
 
         logger.info("Scheduler de usuarios sin animales finalizado.");
+    }
+
+    private void sendNotification(User user, NotificationType type, NotificationStatus status) {
+        Notification notif = Notification.builder()
+                .user(user)
+                .title("🐶 ¡No dejes solo a tu amigo!")
+                .description("Aún no has registrado animales en el sistema. Hazlo para que podamos recordarte sus cuidados y atenciones sanitarias 🩺.")
+                .dateIssued(LocalDate.now())
+                .notificationStatus(status)
+                .notificationType(type)
+                .build();
+
+        notificationRepository.save(notif);
+        logger.info("Notificación enviada a usuario {}", user.getId());
     }
 }
