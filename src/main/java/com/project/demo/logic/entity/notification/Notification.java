@@ -8,6 +8,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Table(name = "notification")
@@ -31,7 +32,7 @@ public class Notification {
     private String imageUrl;
 
     @Column(name = "date_issued", nullable = false)
-    private String dateIssued;
+    private LocalDate dateIssued;
 
     @Column(name = "action_url")
     private String actionUrl;

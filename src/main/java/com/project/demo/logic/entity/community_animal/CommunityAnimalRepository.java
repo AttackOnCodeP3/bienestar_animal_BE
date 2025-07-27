@@ -17,4 +17,11 @@ public interface CommunityAnimalRepository extends JpaRepository<CommunityAnimal
      * @author dgutierrez
      */
     Page<CommunityAnimal> findByUser_Email(String email, Pageable pageable);
+
+    /**
+     * Checks if a user has registered animals by their email.
+     * @param email the email of the user
+     * @return true if the user has registered animals
+     */
+    boolean existsByUser_Email(String email);
 }

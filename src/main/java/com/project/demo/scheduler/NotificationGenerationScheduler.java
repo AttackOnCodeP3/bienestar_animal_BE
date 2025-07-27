@@ -154,22 +154,28 @@ public class NotificationGenerationScheduler {
     }
 
     private void generateNotification(CommunityAnimal animal, MunicipalPreventiveCareConfiguration config) {
-        String today = LocalDate.now().toString();
         int monthsInterval = config.getValue();
         NotificationTypeEnum typeEnum = NotificationTypeEnum.SANITARY_ALERT;
 
-        List<Notification> previousNotifs = notificationRepository.findByUserIdAndNotificationType_Name(
-                animal.getUser().getId(), typeEnum.getName());
+        String title = "🦴 Recuerdos cariñosos para tu amigo " + animal.getName();
 
-        Optional<Notification> latestMatchingTypeNotif = previousNotifs.stream()
-                .filter(n -> n.getTitle() != null && n.getTitle().contains(config.getType().getName()))
-                .max(Comparator.comparing(Notification::getDateIssued));
+        Optional<Notification> latestNotif = notificationRepository
+                .findTopByUserIdAndNotificationType_NameAndTitleOrderByDateIssuedDesc(
+                        animal.getUser().getId(),
+                        typeEnum.getName(),
+                        title
+                );
 
-        if (latestMatchingTypeNotif.isPresent()) {
-            LocalDate lastSentDate = LocalDate.parse(latestMatchingTypeNotif.get().getDateIssued());
+        if (latestNotif.isPresent()) {
+            LocalDate lastSentDate = latestNotif.get().getDateIssued();
             if (lastSentDate.plusMonths(monthsInterval).isAfter(LocalDate.now())) {
-                logger.info("Notificación omitida para tipo {}. Última fue en {} y el intervalo aún no se cumple ({} meses)",
-                        config.getType().getName(), lastSentDate, monthsInterval);
+                logger.info("Notificación omitida: ya se envió a {} sobre {} para {} hace {}. Próxima después de {}",
+                        animal.getUser().getId(),
+                        config.getType().getName(),
+                        animal.getName(),
+                        lastSentDate,
+                        lastSentDate.plusMonths(monthsInterval)
+                );
                 return;
             }
         }
@@ -182,10 +188,15 @@ public class NotificationGenerationScheduler {
 
         Notification notif = Notification.builder()
                 .user(animal.getUser())
-                .title("Recordatorio de control sanitario: " + config.getType().getName())
-                .description("Tu animal registrado requiere atención para el tipo: " + config.getType().getName() +
-                        ". Por favor realiza el control correspondiente.")
-                .dateIssued(today)
+                .title(title)
+                .description(
+                        "<p>Hola 👋</p>" +
+                                "<p>Recuerda que tu fiel compañero <strong>" + animal.getName() + "</strong> necesita atención para: <strong>" +
+                                config.getType().getName() + "</strong>.</p>" +
+                                "<p>Mantener sus controles al día es clave para que esté sano y feliz.</p>" +
+                                "<p>¡Nosotros estamos aquí para ayudarte cuando lo necesites!</p>"
+                )
+                .dateIssued(LocalDate.now())
                 .notificationStatus(statusEntity)
                 .notificationType(typeEntity)
                 .build();
