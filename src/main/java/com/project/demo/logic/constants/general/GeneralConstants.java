@@ -141,6 +141,13 @@ public class GeneralConstants {
     public static final int COMMUNITY_ANIMAL_SEEDER_ORDER = 19;
 
     /**
+     * Execution order for the Announcement Seeder.
+     * Seeds initial announcements or notifications in the application.
+     * This is important for informing users about important updates or events.
+     */
+    public static final int ANNOUNCEMENT_SEEDER_ORDER = 20;
+
+    /**
      * Regular expression for validating secure passwords.
      * <p>
      * This regex requires at least 8 characters, one uppercase letter,

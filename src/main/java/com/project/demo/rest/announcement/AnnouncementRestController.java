@@ -1,0 +1,283 @@
+package com.project.demo.rest.announcement;
+
+import com.project.demo.common.PaginationUtils;
+import com.project.demo.logic.entity.announcement.Announcement;
+import com.project.demo.logic.entity.announcement.AnnouncementRepository;
+import com.project.demo.logic.entity.announcement_state.AnnouncementStateRepository;
+import com.project.demo.logic.entity.auth.JwtService;
+import com.project.demo.logic.entity.http.GlobalResponseHandler;
+import com.project.demo.logic.entity.http.Meta;
+import com.project.demo.logic.entity.user.User;
+import com.project.demo.logic.entity.user.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.*;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/announcements")
+public class AnnouncementRestController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AnnouncementRestController.class);
+
+    @Autowired private AnnouncementRepository announcementRepository;
+    @Autowired private AnnouncementStateRepository announcementStateRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private JwtService jwtService;
+
+    /**
+     * Retrieves all announcements in the system.
+     * Accessible only by users with the SUPER_ADMIN role.
+     *
+     * @param page    the requested page number.
+     * @param size    the number of items per page.
+     * @param request the HTTP request for metadata construction.
+     * @return a paginated list of all announcements.
+     * @author dgutierrez
+     */
+    @GetMapping
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    public ResponseEntity<?> getAllAnnouncements(
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request
+    ) {
+        logger.info("Invocando getAllAnnouncements - Página {}, Tamaño {}", page, size);
+
+        Pageable pageable = PaginationUtils.buildPageable(page, size);
+        Page<Announcement> announcements = announcementRepository.findAll(pageable);
+
+        Meta meta = PaginationUtils.buildMeta(request, announcements);
+
+        return new GlobalResponseHandler().handleResponse(
+                "Anuncios obtenidos correctamente",
+                announcements.getContent(),
+                HttpStatus.OK,
+                meta
+        );
+    }
+
+    /**
+     * Retrieves a specific announcement by its ID.
+     * Accessible only by users with the SUPER_ADMIN role.
+     *
+     * @param id      the ID of the announcement.
+     * @param request the HTTP request for error handling.
+     * @return the announcement if found, otherwise a 404 response.
+     * @author dgutierrez
+     */
+    @GetMapping("/{id}")
+    @PreAuthorize("hasRole('SUPER_ADMIN')")
+    public ResponseEntity<?> getById(@PathVariable Long id, HttpServletRequest request) {
+        logger.info("Invocando getById - ID: {}", id);
+
+        Optional<Announcement> optional = announcementRepository.findById(id);
+        if (optional.isEmpty()) {
+            return new GlobalResponseHandler().notFound(
+                    "No se encontró el anuncio con ID " + id,
+                    request
+            );
+        }
+
+        return new GlobalResponseHandler().handleResponse(
+                "Anuncio obtenido correctamente",
+                optional.get(),
+                HttpStatus.OK,
+                request
+        );
+    }
+
+    /**
+     * Retrieves an announcement by its ID only if it belongs to the municipality
+     * associated with the currently authenticated MUNICIPAL_ADMIN user.
+     *
+     * @param authHeader the Authorization header containing the JWT token.
+     * @param id         the ID of the announcement.
+     * @param request    the HTTP request for error handling.
+     * @return the announcement if found within the user's municipality, or a 404 response.
+     * @author dgutierrez
+     */
+    @GetMapping("/my-municipality/{id}")
+    @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
+    public ResponseEntity<?> getMyMunicipalityAnnouncementById(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+        logger.info("Invocando getMyMunicipalityAnnouncementById - ID: {}", id);
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+
+        var optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty() || optionalUser.get().getMunicipality() == null) {
+            return new GlobalResponseHandler().notFound(
+                    "No se encontró la municipalidad del usuario autenticado",
+                    request
+            );
+        }
+
+        Long municipalityId = optionalUser.get().getMunicipality().getId();
+        Optional<Announcement> optional = announcementRepository.findByIdAndMunicipalities_Id(id, municipalityId);
+
+        if (optional.isEmpty()) {
+            return new GlobalResponseHandler().notFound(
+                    "No se encontró el anuncio con ID " + id + " para la municipalidad del usuario",
+                    request
+            );
+        }
+
+        return new GlobalResponseHandler().handleResponse(
+                "Anuncio de la municipalidad obtenido correctamente",
+                optional.get(),
+                HttpStatus.OK,
+                request
+        );
+    }
+
+    /**
+     * Retrieves all announcements filtered by a given announcement state ID.
+     * Accessible only by users with the SUPER_ADMIN role.
+     *
+     * @param stateId the ID of the announcement state.
+     * @param page    the requested page number.
+     * @param size    the number of items per page.
+     * @param request the HTTP request for metadata and error handling.
+     * @return a paginated list of announcements with the given state.
+     * @author dgutierrez
+     */
+    @GetMapping("/by-state/{stateId}")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
+    public ResponseEntity<?> getByState(
+            @PathVariable Long stateId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request
+    ) {
+        logger.info("Invocando getByState - Estado ID: {}, Página: {}, Tamaño: {}", stateId, page, size);
+
+        if (!announcementStateRepository.existsById(stateId)) {
+            return new GlobalResponseHandler().notFound(
+                    "El estado de anuncio con ID " + stateId + " no fue encontrado",
+                    request
+            );
+        }
+
+        Pageable pageable = PaginationUtils.buildPageable(page, size);
+        Page<Announcement> pageResult = announcementRepository.findByState_Id(stateId, pageable);
+
+        Meta meta = PaginationUtils.buildMeta(request, pageResult);
+
+        return new GlobalResponseHandler().handleResponse(
+                "Anuncios filtrados por estado obtenidos correctamente",
+                pageResult.getContent(),
+                HttpStatus.OK,
+                meta
+        );
+    }
+
+    /**
+     * Retrieves announcements that belong to the currently authenticated user's municipality
+     * and are filtered by a given announcement state ID.
+     *
+     * @param authHeader the Authorization header containing the JWT token.
+     * @param stateId    the ID of the announcement state.
+     * @param page       the requested page number.
+     * @param size       the number of items per page.
+     * @param request    the HTTP request for metadata and error handling.
+     * @return a paginated list of announcements for the municipality and state.
+     * @author dgutierrez
+     */
+    @GetMapping("/my-municipality/by-state/{stateId}")
+    @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
+    public ResponseEntity<?> getMyMunicipalityAnnouncementsByState(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long stateId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request
+    ) {
+        logger.info("Invocando getMyMunicipalityAnnouncementsByState - Estado ID: {}", stateId);
+
+        if (!announcementStateRepository.existsById(stateId)) {
+            return new GlobalResponseHandler().notFound(
+                    "El estado de anuncio con ID " + stateId + " no fue encontrado",
+                    request
+            );
+        }
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        var optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty() || optionalUser.get().getMunicipality() == null) {
+            return new GlobalResponseHandler().notFound(
+                    "No se encontró la municipalidad del usuario autenticado",
+                    request
+            );
+        }
+
+        Long municipalityId = optionalUser.get().getMunicipality().getId();
+        Pageable pageable = PaginationUtils.buildPageable(page, size);
+        Page<Announcement> pageResult = announcementRepository.findByState_IdAndMunicipalities_Id(stateId, municipalityId, pageable);
+        Meta meta = PaginationUtils.buildMeta(request, pageResult);
+
+        return new GlobalResponseHandler().handleResponse(
+                "Anuncios filtrados por estado y municipalidad obtenidos correctamente",
+                pageResult.getContent(),
+                HttpStatus.OK,
+                meta
+        );
+    }
+
+    /**
+     * Retrieves all announcements associated with the municipality of the currently
+     * authenticated MUNICIPAL_ADMIN user.
+     *
+     * @param authHeader the Authorization header containing the JWT token.
+     * @param page       the requested page number.
+     * @param size       the number of items per page.
+     * @param request    the HTTP request for metadata construction.
+     * @return a paginated list of announcements belonging to the user's municipality.
+     * @author dgutierrez
+     */
+    @GetMapping("/my-municipality")
+    @PreAuthorize("hasAnyRole('MUNICIPAL_ADMIN')")
+    public ResponseEntity<?> getAnnouncementsForMyMunicipality(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request
+    ) {
+        logger.info("Invocando getAnnouncementsForMyMunicipality");
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty() || optionalUser.get().getMunicipality() == null) {
+            return new GlobalResponseHandler().notFound(
+                    "No se encontró la municipalidad del usuario autenticado",
+                    request
+            );
+        }
+
+        Long municipalityId = optionalUser.get().getMunicipality().getId();
+        Pageable pageable = PaginationUtils.buildPageable(page, size);
+
+        Page<Announcement> pageResult = announcementRepository.findByMunicipalities_Id(municipalityId, pageable);
+        Meta meta = PaginationUtils.buildMeta(request, pageResult);
+
+        return new GlobalResponseHandler().handleResponse(
+                "Anuncios de la municipalidad del usuario obtenidos correctamente",
+                pageResult.getContent(),
+                HttpStatus.OK,
+                meta
+        );
+    }
+}

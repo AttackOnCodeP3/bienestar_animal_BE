@@ -1,9 +1,9 @@
 package com.project.demo.logic.seeds;
 
 import com.project.demo.logic.constants.general.GeneralConstants;
-import com.project.demo.logic.announcement_state.AnnouncementState;
-import com.project.demo.logic.announcement_state.AnnouncementStateEnum;
-import com.project.demo.logic.announcement_state.AnnouncementStateRepository;
+import com.project.demo.logic.entity.announcement_state.AnnouncementState;
+import com.project.demo.logic.entity.announcement_state.AnnouncementStateEnum;
+import com.project.demo.logic.entity.announcement_state.AnnouncementStateRepository;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.core.annotation.Order;

@@ -1,7 +1,7 @@
 package com.project.demo.logic.entity.announcement;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.project.demo.logic.announcement_state.AnnouncementState;
+import com.project.demo.logic.entity.announcement_state.AnnouncementState;
 import com.project.demo.logic.entity.municipality.Municipality;
 import jakarta.persistence.*;
 import lombok.*;

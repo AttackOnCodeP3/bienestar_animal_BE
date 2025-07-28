@@ -1,8 +1,8 @@
 package com.project.demo.rest.announcement_state;
 
 import com.project.demo.common.PaginationUtils;
-import com.project.demo.logic.announcement_state.AnnouncementState;
-import com.project.demo.logic.announcement_state.AnnouncementStateRepository;
+import com.project.demo.logic.entity.announcement_state.AnnouncementState;
+import com.project.demo.logic.entity.announcement_state.AnnouncementStateRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
 import jakarta.servlet.http.HttpServletRequest;

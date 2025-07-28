@@ -1,4 +1,4 @@
-package com.project.demo.logic.announcement_state;
+package com.project.demo.logic.entity.announcement_state;
 
 import lombok.Getter;
 

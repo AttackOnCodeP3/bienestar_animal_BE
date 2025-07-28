@@ -1,6 +1,5 @@
 package com.project.demo.rest.user;
 
-import com.project.demo.common.BooleanUtils;
 import com.project.demo.common.PaginationUtils;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
