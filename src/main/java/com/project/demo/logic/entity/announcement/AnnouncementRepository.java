@@ -3,6 +3,8 @@ package com.project.demo.logic.entity.announcement;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -50,4 +52,27 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
      * @return an Optional containing the Announcement if found, or empty if not found.
      */
     Optional<Announcement> findByIdAndMunicipalities_Id(Long id, Long municipalityId);
+
+
+    /**
+     * Finds Announcement entities by municipality ID and optional filters for title and state ID.
+     * @param municipalityId the ID of the municipality to filter by.
+     * @param title the title to filter announcements by (optional).
+     * @param stateId the ID of the announcement state to filter by (optional).
+     * @param pageable the pagination information.
+     * @return a Page containing Announcement entities that match the given filters.
+     */
+    @Query("""
+    SELECT a FROM Announcement a
+    JOIN a.municipalities m
+    WHERE m.id = :municipalityId
+    AND (:title IS NULL OR LOWER(a.title) LIKE LOWER(CONCAT('%', :title, '%')))
+    AND (:stateId IS NULL OR a.state.id = :stateId)
+""")
+    Page<Announcement> findByMunicipalityAndOptionalFilters(
+            @Param("municipalityId") Long municipalityId,
+            @Param("title") String title,
+            @Param("stateId") Long stateId,
+            Pageable pageable
+    );
 }

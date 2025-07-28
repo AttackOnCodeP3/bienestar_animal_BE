@@ -280,4 +280,54 @@ public class AnnouncementRestController {
                 meta
         );
     }
+
+    /**
+     * Retrieves announcements for the authenticated MUNICIPAL_ADMIN user
+     * filtered optionally by title and state ID.
+     *
+     * @param authHeader Authorization header with JWT.
+     * @param title      (optional) Partial or full title of the announcement.
+     * @param stateId    (optional) ID of the announcement state.
+     * @param page       Page number for pagination.
+     * @param size       Page size for pagination.
+     * @param request    HTTP request for metadata.
+     * @return A paginated list of filtered announcements.
+     */
+    @GetMapping("/my-municipality/filter")
+    @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
+    public ResponseEntity<?> filterAnnouncementsByTitleAndState(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(required = false) String title,
+            @RequestParam(required = false) Long stateId,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request
+    ) {
+        logger.info("Invocando filterAnnouncementsByTitleAndState - title: {}, stateId: {}", title, stateId);
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty() || optionalUser.get().getMunicipality() == null) {
+            return new GlobalResponseHandler().notFound(
+                    "No se encontró la municipalidad del usuario autenticado",
+                    request
+            );
+        }
+
+        Long municipalityId = optionalUser.get().getMunicipality().getId();
+        Pageable pageable = PaginationUtils.buildPageable(page, size);
+
+        Page<Announcement> pageResult = announcementRepository
+                .findByMunicipalityAndOptionalFilters(municipalityId, title, stateId, pageable);
+
+        Meta meta = PaginationUtils.buildMeta(request, pageResult);
+
+        return new GlobalResponseHandler().handleResponse(
+                "Anuncios filtrados obtenidos correctamente",
+                pageResult.getContent(),
+                HttpStatus.OK,
+                meta
+        );
+    }
 }
