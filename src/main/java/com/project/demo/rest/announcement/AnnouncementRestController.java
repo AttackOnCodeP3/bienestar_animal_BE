@@ -9,6 +9,8 @@ import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
 import com.project.demo.logic.entity.user.User;
 import com.project.demo.logic.entity.user.UserRepository;
+import com.project.demo.rest.announcement.dto.CreateAnnouncementMultipartDTO;
+import com.project.demo.service.model.Tripo3DService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.Optional;
 
 @RestController
@@ -27,10 +30,16 @@ public class AnnouncementRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(AnnouncementRestController.class);
 
-    @Autowired private AnnouncementRepository announcementRepository;
-    @Autowired private AnnouncementStateRepository announcementStateRepository;
-    @Autowired private UserRepository userRepository;
-    @Autowired private JwtService jwtService;
+    @Autowired
+    private AnnouncementRepository announcementRepository;
+    @Autowired
+    private AnnouncementStateRepository announcementStateRepository;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private JwtService jwtService;
+    @Autowired
+    private Tripo3DService tripo3DService;
 
     /**
      * Retrieves all announcements in the system.
@@ -328,6 +337,78 @@ public class AnnouncementRestController {
                 pageResult.getContent(),
                 HttpStatus.OK,
                 meta
+        );
+    }
+
+    /**
+     * Creates a new announcement associated with the currently authenticated MUNICIPAL_ADMIN's municipality.
+     * The announcement requires an image file and metadata sent as multipart/form-data.
+     *
+     * @param authHeader Authorization header with JWT.
+     * @param dto        DTO containing the announcement metadata and image.
+     * @param request    HTTP request for error handling and metadata.
+     * @return ResponseEntity with created announcement or error message.
+     * @throws IOException if an error occurs during image upload.
+     * @author dgutierrez
+     */
+    @PostMapping("/my-municipality")
+    @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
+    public ResponseEntity<?> createAnnouncementForMyMunicipality(
+            @RequestHeader("Authorization") String authHeader,
+            @ModelAttribute CreateAnnouncementMultipartDTO dto,
+            HttpServletRequest request
+    ) throws IOException {
+        logger.info("POST /announcements/my-municipality - Creando anuncio para el usuario autenticado administrador municipal");
+
+        var globalResponseHandler = new GlobalResponseHandler();
+
+        if (dto.getFile() == null || dto.getFile().isEmpty()) {
+            return globalResponseHandler.badRequest(
+                    "El archivo de imagen es obligatorio para crear un anuncio",
+                    request
+            );
+        }
+
+        var optionalState = announcementStateRepository.findById(dto.getStateId());
+        if (optionalState.isEmpty()) {
+            return globalResponseHandler.badRequest(
+                    "El estado de anuncio con ID " + dto.getStateId() + " no fue encontrado",
+                    request
+            );
+        }
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        var optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty() || optionalUser.get().getMunicipality() == null) {
+            return globalResponseHandler.notFound(
+                    "No se encontró la municipalidad del usuario autenticado",
+                    request
+            );
+        }
+
+        var municipality = optionalUser.get().getMunicipality();
+
+        String imageUrl = tripo3DService.uploadToImgur(dto.getFile());
+
+        var announcement = Announcement.builder()
+                .title(dto.getTitle())
+                .description(dto.getDescription())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .state(optionalState.get())
+                .imageUrl(imageUrl)
+                .build();
+
+        announcement.getMunicipalities().add(municipality);
+
+        announcementRepository.save(announcement);
+
+        return globalResponseHandler.handleResponse(
+                "Anuncio creado correctamente para la municipalidad del usuario",
+                announcement,
+                HttpStatus.CREATED,
+                request
         );
     }
 }
