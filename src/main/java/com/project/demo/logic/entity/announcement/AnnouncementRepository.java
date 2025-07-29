@@ -53,7 +53,6 @@ public interface AnnouncementRepository extends JpaRepository<Announcement, Long
      */
     Optional<Announcement> findByIdAndMunicipalities_Id(Long id, Long municipalityId);
 
-
     /**
      * Finds Announcement entities by municipality ID and optional filters for title and state ID.
      * @param municipalityId the ID of the municipality to filter by.
