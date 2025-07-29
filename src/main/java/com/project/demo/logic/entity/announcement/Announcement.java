@@ -30,7 +30,7 @@ public class Announcement {
     @Column(name = "title", nullable = false)
     private String title;
 
-    @Column(name = "description", columnDefinition = "TEXT", nullable = false)
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
     @Column(name = "start_date", nullable = false)
@@ -42,6 +42,7 @@ public class Announcement {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Builder.Default
     @ManyToMany
     @JoinTable(
             name = "announcement_municipality",
