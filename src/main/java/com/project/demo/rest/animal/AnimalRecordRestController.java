@@ -1,29 +1,45 @@
 package com.project.demo.rest.animal;
-
+import com.project.demo.logic.entity.animal.AnimalRepository;
+import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.rest.animal.dto.AnimalRecordDTO;
-import com.project.demo.service.model.AnimalRecordService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import javax.servlet.http.HttpServletRequest;
+
+import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/animals")
+@RequestMapping("/animals/records")
 public class AnimalRecordRestController {
 
     @Autowired
-    private AnimalRecordService animalRecordService;
+    private AnimalRepository animalRepository;
 
-    @GetMapping("/{animalId}/record")
-    public ResponseEntity<?> getAnimalRecord(
-            @PathVariable Long animalId,
-            HttpServletRequest request
-    ) {
-        String token = request.getHeader("Authorization");
-        AnimalRecordDTO dto = animalRecordService.getAnimalRecord(animalId, token);
-        if (dto == null) {
-            return ResponseEntity.status(403).body("No tiene permisos para ver este expediente.");
+    @GetMapping("/{animalId}/user/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getAnimalRecordByAnimalAndUser(@PathVariable Long animalId, @PathVariable Long userId, HttpServletRequest request) {
+
+        var globalResponseHandler = new GlobalResponseHandler();
+
+        /*Optional<AnimalRecordDTO> animalOpt = animalRepository.findByIdAndUserId(animalId, userId);
+        if (animalOpt.isEmpty()) {
+
+            return globalResponseHandler.notFound(
+                    "El animal con ID " + animalId + " y usuario con ID " + userId + " no fue encontrado",
+                    request
+            );
         }
-        return ResponseEntity.ok(dto);
+
+        return globalResponseHandler.handleResponse(
+                "Registro de animal obtenido correctamente",
+                animalOpt.get(),
+                HttpStatus.OK,
+                request
+        );*/
+        return null;
     }
+
 }

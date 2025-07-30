@@ -31,4 +31,8 @@ public interface UserRepository extends JpaRepository<User, Long>  {
     )
 """)
     Page<User> findAllExcludingUsersWithRoleId(@Param("roleId") Long roleId, Pageable pageable);
+
+    @Query("SELECT r.name FROM User u JOIN u.roles r WHERE u.id = :userId")
+    List<RoleEnum> findRoleNamesByUserId(@Param("userId") Long userId);
+
 }
