@@ -10,6 +10,7 @@ import com.project.demo.logic.entity.http.Meta;
 import com.project.demo.logic.entity.user.User;
 import com.project.demo.logic.entity.user.UserRepository;
 import com.project.demo.rest.announcement.dto.CreateAnnouncementMultipartDTO;
+import com.project.demo.rest.announcement.dto.UpdateAnnouncementMultipartDTO;
 import com.project.demo.service.model.Tripo3DService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -23,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @RestController
@@ -371,6 +373,9 @@ public class AnnouncementRestController {
             );
         }
 
+        var dateValidationResponse = validateAnnouncementDates(dto.getStartDate(), dto.getEndDate(), request, globalResponseHandler);
+        if (dateValidationResponse != null) return dateValidationResponse;
+
         var optionalState = announcementStateRepository.findById(dto.getStateId());
         if (optionalState.isEmpty()) {
             return globalResponseHandler.badRequest(
@@ -412,5 +417,123 @@ public class AnnouncementRestController {
                 HttpStatus.CREATED,
                 request
         );
+    }
+
+    @PutMapping("/my-municipality/{id}")
+    @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
+    @Transactional
+    public ResponseEntity<?> updateAnnouncementForMyMunicipality(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long id,
+            @ModelAttribute UpdateAnnouncementMultipartDTO dto,
+            HttpServletRequest request
+    ) throws IOException {
+        logger.info("PUT /announcements/my-municipality/{} - Actualizando anuncio", id);
+
+        var globalResponseHandler = new GlobalResponseHandler();
+
+
+        var optionalUser = userRepository.findByEmail(
+                jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader))
+        );
+
+        if (optionalUser.isEmpty() || optionalUser.get().getMunicipality() == null) {
+            return globalResponseHandler.notFound(
+                    "No se encontró la municipalidad del usuario autenticado",
+                    request
+            );
+        }
+
+        var municipalityId = optionalUser.get().getMunicipality().getId();
+
+        var optionalAnnouncement = announcementRepository.findByIdAndMunicipalities_Id(id, municipalityId);
+        if (optionalAnnouncement.isEmpty()) {
+            return globalResponseHandler.notFound(
+                    "No se encontró el anuncio para esta municipalidad con ID " + id,
+                    request
+            );
+        }
+
+        var dateValidationResponse = validateAnnouncementDates(dto.getStartDate(), dto.getEndDate(), request, globalResponseHandler);
+        if (dateValidationResponse != null) return dateValidationResponse;
+
+        var announcement = optionalAnnouncement.get();
+
+        if (dto.getStateId() != null && !announcementStateRepository.existsById(dto.getStateId())) {
+            return globalResponseHandler.badRequest(
+                    "El estado de anuncio con ID " + dto.getStateId() + " no fue encontrado",
+                    request
+            );
+        }
+
+        announcement.setTitle(dto.getTitle());
+        announcement.setDescription(dto.getDescription());
+        announcement.setStartDate(dto.getStartDate());
+        announcement.setEndDate(dto.getEndDate());
+        if (dto.getStateId() != null) {
+            var optionalState = announcementStateRepository.findById(dto.getStateId());
+            if (optionalState.isEmpty()) {
+                return globalResponseHandler.badRequest(
+                        "El estado de anuncio con ID " + dto.getStateId() + " no fue encontrado",
+                        request
+                );
+            }
+            announcement.setState(optionalState.get());
+        }
+
+        if (dto.getFile() != null && !dto.getFile().isEmpty()) {
+            String imageUrl = tripo3DService.uploadToImgur(dto.getFile());
+            announcement.setImageUrl(imageUrl);
+        }
+
+        announcementRepository.save(announcement);
+
+        return globalResponseHandler.handleResponse(
+                "Anuncio actualizado correctamente",
+                announcement,
+                HttpStatus.OK,
+                request
+        );
+    }
+
+    /**
+     * Validates the start and end dates of an announcement.
+     * @param startDate Date when the announcement starts.
+     * @param endDate Date when the announcement ends.
+     * @param request HTTP request for error handling.
+     * @param handler GlobalResponseHandler for constructing responses.
+     * @return ResponseEntity with validation results or null if valid.
+     * @author dgutierrez
+     */
+    private ResponseEntity<?> validateAnnouncementDates(
+            LocalDate startDate,
+            LocalDate endDate,
+            HttpServletRequest request,
+            GlobalResponseHandler handler
+    ) {
+        if (startDate == null || endDate == null) {
+            return handler.badRequest("Las fechas de inicio y fin del anuncio son obligatorias", request);
+        }
+
+        if (!startDate.isBefore(endDate)) {
+            return handler.badRequest("La fecha de inicio debe ser anterior a la fecha de fin", request);
+        }
+
+        LocalDate today = LocalDate.now();
+        LocalDate threeMonthsAgo = today.minusMonths(3);
+
+        if (startDate.isBefore(threeMonthsAgo)) {
+            return handler.badRequest("La fecha de inicio no puede ser anterior a hace 3 meses", request);
+        }
+
+        if (startDate.isAfter(today)) {
+            return handler.badRequest("La fecha de inicio no puede ser posterior a hoy", request);
+        }
+
+        if (endDate.isAfter(startDate.plusYears(3))) {
+            return handler.badRequest("La duración del anuncio no puede ser mayor a 3 años", request);
+        }
+
+        return null;
     }
 }
