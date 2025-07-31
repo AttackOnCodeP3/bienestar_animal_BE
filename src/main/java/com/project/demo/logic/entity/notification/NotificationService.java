@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * Service for managing notifications.
@@ -54,7 +55,7 @@ public class NotificationService {
         var template = NotificationTemplateRegistry.getTemplate(notificationType);
         var resolvedActionUrl = (actionUrl != null && !actionUrl.isBlank()) ? actionUrl : template.actionUrl();
 
-        var dateIssued = LocalDate.now();
+        var dateIssued = LocalDateTime.now();
 
         users.forEach(user -> {
             var notification = Notification.builder()

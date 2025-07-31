@@ -34,7 +34,7 @@ import java.util.*;
 /**
  * Scheduled task that runs daily at midnight to generate user notifications
  * based on registered animals in the system.
- *
+ * <p>
  * This class is responsible for orchestrating the execution of the notification
  * generation logic and should delegate business logic to the appropriate service layer.
  *
@@ -166,8 +166,8 @@ public class NotificationGenerationScheduler {
                 );
 
         if (latestNotif.isPresent()) {
-            LocalDate lastSentDate = latestNotif.get().getDateIssued();
-            if (lastSentDate.plusMonths(monthsInterval).isAfter(LocalDate.now())) {
+            LocalDateTime lastSentDate = latestNotif.get().getDateIssued();
+            if (lastSentDate.plusMonths(monthsInterval).isAfter(LocalDateTime.now())) {
                 logger.info("Notificación omitida: ya se envió a {} sobre {} para {} hace {}. Próxima después de {}",
                         animal.getUser().getId(),
                         config.getType().getName(),
@@ -195,7 +195,7 @@ public class NotificationGenerationScheduler {
                 .title(title)
                 .description(resolvedDescription)
                 .actionUrl(resolvedActionUrl)
-                .dateIssued(LocalDate.now())
+                .dateIssued(LocalDateTime.now())
                 .notificationStatus(statusEntity)
                 .notificationType(typeEntity)
                 .build();

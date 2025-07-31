@@ -19,6 +19,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -78,8 +79,8 @@ public class NotificationGenerationRegisterAnimalsScheduler {
 
             notificationRepository.findTopByUserIdAndNotificationType_NameOrderByDateIssuedDesc(user.getId(), type.getName())
                     .ifPresentOrElse(lastNotif -> {
-                        LocalDate lastIssued = lastNotif.getDateIssued();
-                        if (lastIssued.plusDays(SchedulerCronConstants.DAYS_BETWEEN_NOTIFICATIONS_FOR_REGISTER_COMMUNITY_ANIMALS).isAfter(LocalDate.now())) {
+                        LocalDateTime lastIssued = lastNotif.getDateIssued();
+                        if (lastIssued.plusDays(SchedulerCronConstants.DAYS_BETWEEN_NOTIFICATIONS_FOR_REGISTER_COMMUNITY_ANIMALS).isAfter(LocalDateTime.now())) {
                             logger.info(
                                     "Usuario {} ya fue notificado el {}. No se enviará otra hasta pasar {} días.",
                                     user.getId(),
@@ -102,7 +103,7 @@ public class NotificationGenerationRegisterAnimalsScheduler {
                 .user(user)
                 .title("🐶 ¡No dejes solo a tu amigo!")
                 .description("Aún no has registrado animales en el sistema. Hazlo para que podamos recordarte sus cuidados y atenciones sanitarias 🩺.")
-                .dateIssued(LocalDate.now())
+                .dateIssued(LocalDateTime.now())
                 .notificationStatus(status)
                 .notificationType(type)
                 .build();
