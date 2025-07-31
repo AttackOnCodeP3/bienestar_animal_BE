@@ -16,14 +16,6 @@ package com.project.demo.logic.constants.general;
 public class GeneralConstants {
 
     /**
-     * URL to redirect the user after successful Google authentication.
-     * <p>
-     * This is typically the front-end route where the application handles the
-     * authentication response and finalizes the login process.
-     */
-    public static final String SUCCESS_URL_AUTHENTICATION_GOOGLE = "http://localhost:4200/auth/social-callback";
-
-    /**
      * Execution order for the Role seeder.
      * This should be one of the first to run since roles are typically needed for user creation.
      */

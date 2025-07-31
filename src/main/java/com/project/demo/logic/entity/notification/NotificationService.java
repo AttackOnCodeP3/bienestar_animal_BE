@@ -27,20 +27,17 @@ public class NotificationService {
     private final NotificationStatusRepository notificationStatusRepository;
     private final UserRepository userRepository;
 
-
     /**
-     * Sends a notification to all users of a given municipality when a new announcement is created.
+     * Sends a preconfigured notification to all users of a given municipality,
+     * based on the selected NotificationTypeEnum.
      *
-     * @param announcementTitle   Title of the created announcement.
-     * @param announcementSummary Description or summary of the announcement.
-     * @param actionUrl           Optional URL the user can click for details.
-     * @param municipalityId      Municipality ID whose users will be notified.
-     * @param excludedEmail       Email to exclude from notifications (e.g., the creator of the announcement).
+     * @param notificationType Type of notification to send (enum key).
+     * @param actionUrl        Optional override for the action URL.
+     * @param municipalityId   Municipality whose users will receive the notification.
+     * @param excludedEmail    Email to exclude from notification (e.g., the creator).
      * @author dgutierrez
      */
     public void notifyAnnouncementCreationToMunicipalityUsers(
-            String announcementTitle,
-            String announcementSummary,
             NotificationTypeEnum notificationType,
             String actionUrl,
             Long municipalityId,
@@ -54,20 +51,23 @@ public class NotificationService {
         var status = notificationStatusRepository.findByName(NotificationStatusEnum.SENT.getName())
                 .orElseThrow(() -> new IllegalStateException("Notification status '" + NotificationStatusEnum.SENT.getName() + "' not found"));
 
+        var template = NotificationTemplateRegistry.getTemplate(notificationType);
+        var resolvedActionUrl = (actionUrl != null && !actionUrl.isBlank()) ? actionUrl : template.actionUrl();
+
         var dateIssued = LocalDate.now();
 
         users.forEach(user -> {
-            var notif = Notification.builder()
-                    .title("Nuevo anuncio: " + announcementTitle)
-                    .description(announcementSummary)
-                    .actionUrl(actionUrl)
+            var notification = Notification.builder()
+                    .title(template.title())
+                    .description(template.message())
+                    .actionUrl(resolvedActionUrl)
                     .dateIssued(dateIssued)
                     .user(user)
                     .notificationType(type)
                     .notificationStatus(status)
                     .build();
 
-            notificationRepository.save(notif);
+            notificationRepository.save(notification);
         });
     }
 }

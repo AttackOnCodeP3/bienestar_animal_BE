@@ -409,30 +409,10 @@ public class AnnouncementRestController {
 
         announcementRepository.save(announcement);
 
-        String announcementTitle = String.format(
-                "Anuncio de %s: %s",
-                municipality.getName(),
-                announcement.getTitle()
-        );
-
-        String announcementSummary = String.format(
-                "Nuevo anuncio creado: %s. Descripción: %s. Fecha de inicio: %s, Fecha de fin: %s.",
-                announcementTitle,
-                announcement.getDescription(),
-                announcement.getStartDate(),
-                announcement.getEndDate()
-        );
-
-        NotificationTypeEnum notificationType = NotificationTypeEnum.ANNOUNCEMENT_CREATED;
-        String actionUrl = "";
-        Long municipalityId = municipality.getId();
-
         notificationService.notifyAnnouncementCreationToMunicipalityUsers(
-                announcementTitle,
-                announcementSummary,
-                notificationType,
-                actionUrl,
-                municipalityId,
+                NotificationTypeEnum.ANNOUNCEMENT_CREATED,
+                null,
+                municipality.getId(),
                 email
         );
 
