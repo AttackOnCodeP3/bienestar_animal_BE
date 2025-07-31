@@ -31,4 +31,10 @@ public interface UserRepository extends JpaRepository<User, Long>  {
     )
 """)
     Page<User> findAllExcludingUsersWithRoleId(@Param("roleId") Long roleId, Pageable pageable);
+
+    List<User> findByMunicipality_Id(Long municipalityId);
+
+    List<User> findByMunicipality_IdAndIdNot(Long municipalityId, Long excludedUserId);
+
+    List<User> findByMunicipality_IdAndEmailNot(Long municipalityId, String excludedEmail);
 }

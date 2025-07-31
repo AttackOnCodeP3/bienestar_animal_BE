@@ -7,6 +7,8 @@ import com.project.demo.logic.entity.announcement_state.AnnouncementStateReposit
 import com.project.demo.logic.entity.auth.JwtService;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
+import com.project.demo.logic.entity.notification.NotificationService;
+import com.project.demo.logic.entity.notification_type.NotificationTypeEnum;
 import com.project.demo.logic.entity.user.User;
 import com.project.demo.logic.entity.user.UserRepository;
 import com.project.demo.rest.announcement.dto.CreateAnnouncementMultipartDTO;
@@ -33,16 +35,12 @@ public class AnnouncementRestController {
 
     private static final Logger logger = LoggerFactory.getLogger(AnnouncementRestController.class);
 
-    @Autowired
-    private AnnouncementRepository announcementRepository;
-    @Autowired
-    private AnnouncementStateRepository announcementStateRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private JwtService jwtService;
-    @Autowired
-    private Tripo3DService tripo3DService;
+    @Autowired private AnnouncementRepository announcementRepository;
+    @Autowired private AnnouncementStateRepository announcementStateRepository;
+    @Autowired private UserRepository userRepository;
+    @Autowired private JwtService jwtService;
+    @Autowired private Tripo3DService tripo3DService;
+    @Autowired private NotificationService notificationService;
 
     /**
      * Retrieves all announcements in the system.
@@ -410,6 +408,33 @@ public class AnnouncementRestController {
         announcement.getMunicipalities().add(municipality);
 
         announcementRepository.save(announcement);
+
+        String announcementTitle = String.format(
+                "Anuncio de %s: %s",
+                municipality.getName(),
+                announcement.getTitle()
+        );
+
+        String announcementSummary = String.format(
+                "Nuevo anuncio creado: %s. Descripción: %s. Fecha de inicio: %s, Fecha de fin: %s.",
+                announcementTitle,
+                announcement.getDescription(),
+                announcement.getStartDate(),
+                announcement.getEndDate()
+        );
+
+        NotificationTypeEnum notificationType = NotificationTypeEnum.ANNOUNCEMENT_CREATED;
+        String actionUrl = "";
+        Long municipalityId = municipality.getId();
+
+        notificationService.notifyAnnouncementCreationToMunicipalityUsers(
+                announcementTitle,
+                announcementSummary,
+                notificationType,
+                actionUrl,
+                municipalityId,
+                email
+        );
 
         return globalResponseHandler.handleResponse(
                 "Anuncio creado correctamente para la municipalidad del usuario",
