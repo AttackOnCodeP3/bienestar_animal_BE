@@ -1,4 +1,5 @@
 package com.project.demo.rest.animal;
+import com.project.demo.logic.entity.animal.Animal;
 import com.project.demo.logic.entity.animal.AnimalRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.rest.animal.dto.AnimalRecordDTO;
@@ -9,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -40,6 +42,31 @@ public class AnimalRecordRestController {
                 request
         );*/
         return null;
+    }
+
+    @GetMapping("/user/{userId}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getCommunityAnimalsByUserId(@PathVariable Long userId, HttpServletRequest request) {
+        var globalResponseHandler = new GlobalResponseHandler();
+
+        // Replace with actual repository method to fetch community animals by userId
+        // Example: List<AnimalRecordDTO> animals = animalRepository.findCommunityAnimalsByUserId(userId);
+
+        List<Animal> communityAnimals = animalRepository.findCommunityAnimalsByUserId(userId);
+
+        // Placeholder response
+        if (communityAnimals.isEmpty()) {
+            return globalResponseHandler.notFound(
+               "No community animals found for user with ID " + userId,
+                 request
+             );
+         }
+         return globalResponseHandler.handleResponse(
+             "Community animals retrieved successfully",
+                 communityAnimals,
+             HttpStatus.OK,
+             request
+        );
     }
 
 }
