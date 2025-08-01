@@ -3,15 +3,14 @@ package com.project.demo.scheduler;
 import com.project.demo.logic.constants.scheduling.SchedulerCronConstants;
 import com.project.demo.logic.entity.community_animal.CommunityAnimal;
 import com.project.demo.logic.entity.community_animal.CommunityAnimalRepository;
-import com.project.demo.logic.entity.district.District;
 import com.project.demo.logic.entity.municipal_preventive_care_configuration.MunicipalPreventiveCareConfiguration;
 import com.project.demo.logic.entity.municipal_preventive_care_configuration.MunicipalPreventiveCareConfigurationEnum;
 import com.project.demo.logic.entity.municipal_preventive_care_configuration.MunicipalPreventiveCareConfigurationRepository;
 import com.project.demo.logic.entity.municipality.Municipality;
 import com.project.demo.logic.entity.municipality.MunicipalityRepository;
-import com.project.demo.logic.entity.neighborhood.Neighborhood;
 import com.project.demo.logic.entity.notification.Notification;
 import com.project.demo.logic.entity.notification.NotificationRepository;
+import com.project.demo.logic.entity.notification.NotificationTemplateRegistry;
 import com.project.demo.logic.entity.notification_status.NotificationStatus;
 import com.project.demo.logic.entity.notification_status.NotificationStatusRepository;
 import com.project.demo.logic.entity.notification_status.NotificationStatusEnum;
@@ -35,7 +34,7 @@ import java.util.*;
 /**
  * Scheduled task that runs daily at midnight to generate user notifications
  * based on registered animals in the system.
- *
+ * <p>
  * This class is responsible for orchestrating the execution of the notification
  * generation logic and should delegate business logic to the appropriate service layer.
  *
@@ -135,7 +134,7 @@ public class NotificationGenerationScheduler {
                 .toList();
 
         boolean isValid = !applications.isEmpty();
-        logger.debug("💉 Evaluando vacunación para animal {} → {}", animal.getId(), isValid ? "al día" : "atrasado");
+        logger.debug("Evaluando vacunación para animal {} → {}", animal.getId(), isValid ? "al día" : "atrasado");
         return !isValid;
     }
 
@@ -167,8 +166,8 @@ public class NotificationGenerationScheduler {
                 );
 
         if (latestNotif.isPresent()) {
-            LocalDate lastSentDate = latestNotif.get().getDateIssued();
-            if (lastSentDate.plusMonths(monthsInterval).isAfter(LocalDate.now())) {
+            LocalDateTime lastSentDate = latestNotif.get().getDateIssued();
+            if (lastSentDate.plusMonths(monthsInterval).isAfter(LocalDateTime.now())) {
                 logger.info("Notificación omitida: ya se envió a {} sobre {} para {} hace {}. Próxima después de {}",
                         animal.getUser().getId(),
                         config.getType().getName(),
@@ -186,17 +185,17 @@ public class NotificationGenerationScheduler {
         NotificationStatus statusEntity = notificationStatusRepository.findByName(NotificationStatusEnum.SENT.getName())
                 .orElseThrow(() -> new IllegalStateException("Estado SENT no encontrado"));
 
+        var template = NotificationTemplateRegistry.getTemplate(typeEnum);
+
+        String resolvedDescription = template.message();
+        String resolvedActionUrl = template.actionUrl();
+
         Notification notif = Notification.builder()
                 .user(animal.getUser())
                 .title(title)
-                .description(
-                        "<p>Hola 👋</p>" +
-                                "<p>Recuerda que tu fiel compañero <strong>" + animal.getName() + "</strong> necesita atención para: <strong>" +
-                                config.getType().getName() + "</strong>.</p>" +
-                                "<p>Mantener sus controles al día es clave para que esté sano y feliz.</p>" +
-                                "<p>¡Nosotros estamos aquí para ayudarte cuando lo necesites!</p>"
-                )
-                .dateIssued(LocalDate.now())
+                .description(resolvedDescription)
+                .actionUrl(resolvedActionUrl)
+                .dateIssued(LocalDateTime.now())
                 .notificationStatus(statusEntity)
                 .notificationType(typeEntity)
                 .build();
