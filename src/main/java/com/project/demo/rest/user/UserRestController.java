@@ -34,6 +34,10 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+/**
+ * @modifiedBy gjimenez - Added new GET endpoint to support community animal owner lookup.
+ */
+
 @RestController
 @RequestMapping("/users")
 public class UserRestController {
@@ -112,6 +116,30 @@ public class UserRestController {
 
         return globalResponseHandler.handleResponse(
                 "Usuario obtenido correctamente",
+                userOpt.get(),
+                HttpStatus.OK,
+                request
+        );
+    }
+
+    @GetMapping("/cedula/{cedula}")
+    @PreAuthorize("hasAnyRole('CENSISTA_USER', 'SUPER_ADMIN')")
+    public ResponseEntity<?> getUserByCedula(
+            @PathVariable String cedula,
+            HttpServletRequest request) {
+
+        var globalResponseHandler = new GlobalResponseHandler();
+
+        Optional<User> userOpt = userRepository.findByIdentificationCard(cedula);
+        if (userOpt.isEmpty()) {
+            return globalResponseHandler.handleResponse(
+                    "No se encontro un usuario con la cedula proporcionada",
+                    HttpStatus.NOT_FOUND,
+                    request
+            );
+        }
+        return globalResponseHandler.handleResponse(
+                "Usuario encontrado",
                 userOpt.get(),
                 HttpStatus.OK,
                 request

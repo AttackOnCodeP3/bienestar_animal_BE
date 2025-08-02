@@ -56,12 +56,21 @@ public class CommunityAnimalService {
      * @param dto   The request data transfer object containing animal registration details.
      * @return The persisted {@link CommunityAnimal} entity including its associations.
      * @throws IllegalArgumentException If any referenced entity is not found or input data is invalid.
+     *
+     * @modifiedBy gjimenez - Enhanced logic to allow animal registration for other users (by cedula).
      */
     @Transactional
     public CommunityAnimal createCommunityAnimal(String email, CreateAnimalRequestDTO dto) {
 
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("Usuario no encontrado"));
+        User user;
+
+        if (dto.getOwnerIdentificationCard() != null && !dto.getOwnerIdentificationCard().isBlank()) {
+            user = userRepository.findByIdentificationCard(dto.getOwnerIdentificationCard())
+                    .orElseThrow(() -> new IllegalArgumentException("Propietario no encontrado"));
+        } else {
+            user = userRepository.findByEmail(email)
+                    .orElseThrow(() -> new IllegalArgumentException("Usuario autenticado no encontrado"));
+        }
 
         Species species = speciesRepository.findById(dto.getSpeciesId())
                 .orElseThrow(() -> new IllegalArgumentException("La especie especificada no existe"));

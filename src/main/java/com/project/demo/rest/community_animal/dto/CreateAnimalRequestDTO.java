@@ -10,6 +10,7 @@ import java.util.List;
  * DTO for creating a new animal in the community.
  * Contains fields for the animal's name, birthdate, weight, species
  * @author dgutierrez
+ * @modifiedBy gjimenez - Added support to register animals for a different user.
  */
 @Getter
 @Setter
@@ -24,4 +25,5 @@ public class CreateAnimalRequestDTO {
     private Double longitude;
     private List<SanitaryControlDTO> sanitaryControls;
     private List<VaccineApplicationDTO> vaccineApplications;
+    private String ownerIdentificationCard;
 }

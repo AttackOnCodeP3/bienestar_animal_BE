@@ -17,6 +17,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * @modifiedBy gjimenez - Added support for CENSISTA_USER role to access this endpoint.
+ */
+
 @RestController
 @RequestMapping("/community-animals")
 public class CommunityAnimalRestController {
@@ -27,7 +31,7 @@ public class CommunityAnimalRestController {
     private static final Logger logger = LoggerFactory.getLogger(CommunityAnimalRestController.class);
 
     @PostMapping
-    @PreAuthorize("hasRole('COMMUNITY_USER')")
+    @PreAuthorize("hasAnyRole('COMMUNITY_USER', 'CENSISTA_USER')")
     public ResponseEntity<?> createCommunityAnimal(
             @RequestHeader("Authorization") String authHeader,
             @RequestBody CreateAnimalRequestDTO dto,
