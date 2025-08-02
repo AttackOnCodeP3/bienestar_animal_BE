@@ -9,6 +9,7 @@ import com.project.demo.logic.entity.municipality.*;
 import com.project.demo.logic.entity.rol.Role;
 import com.project.demo.logic.entity.rol.RoleEnum;
 import com.project.demo.logic.entity.rol.RoleRepository;
+import com.project.demo.logic.entity.user.ForgotPasswordService;
 import com.project.demo.logic.entity.user.User;
 import com.project.demo.logic.entity.user.UserRepository;
 import com.project.demo.rest.municipality.dto.*;
@@ -49,6 +50,8 @@ public class MunicipalityRestController {
 
     @Autowired
     private MunicipalityStatusRepository municipalityStatusRepository;
+    @Autowired
+    private ForgotPasswordService forgotPasswordService;
 
     private final Logger logger = LoggerFactory.getLogger(MunicipalityRestController.class);
 
@@ -171,6 +174,12 @@ public class MunicipalityRestController {
 
         adminUser.addRole(adminRole.get());
         userRepository.save(adminUser);
+
+        try {
+            forgotPasswordService.resetPasswordAndSendEmail(dto.getEmail());
+        } catch (Exception e) {
+            logger.error("Error sending email to admin user: {}", e.getMessage());
+        }
 
         return new GlobalResponseHandler().handleResponse(
                 "Municipality and admin user created successfully",
