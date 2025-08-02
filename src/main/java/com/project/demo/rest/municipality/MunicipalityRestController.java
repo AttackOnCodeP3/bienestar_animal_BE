@@ -50,6 +50,7 @@ public class MunicipalityRestController {
 
     @Autowired
     private MunicipalityStatusRepository municipalityStatusRepository;
+
     @Autowired
     private ForgotPasswordService forgotPasswordService;
 
@@ -177,8 +178,9 @@ public class MunicipalityRestController {
 
         try {
             forgotPasswordService.resetPasswordAndSendEmail(dto.getEmail());
+            logger.info("Email sent to admin user: {}", dto.getEmail());
         } catch (Exception e) {
-            logger.error("Error sending email to admin user: {}", e.getMessage());
+            logger.error("Error sending email to admin user municipality: {}", e.getMessage());
         }
 
         return new GlobalResponseHandler().handleResponse(
