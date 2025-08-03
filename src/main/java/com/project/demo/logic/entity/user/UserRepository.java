@@ -43,4 +43,6 @@ public interface UserRepository extends JpaRepository<User, Long>  {
     List<User> findByMunicipality_IdAndIdNot(Long municipalityId, Long excludedUserId);
 
     List<User> findByMunicipality_IdAndEmailNot(Long municipalityId, String excludedEmail);
+
+    List<User> findByMunicipalityIdAndRolesName(Long municipalityId, RoleEnum roleName);
 }

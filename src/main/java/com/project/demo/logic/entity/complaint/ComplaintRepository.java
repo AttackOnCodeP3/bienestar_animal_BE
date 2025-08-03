@@ -8,5 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
  * This interface extends JpaRepository to provide CRUD operations.
  * @author dgutierrez
  */
-public interface ComplaintRepository extends JpaRepository<ComplaintType, Long> {
+public interface ComplaintRepository extends JpaRepository<Complaint, Long> {
 }

@@ -16,6 +16,7 @@ public enum NotificationTypeEnum {
     INCIDENT("Incidente", "Reportes o actualizaciones sobre incidentes con animales (abandonos, rescates)."),
     REMINDER("Recordatorio", "Recordatorios generales sobre eventos o tareas pendientes."),
     SYSTEM("Sistema", "Notificaciones de servicio, actualizaciones de cuenta, cambios de contraseña."),
+    COMPLAINT("Denuncia", "Notificaciones sobre denuncias realizadas por usuarios."),
     ANNOUNCEMENT_CREATED("Anuncio Creado", "Notificaciones sobre anuncios creados por administradores."),
     CUSTOM_MESSAGE("Mensaje Personalizado", "Notificaciones enviadas por administradores con un mensaje específico.");
 
