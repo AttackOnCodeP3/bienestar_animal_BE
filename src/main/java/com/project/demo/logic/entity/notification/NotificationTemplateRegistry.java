@@ -35,6 +35,8 @@ public class NotificationTemplateRegistry {
         TEMPLATE_MAP.put(NotificationTypeEnum.ANNOUNCEMENT_CREATED, new NotificationTemplate("Nuevo anuncio", "Se ha publicado un nuevo anuncio en su municipalidad.", ""));
 
         TEMPLATE_MAP.put(NotificationTypeEnum.CUSTOM_MESSAGE, new NotificationTemplate("Mensaje del administrador", "Tiene un mensaje personalizado en su bandeja.", ""));
+
+        TEMPLATE_MAP.put(NotificationTypeEnum.COMPLAINT, new NotificationTemplate("Denuncia recibida", "Se ha registrado una nueva denuncia.", ""));
     }
 
     public static NotificationTemplate getTemplate(NotificationTypeEnum type) {
