@@ -4,7 +4,7 @@ import com.project.demo.logic.entity.complaint_type.ComplaintType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- * Repository interface for managing ComplaintType entities.
+ * Repository interface for managing Complaint entities.
  * This interface extends JpaRepository to provide CRUD operations.
  * @author dgutierrez
  */
