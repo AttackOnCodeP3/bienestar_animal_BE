@@ -24,4 +24,6 @@ public interface CommunityAnimalRepository extends JpaRepository<CommunityAnimal
      * @return true if the user has registered animals
      */
     boolean existsByUser_Email(String email);
+
+
 }
