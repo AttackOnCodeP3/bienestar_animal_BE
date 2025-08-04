@@ -14,6 +14,13 @@ import java.util.List;
  */
 public interface AnimalRepository extends JpaRepository<Animal, Long> {
 
+    /**
+     * Retrieves a list of community animals associated with a specific user.
+     *
+     * @param userId the ID of the user whose community animals are to be found
+     * @return a list of {@link Animal} entities linked to the given user
+     * @author aBlancoC
+     */
     @Query("SELECT a FROM Animal a JOIN CommunityAnimal c ON a.id = c.id WHERE c.user.id = :userId")
     List<Animal> findCommunityAnimalsByUserId(@Param("userId") Long userId);
 

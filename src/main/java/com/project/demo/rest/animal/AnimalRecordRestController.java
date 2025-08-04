@@ -11,6 +11,14 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+/**
+ * REST controller for handling animal record operations.
+ * <p>
+ * Provides endpoints to retrieve community animals by owner ID.
+ * </p>
+ *
+ * @author @aBlancoC
+ */
 @RestController
 @RequestMapping("/animals/records")
 public class AnimalRecordRestController {
@@ -18,6 +26,13 @@ public class AnimalRecordRestController {
     @Autowired
     private AnimalRepository animalRepository;
 
+    /**
+     * Retrieves a list of community animals associated with a specific owner.
+     *
+     * @param ownerId the ID of the animal owner
+     * @param request the HTTP servlet request
+     * @return a {@link ResponseEntity} containing the list of animals or a not found response
+     */
     @GetMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getCommunityAnimalsByOwnerId(@RequestParam Long ownerId, HttpServletRequest request) {
@@ -40,3 +55,4 @@ public class AnimalRecordRestController {
     }
 
 }
+
