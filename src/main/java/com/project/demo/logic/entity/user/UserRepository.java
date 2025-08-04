@@ -10,6 +10,10 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * @modifiedBy gjimenez - Added query method to support user lookup by ID card.
+ */
+
 public interface UserRepository extends JpaRepository<User, Long>  {
     @Query("SELECT u FROM User u WHERE LOWER(u.name) LIKE %?1%")
     List<User> findUsersWithCharacterInName(String character);
@@ -24,6 +28,8 @@ public interface UserRepository extends JpaRepository<User, Long>  {
 
     Optional<User> findByEmail(String email);
 
+    Optional<User> findByIdentificationCard(String identificationCard);
+
     @Query("""
     SELECT u FROM User u
     WHERE :roleId NOT IN (
@@ -35,4 +41,11 @@ public interface UserRepository extends JpaRepository<User, Long>  {
     @Query("SELECT r.name FROM User u JOIN u.roles r WHERE u.id = :userId")
     List<RoleEnum> findRoleNamesByUserId(@Param("userId") Long userId);
 
+    List<User> findByMunicipality_Id(Long municipalityId);
+
+    List<User> findByMunicipality_IdAndIdNot(Long municipalityId, Long excludedUserId);
+
+    List<User> findByMunicipality_IdAndEmailNot(Long municipalityId, String excludedEmail);
+
+    List<User> findByMunicipalityIdAndRolesName(Long municipalityId, RoleEnum roleName);
 }

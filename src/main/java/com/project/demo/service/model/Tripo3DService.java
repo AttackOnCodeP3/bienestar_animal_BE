@@ -8,6 +8,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
@@ -78,6 +79,47 @@ public class Tripo3DService {
             }
         } catch (Exception e) {
             log.error("Error uploading to Imgur: " + e.getMessage());
+            throw new RuntimeException("Error uploading to Imgur: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Uploads an image to Imgur and returns the public URL.
+     *
+     * @param file Multipart image file to upload.
+     * @return Public URL of the uploaded image.
+     * @throws IOException If an error occurs during file reading or upload.
+     * @author dgutierrez
+     */
+    public String uploadToImgur(MultipartFile file) throws IOException {
+        try {
+            byte[] fileBytes = file.getBytes();
+            String base64Image = Base64.getEncoder().encodeToString(fileBytes);
+
+            MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+            formData.add("image", base64Image);
+            formData.add("type", "base64");
+
+            String response = webClient.post()
+                    .uri(imgurApiUrl)
+                    .header("Authorization", "Client-ID " + imgurClientId)
+                    .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                    .bodyValue(formData)
+                    .retrieve()
+                    .bodyToMono(String.class)
+                    .block();
+
+            log.info("Imgur response: {}", response);
+
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode json = mapper.readTree(response);
+            if (json.has("data") && json.get("data").has("link")) {
+                return json.get("data").get("link").asText();
+            } else {
+                throw new RuntimeException("Could not get public URL from Imgur: " + response);
+            }
+        } catch (Exception e) {
+            log.error("Error uploading to Imgur: {}", e.getMessage(), e);
             throw new RuntimeException("Error uploading to Imgur: " + e.getMessage(), e);
         }
     }

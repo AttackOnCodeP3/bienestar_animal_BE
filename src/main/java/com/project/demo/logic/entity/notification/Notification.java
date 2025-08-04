@@ -32,7 +32,7 @@ public class Notification {
     private String imageUrl;
 
     @Column(name = "date_issued", nullable = false)
-    private LocalDate dateIssued;
+    private LocalDateTime dateIssued;
 
     @Column(name = "action_url")
     private String actionUrl;

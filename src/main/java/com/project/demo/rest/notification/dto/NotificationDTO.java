@@ -12,7 +12,7 @@ public record NotificationDTO(
         String title,
         String description,
         String imageUrl,
-        LocalDate dateIssued,
+        LocalDateTime dateIssued,
         String actionUrl,
         String notificationStatusName,
         String notificationTypeName,
