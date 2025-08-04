@@ -34,6 +34,9 @@ public class Complaint {
     @Column(name = "longitude", nullable = false)
     private Double longitude;
 
+    @Column(name = "observations", columnDefinition = "TEXT", length = 1000)
+    private String observations;
+
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "complaint_type_id", nullable = false)
     private ComplaintType complaintType;
