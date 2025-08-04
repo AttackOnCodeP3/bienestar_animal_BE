@@ -1,5 +1,6 @@
 package com.project.demo.logic.entity.complaint;
 
+import com.project.demo.logic.entity.complaint_state.ComplaintState;
 import com.project.demo.logic.entity.complaint_type.ComplaintType;
 import com.project.demo.logic.entity.user.User;
 import jakarta.persistence.*;
@@ -36,6 +37,10 @@ public class Complaint {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "complaint_type_id", nullable = false)
     private ComplaintType complaintType;
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "complaint_state_id", nullable = false)
+    private ComplaintState complaintState;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
