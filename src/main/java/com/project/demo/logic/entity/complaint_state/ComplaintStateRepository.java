@@ -8,7 +8,7 @@ import java.util.Optional;
  * Repository interface for managing ComplaintState entities.
  * This interface extends JpaRepository to provide CRUD operations.
  *
- * @author author dgutierrez
+ * @author dgutierrez
  */
 public interface ComplaintStateRepository extends JpaRepository<ComplaintState, Long> {
     /**
