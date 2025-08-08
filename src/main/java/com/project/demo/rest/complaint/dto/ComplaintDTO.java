@@ -1,6 +1,8 @@
 package com.project.demo.rest.complaint.dto;
 
 import com.project.demo.logic.entity.complaint.Complaint;
+import com.project.demo.rest.complaint_state.dto.ComplaintStateDTO;
+import com.project.demo.rest.complaint_type.dto.ComplaintTypeDTO;
 
 /**
  * Data Transfer Object (DTO) for Complaint.
@@ -14,8 +16,10 @@ import com.project.demo.logic.entity.complaint.Complaint;
  * @param imageUrl           The URL of the image associated with the complaint.
  * @param latitude           The latitude coordinate of the complaint location.
  * @param longitude          The longitude coordinate of the complaint location.
- * @param complaintTypeName  The name of the type of the complaint.
- * @param complaintStateName The name of the state of the complaint.
+ * @param complaintTypeDTO  The type of the complaint, represented as a ComplaintTypeDTO.
+ * @param observations        Additional observations related to the complaint.
+ * @param complaintStateDTO  The state of the complaint, represented as a ComplaintStateDTO.
+ * <p>
  * @author dgutierrez
  */
 public record ComplaintDTO(
@@ -25,8 +29,8 @@ public record ComplaintDTO(
         Double latitude,
         Double longitude,
         String observations,
-        String complaintTypeName,
-        String complaintStateName
+        ComplaintTypeDTO complaintTypeDTO,
+        ComplaintStateDTO complaintStateDTO
 ) {
     public static ComplaintDTO fromEntity(Complaint complaint) {
         return new ComplaintDTO(
@@ -36,8 +40,8 @@ public record ComplaintDTO(
                 complaint.getLatitude(),
                 complaint.getLongitude(),
                 complaint.getObservations(),
-                complaint.getComplaintType().getName(),
-                complaint.getComplaintState().getName()
+                ComplaintTypeDTO.fromEntity(complaint.getComplaintType()),
+                ComplaintStateDTO.fromEntity(complaint.getComplaintState())
         );
     }
 }

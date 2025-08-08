@@ -154,6 +154,85 @@ public class ComplaintRestController {
     }
 
     /**
+     * Retrieves a complaint by ID only if it belongs to the authenticated municipal admin's municipality.
+     * @param id Complaint ID to retrieve.
+     * @param authHeader JWT token.
+     * @param request HTTP request metadata.
+     * @return ComplaintDTO if authorized and exists, otherwise appropriate error.
+     * @author dgutierrez
+     */
+    @GetMapping("/my-municipality/{id}")
+    @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
+    public ResponseEntity<?> getComplaintByIdForMunicipalityAdmin(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String authHeader,
+            HttpServletRequest request
+    ) {
+        logger.info("GET /complaints/my-municipality/{} - Fetching complaint for municipal admin", id);
+        var handler = new GlobalResponseHandler();
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        Optional<User> optionalUser = userRepository.findByEmail(email);
+
+        if (optionalUser.isEmpty() || optionalUser.get().getMunicipality() == null) {
+            return handler.notFound("No se encontró la municipalidad del usuario autenticado", request);
+        }
+
+        Long municipalityId = optionalUser.get().getMunicipality().getId();
+        Optional<Complaint> optComplaint = complaintRepository.findById(id);
+
+        if (optComplaint.isEmpty()) {
+            return handler.notFound("Denuncia no encontrada", request);
+        }
+
+        Complaint complaint = optComplaint.get();
+
+        if (!complaint.getCreatedBy().getMunicipality().getId().equals(municipalityId)) {
+            return handler.badRequest("La denuncia no pertenece a su municipalidad", request);
+        }
+
+        return wrapComplaintAsDto("Denuncia obtenida correctamente", complaint, HttpStatus.OK, request);
+    }
+
+    /**
+     * Retrieves a specific complaint created by the authenticated COMMUNITY_USER.
+     * Ensures that the complaint belongs to the authenticated user.
+     *
+     * @param id Complaint ID.
+     * @param authHeader JWT Authorization header.
+     * @param request HTTP request metadata.
+     * @return ComplaintDTO if found and belongs to user; error otherwise.
+     * @author dgutierrez
+     */
+    @GetMapping("/my-complaints/{id}")
+    @PreAuthorize("hasRole('COMMUNITY_USER')")
+    public ResponseEntity<?> getComplaintByIdForCommunityUser(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String authHeader,
+            HttpServletRequest request
+    ) {
+        logger.info("GET /complaints/my-complaints/{} - Fetching complaint for community user", id);
+        var handler = new GlobalResponseHandler();
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        var optionalUser = userRepository.findByEmail(email);
+        var optionalComplaint = complaintRepository.findById(id);
+
+        if (optionalUser.isEmpty() || optionalComplaint.isEmpty()) {
+            return handler.notFound("Usuario o denuncia no encontrada", request);
+        }
+
+        var user = optionalUser.get();
+        var complaint = optionalComplaint.get();
+
+        if (!complaint.getCreatedBy().getId().equals(user.getId())) {
+            return handler.badRequest("No tienes permiso para acceder a esta denuncia", request);
+        }
+
+        return wrapComplaintAsDto("Denuncia obtenida correctamente", complaint, HttpStatus.OK, request);
+    }
+
+    /**
      * Endpoint to create a new complaint. Only community users can create complaints.
      * Validates required fields and uploads an image if provided.
      * Sets the initial state of the complaint to "Open".
