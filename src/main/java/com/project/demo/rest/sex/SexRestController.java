@@ -34,15 +34,16 @@ public class SexRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
-        logger.info("Fetching all sex entries");
+        logger.info("Invocando getAll - obteniendo todos los valores de sexo. Página: {}, Tamaño: {}", page, size);
+        var globalResponseHandler = new GlobalResponseHandler();
 
         Pageable pageable = PaginationUtils.buildPageable(page, size);
         Page<Sex> sexPage = sexRepository.findAll(pageable);
 
         Meta meta = PaginationUtils.buildMeta(request, sexPage);
 
-        return new GlobalResponseHandler().handleResponse(
-                "Sex values retrieved successfully",
+        return globalResponseHandler.handleResponse(
+                "Valores de sexo obtenidos correctamente",
                 sexPage.getContent(),
                 HttpStatus.OK,
                 meta
@@ -52,18 +53,21 @@ public class SexRestController {
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getById(@PathVariable Long id, HttpServletRequest request) {
-        logger.info("Fetching sex with id: {}", id);
+
+        logger.info("Invocando getById - obteniendo valor de sexo con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<Sex> opt = sexRepository.findById(id);
         if (opt.isEmpty()) {
-            logger.warn("Sex with id {} not found", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Sex id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
+            logger.warn("Valor de sexo con ID {} no fue encontrado", id);
+            return globalResponseHandler.notFound(
+                    "El valor de sexo con ID " + id + " no fue encontrado",
                     request
             );
         }
-        return new GlobalResponseHandler().handleResponse(
-                "Sex value retrieved successfully",
+
+        return globalResponseHandler.handleResponse(
+                "Valor de sexo obtenido correctamente",
                 opt.get(),
                 HttpStatus.OK,
                 request

@@ -34,37 +34,39 @@ public class SanitaryControlRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
-        logger.info("Fetching all sanitary control records");
+        logger.info("Invocando getAll - obteniendo todos los registros de control sanitario. Página: {}, Tamaño: {}", page, size);
+        var globalResponseHandler = new GlobalResponseHandler();
 
         Pageable pageable = PaginationUtils.buildPageable(page, size);
         Page<SanitaryControl> sanitaryControlPage = sanitaryControlRepository.findAll(pageable);
 
         Meta meta = PaginationUtils.buildMeta(request, sanitaryControlPage);
 
-        return new GlobalResponseHandler().handleResponse(
-                "Sanitary control records retrieved successfully",
+        return globalResponseHandler.handleResponse(
+                "Registros de control sanitario obtenidos correctamente",
                 sanitaryControlPage.getContent(),
                 HttpStatus.OK,
                 meta
         );
     }
 
-
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getById(@PathVariable Long id, HttpServletRequest request) {
-        logger.info("Fetching sanitary control record with id: {}", id);
+        logger.info("Invocando getById - obteniendo registro de control sanitario con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<SanitaryControl> opt = sanitaryControlRepository.findById(id);
         if (opt.isEmpty()) {
-            logger.warn("Sanitary control record with id {} not found", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Sanitary control id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
+            logger.warn("Registro de control sanitario con ID {} no fue encontrado", id);
+            return globalResponseHandler.notFound(
+                    "El registro de control sanitario con ID " + id + " no fue encontrado",
                     request
             );
         }
-        return new GlobalResponseHandler().handleResponse(
-                "Sanitary control record retrieved successfully",
+
+        return globalResponseHandler.handleResponse(
+                "Registro de control sanitario obtenido correctamente",
                 opt.get(),
                 HttpStatus.OK,
                 request
@@ -74,12 +76,13 @@ public class SanitaryControlRestController {
     @PostMapping
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> create(@RequestBody SanitaryControl sanitaryControl, HttpServletRequest request) {
-        logger.info("Creating sanitary control record for type: {}", sanitaryControl.getSanitaryControlType().getName());
+        logger.info("Invocando create - creando nuevo registro de control sanitario para tipo: {}", sanitaryControl.getSanitaryControlType().getName());
+        var globalResponseHandler = new GlobalResponseHandler();
+
         sanitaryControlRepository.save(sanitaryControl);
-        return new GlobalResponseHandler().handleResponse(
-                "Sanitary control record created successfully",
+        return globalResponseHandler.created(
+                "Registro de control sanitario creado correctamente",
                 sanitaryControl,
-                HttpStatus.CREATED,
                 request
         );
     }
@@ -87,26 +90,27 @@ public class SanitaryControlRestController {
     @PutMapping("/{id}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody SanitaryControl sanitaryControl, HttpServletRequest request) {
-        logger.info("Updating sanitary control record with id: {}", id);
+        logger.info("Invocando update - actualizando registro de control sanitario con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<SanitaryControl> opt = sanitaryControlRepository.findById(id);
         if (opt.isEmpty()) {
-            logger.warn("Sanitary control record with id {} not found", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Sanitary control id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
+            logger.warn("Registro de control sanitario con ID {} no fue encontrado", id);
+            return globalResponseHandler.notFound(
+                    "El registro de control sanitario con ID " + id + " no fue encontrado",
                     request
             );
         }
+
         SanitaryControl current = opt.get();
         current.setLastApplicationDate(sanitaryControl.getLastApplicationDate());
         current.setProductUsed(sanitaryControl.getProductUsed());
         current.setSanitaryControlType(sanitaryControl.getSanitaryControlType());
 
         sanitaryControlRepository.save(current);
-        return new GlobalResponseHandler().handleResponse(
-                "Sanitary control record updated successfully",
+        return globalResponseHandler.success(
+                "Registro de control sanitario actualizado correctamente",
                 current,
-                HttpStatus.OK,
                 request
         );
     }
@@ -114,22 +118,22 @@ public class SanitaryControlRestController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAnyRole('SUPER_ADMIN')")
     public ResponseEntity<?> delete(@PathVariable Long id, HttpServletRequest request) {
-        logger.info("Deleting sanitary control record with id: {}", id);
+        logger.info("Invocando delete - eliminando registro de control sanitario con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<SanitaryControl> opt = sanitaryControlRepository.findById(id);
         if (opt.isPresent()) {
             sanitaryControlRepository.deleteById(id);
-            logger.info("Sanitary control record with id {} deleted", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Sanitary control record deleted successfully",
+            logger.info("Registro de control sanitario con ID {} eliminado correctamente", id);
+            return globalResponseHandler.success(
+                    "Registro de control sanitario eliminado correctamente",
                     opt.get(),
-                    HttpStatus.OK,
                     request
             );
         } else {
-            logger.warn("Sanitary control record with id {} not found", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Sanitary control id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
+            logger.warn("Registro de control sanitario con ID {} no fue encontrado", id);
+            return globalResponseHandler.notFound(
+                    "El registro de control sanitario con ID " + id + " no fue encontrado",
                     request
             );
         }

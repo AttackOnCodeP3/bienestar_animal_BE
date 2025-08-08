@@ -34,15 +34,16 @@ public class SpeciesRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
-        logger.info("Fetching all species");
+        logger.info("Invocando getAllSpecies - obteniendo todas las especies. Página: {}, Tamaño: {}", page, size);
+        var globalResponseHandler = new GlobalResponseHandler();
 
         Pageable pageable = PaginationUtils.buildPageable(page, size);
         Page<Species> speciesPage = speciesRepository.findAll(pageable);
 
         Meta meta = PaginationUtils.buildMeta(request, speciesPage);
 
-        return new GlobalResponseHandler().handleResponse(
-                "Species retrieved successfully",
+        return globalResponseHandler.handleResponse(
+                "Especies obtenidas correctamente",
                 speciesPage.getContent(),
                 HttpStatus.OK,
                 meta
@@ -52,22 +53,23 @@ public class SpeciesRestController {
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getSpeciesById(@PathVariable Long id, HttpServletRequest request) {
-        logger.info("Fetching species with id: {}", id);
+        logger.info("Invocando getSpeciesById - obteniendo especie con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<Species> speciesOpt = speciesRepository.findById(id);
         if (speciesOpt.isEmpty()) {
-            logger.warn("Species with id {} not found", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Species id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
+            logger.warn("Especie con ID {} no fue encontrada", id);
+            return globalResponseHandler.notFound(
+                    "La especie con ID " + id + " no fue encontrada",
                     request
             );
         }
-        return new GlobalResponseHandler().handleResponse(
-                "Species retrieved successfully",
+
+        return globalResponseHandler.handleResponse(
+                "Especie obtenida correctamente",
                 speciesOpt.get(),
                 HttpStatus.OK,
                 request
         );
     }
 }
-
