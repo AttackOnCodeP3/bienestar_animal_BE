@@ -369,9 +369,6 @@ public class ComplaintRestController {
         c.setComplaintState(cancel.get());
         complaintRepository.save(c);
 
-        // Opcional: notificar a admins
-        // notificationService.notifyComplaintCancelled(c);
-
         return wrapComplaintAsDto("Denuncia cancelada", c, HttpStatus.OK, req);
     }
 
@@ -548,9 +545,6 @@ public class ComplaintRestController {
              c.setObservations("Cerrada por la municipalidad tras inactividad del usuario.");
         }
         complaintRepository.save(c);
-
-        // opcional: notificar al denunciante que se cerró por inactividad si venía de WITH_OBSERVATIONS
-        // notificationService.notifyComplaintClosed(c);
 
         return wrapComplaintAsDto("Denuncia cerrada", c, HttpStatus.OK, req);
     }
