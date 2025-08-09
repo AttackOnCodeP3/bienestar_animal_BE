@@ -15,6 +15,7 @@ import com.project.demo.logic.entity.user.UserRepository;
 import com.project.demo.rest.complaint.dto.ComplaintDTO;
 import com.project.demo.rest.complaint.dto.CreateComplaintMultipartDTO;
 import com.project.demo.rest.complaint.dto.ObservationsDTO;
+import com.project.demo.rest.complaint.dto.UpdateComplaintMultipartDTO;
 import com.project.demo.service.model.Tripo3DService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
@@ -48,10 +49,12 @@ public class ComplaintRestController {
     @Autowired private Tripo3DService tripo3DService;
     @Autowired private NotificationService notificationService;
 
+    /* ============================================================
+       CONSULTAS - ADMIN MUNICIPAL
+       ============================================================ */
+
     /**
-     * Endpoint to filter complaints by type and state for the authenticated municipal admin's municipality.
-     * Supports pagination and optional filtering parameters.
-     * @author dgutierrez
+     * Filtra denuncias por tipo/estado dentro de la municipalidad del admin autenticado.
      */
     @GetMapping("/my-municipality/filter")
     @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
@@ -97,19 +100,37 @@ public class ComplaintRestController {
     }
 
     /**
-     * Retrieves complaints created by the authenticated COMMUNITY_USER.
-     * Supports optional filtering by complaint type and state, and is paginated.
-     *
-     * This endpoint is protected and only accessible by users with the COMMUNITY_USER role.
-     *
-     * @param authHeader JWT Authorization header.
-     * @param typeId Optional complaint type filter.
-     * @param stateId Optional complaint state filter.
-     * @param page Page number for pagination (default is 1).
-     * @param size Page size for pagination (default is 10).
-     * @param request HTTP request metadata.
-     * @return Paginated list of complaints created by the user.
-     * @author dgutierrez
+     * Obtiene una denuncia por ID si pertenece a la municipalidad del admin.
+     */
+    @GetMapping("/my-municipality/{id}")
+    @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
+    public ResponseEntity<?> getComplaintByIdForMunicipalityAdmin(
+            @PathVariable Long id,
+            @RequestHeader("Authorization") String authHeader,
+            HttpServletRequest request
+    ) {
+        logger.info("GET /complaints/my-municipality/{} - Fetching complaint for municipal admin", id);
+        var handler = new GlobalResponseHandler();
+
+        var optionalComplaint = complaintRepository.findById(id);
+        if (optionalComplaint.isEmpty()) {
+            return handler.notFound("Denuncia no encontrada", request);
+        }
+
+        var complaint = optionalComplaint.get();
+        if (isOutsideAdminMunicipality(complaint, authHeader)) {
+            return handler.badRequest("La denuncia no pertenece a su municipalidad", request);
+        }
+
+        return wrapComplaintAsDto("Denuncia obtenida correctamente", complaint, HttpStatus.OK, request);
+    }
+
+    /* ============================================================
+       CONSULTAS - USUARIO COMUNITARIO
+       ============================================================ */
+
+    /**
+     * Denuncias del usuario autenticado (opcionalmente filtradas).
      */
     @GetMapping("/my-complaints")
     @PreAuthorize("hasRole('COMMUNITY_USER')")
@@ -154,55 +175,7 @@ public class ComplaintRestController {
     }
 
     /**
-     * Retrieves a complaint by ID only if it belongs to the authenticated municipal admin's municipality.
-     * @param id Complaint ID to retrieve.
-     * @param authHeader JWT token.
-     * @param request HTTP request metadata.
-     * @return ComplaintDTO if authorized and exists, otherwise appropriate error.
-     * @author dgutierrez
-     */
-    @GetMapping("/my-municipality/{id}")
-    @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
-    public ResponseEntity<?> getComplaintByIdForMunicipalityAdmin(
-            @PathVariable Long id,
-            @RequestHeader("Authorization") String authHeader,
-            HttpServletRequest request
-    ) {
-        logger.info("GET /complaints/my-municipality/{} - Fetching complaint for municipal admin", id);
-        var handler = new GlobalResponseHandler();
-
-        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
-        Optional<User> optionalUser = userRepository.findByEmail(email);
-
-        if (optionalUser.isEmpty() || optionalUser.get().getMunicipality() == null) {
-            return handler.notFound("No se encontró la municipalidad del usuario autenticado", request);
-        }
-
-        Long municipalityId = optionalUser.get().getMunicipality().getId();
-        Optional<Complaint> optComplaint = complaintRepository.findById(id);
-
-        if (optComplaint.isEmpty()) {
-            return handler.notFound("Denuncia no encontrada", request);
-        }
-
-        Complaint complaint = optComplaint.get();
-
-        if (!complaint.getCreatedBy().getMunicipality().getId().equals(municipalityId)) {
-            return handler.badRequest("La denuncia no pertenece a su municipalidad", request);
-        }
-
-        return wrapComplaintAsDto("Denuncia obtenida correctamente", complaint, HttpStatus.OK, request);
-    }
-
-    /**
-     * Retrieves a specific complaint created by the authenticated COMMUNITY_USER.
-     * Ensures that the complaint belongs to the authenticated user.
-     *
-     * @param id Complaint ID.
-     * @param authHeader JWT Authorization header.
-     * @param request HTTP request metadata.
-     * @return ComplaintDTO if found and belongs to user; error otherwise.
-     * @author dgutierrez
+     * Obtiene una denuncia del usuario comunitario (propiedad obligatoria).
      */
     @GetMapping("/my-complaints/{id}")
     @PreAuthorize("hasRole('COMMUNITY_USER')")
@@ -233,11 +206,7 @@ public class ComplaintRestController {
     }
 
     /**
-     * Endpoint to create a new complaint. Only community users can create complaints.
-     * Validates required fields and uploads an image if provided.
-     * Sets the initial state of the complaint to "Open".
-     * Notifies municipal administrators about the new complaint.
-     * @author dgutierrez
+     * Crea una denuncia (estado inicial: Abierta).
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('COMMUNITY_USER')")
@@ -308,102 +277,115 @@ public class ComplaintRestController {
         );
     }
 
-    /**
-     * Endpoint to approve a complaint. Only municipal admins can approve complaints.
-     * Complaints can be approved if they are not in "Completed", "Approved", or "With Observations" states.
-     * Upon approval, the complaint state is set to "Approved" and any existing observations are cleared.
-     * Notifies the original complainant about the approval.
-     * @author dgutierrez
-     */
-    @PutMapping("/{id}/approve")
-    @PreAuthorize("hasAnyRole('MUNICIPAL_ADMIN')")
-    @Transactional
-    public ResponseEntity<?> approveComplaint(@PathVariable Long id, HttpServletRequest req) {
-        var handler = new GlobalResponseHandler();
-        var opt = complaintRepository.findById(id);
-        if (opt.isEmpty()) return handler.notFound("Denuncia no encontrada", req);
-
-        var complaint = opt.get();
-        var currentState = getComplaintStateEnumFromEntity(complaint);
-
-        if (currentState == null) {
-            return handler.internalError("Estado de denuncia desconocido", req);
-        }
-
-        List<ComplaintStateEnum> nonApprovingStates = List.of(
-                ComplaintStateEnum.COMPLETED,
-                ComplaintStateEnum.APPROVED,
-                ComplaintStateEnum.WITH_OBSERVATIONS
-        );
-
-        if (nonApprovingStates.contains(currentState)) {
-            return handler.badRequest("No se puede aprobar una denuncia en estado: " + currentState.getName(), req);
-        }
-
-        var stateOpt = complaintStateRepository.findByName(ComplaintStateEnum.APPROVED.getName());
-        if (stateOpt.isEmpty()) return handler.internalError("Estado Aprobada no encontrado", req);
-
-        complaint.setComplaintState(stateOpt.get());
-        complaint.setObservations(null);
-        complaintRepository.save(complaint);
-
-        notificationService.notifyComplaintStateChanged(complaint);
-        return wrapComplaintAsDto("Denuncia aprobada", complaint, HttpStatus.OK, req);
-    }
+    /* ============================================================
+       ACCIONES - USUARIO COMUNITARIO
+       ============================================================ */
 
     /**
-     * Endpoint to add observations to a complaint. Only municipal admins can add observations.
-     * Observations can be added if the complaint is not in "Completed" or "Approved" states.
-     * Upon adding observations, the complaint state is set to "With Observations".
-     * Notifies the original complainant about the observations.
-     * @author dgutierrez
+     * Actualiza una denuncia del comunitario.
+     * - Si está Abierta: solo actualiza campos.
+     * - Si está Con observaciones: actualiza y pasa a Abierta (limpia observaciones).
+     * - Otros estados: prohibido.
      */
-    @PutMapping("/{id}/observe")
-    @PreAuthorize("hasAnyRole('MUNICIPAL_ADMIN')")
+    @PutMapping("/{id}")
+    @PreAuthorize("hasRole('COMMUNITY_USER')")
     @Transactional
-    public ResponseEntity<?> observeComplaint(@PathVariable Long id,
-                                              @RequestBody ObservationsDTO dto,
-                                              HttpServletRequest req) {
+    public ResponseEntity<?> updateComplaint(@PathVariable Long id,
+                                             @ModelAttribute UpdateComplaintMultipartDTO dto,
+                                             @RequestHeader("Authorization") String authHeader,
+                                             HttpServletRequest req) throws IOException {
         var handler = new GlobalResponseHandler();
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        var optUser = userRepository.findByEmail(email);
         var opt = complaintRepository.findById(id);
-        if (opt.isEmpty()) return handler.notFound("Denuncia no encontrada", req);
+        if (optUser.isEmpty() || opt.isEmpty()) return handler.notFound("Usuario o denuncia no encontrada", req);
 
         var c = opt.get();
-        var currentState = getComplaintStateEnumFromEntity(c);
-
-        var nonObservingStates = List.of(
-                ComplaintStateEnum.COMPLETED,
-                ComplaintStateEnum.APPROVED
-        );
-
-        if (nonObservingStates.contains(currentState)) {
-            return handler.badRequest("No se puede indicar observaciones en una denuncia en estado: " + currentState.getName(), req);
+        if (!c.getCreatedBy().getId().equals(optUser.get().getId())) {
+            return handler.badRequest("No puedes actualizar una denuncia que no es tuya", req);
         }
 
-        var stateOpt = complaintStateRepository.findByName(ComplaintStateEnum.WITH_OBSERVATIONS.getName());
-        if (stateOpt.isEmpty()) return handler.internalError("Estado Con observaciones no encontrado", req);
+        var state = getComplaintStateEnumFromEntity(c);
+        if (!(state == ComplaintStateEnum.OPEN || state == ComplaintStateEnum.WITH_OBSERVATIONS)) {
+            return handler.badRequest("Solo se puede actualizar si está Abierta o Con observaciones", req);
+        }
 
-        c.setComplaintState(stateOpt.get());
-        c.setObservations(dto.observations());
+        if (dto.description() != null) c.setDescription(dto.description());
+        if (dto.latitude() != null)   c.setLatitude(dto.latitude());
+        if (dto.longitude() != null)  c.setLongitude(dto.longitude());
+        if (dto.complaintTypeId() != null) {
+            var optType = complaintTypeRepository.findById(dto.complaintTypeId());
+            if (optType.isEmpty()) return handler.badRequest("Tipo de denuncia inválido", req);
+            c.setComplaintType(optType.get());
+        }
+        if (dto.image() != null && !dto.image().isEmpty()) {
+            c.setImageUrl(tripo3DService.uploadToImgur(dto.image()));
+        }
+
+        // Si estaba Con observaciones, reabre
+        if (state == ComplaintStateEnum.WITH_OBSERVATIONS) {
+            var open = complaintStateRepository.findByName(ComplaintStateEnum.OPEN.getName());
+            if (open.isEmpty()) return handler.internalError("Estado Abierta no encontrado", req);
+            c.setComplaintState(open.get());
+            complaintRepository.save(c);
+            notificationService.notifyResubmission(c);
+            return wrapComplaintAsDto("Denuncia actualizada y reenviada a estado Abierta", c, HttpStatus.OK, req);
+        }
+
         complaintRepository.save(c);
-
-        notificationService.notifyComplaintObservationsToUser(c);
-        return wrapComplaintAsDto("Observaciones agregadas y enviadas para su revisión", c, HttpStatus.OK, req);
+        return wrapComplaintAsDto("Denuncia actualizada", c, HttpStatus.OK, req);
     }
 
     /**
-     * Endpoint to resubmit a complaint that has been returned with observations.
-     * Only the original complainant can resubmit, and only if the complaint is in the "With Observations" state.
-     * Upon resubmission, the complaint state is set back to "Open".
-     * Notifies municipal administrators of the resubmission.
-     * @author dgutierrez
+     * Cancela una denuncia del comunitario (solo si está Abierta).
+     */
+    @PutMapping("/{id}/cancel")
+    @PreAuthorize("hasRole('COMMUNITY_USER')")
+    @Transactional
+    public ResponseEntity<?> cancelComplaint(@PathVariable Long id,
+                                             @RequestHeader("Authorization") String authHeader,
+                                             HttpServletRequest req) {
+        var handler = new GlobalResponseHandler();
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        var optUser = userRepository.findByEmail(email);
+        var opt = complaintRepository.findById(id);
+        if (optUser.isEmpty() || opt.isEmpty()) return handler.notFound("Usuario o denuncia no encontrada", req);
+
+        var c = opt.get();
+        if (!c.getCreatedBy().getId().equals(optUser.get().getId())) {
+            return handler.badRequest("No puedes cancelar una denuncia que no es tuya", req);
+        }
+
+        var state = getComplaintStateEnumFromEntity(c);
+        if (state != ComplaintStateEnum.OPEN) {
+            return handler.badRequest("Solo se puede cancelar una denuncia en estado Abierta", req);
+        }
+
+        var cancel = complaintStateRepository.findByName(ComplaintStateEnum.CANCELLED.getName());
+        if (cancel.isEmpty()) return handler.internalError("Estado Cancelada no encontrado", req);
+
+        c.setComplaintState(cancel.get());
+        complaintRepository.save(c);
+
+        // Opcional: notificar a admins
+        // notificationService.notifyComplaintCancelled(c);
+
+        return wrapComplaintAsDto("Denuncia cancelada", c, HttpStatus.OK, req);
+    }
+
+    /**
+     * Reenvía una denuncia que está Con observaciones → Abierta (atajo explícito).
      */
     @PutMapping("/{id}/resubmit")
     @PreAuthorize("hasAnyRole('COMMUNITY_USER')")
     @Transactional
-    public ResponseEntity<?> resubmitComplaint(@PathVariable Long id, HttpServletRequest req) {
+    public ResponseEntity<?> resubmitComplaint(@PathVariable Long id,
+                                               @RequestHeader("Authorization") String authHeader,
+                                               HttpServletRequest req) {
         var handler = new GlobalResponseHandler();
-        var email = jwtService.extractUsername(jwtService.getTokenFromHeader(req.getHeader("Authorization")));
+        var email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
         var optUser = userRepository.findByEmail(email);
         var cOpt = complaintRepository.findById(id);
 
@@ -423,31 +405,105 @@ public class ComplaintRestController {
         if (stateOpt.isEmpty()) return handler.internalError("Estado Abierta no encontrado", req);
 
         c.setComplaintState(stateOpt.get());
-        c.setObservations(null);
         complaintRepository.save(c);
 
         notificationService.notifyResubmission(c);
-        return wrapComplaintAsDto("Denuncia reenviada a estado abierta", c, HttpStatus.OK, req);
+        return wrapComplaintAsDto("Denuncia reenviada a estado Abierta", c, HttpStatus.OK, req);
+    }
+
+    /* ============================================================
+       ACCIONES - ADMIN MUNICIPAL
+       ============================================================ */
+
+    /**
+     * Pasa a Con observaciones (o reescribe observaciones) desde Abierta/Con observaciones.
+     */
+    @PutMapping("/{id}/observe")
+    @PreAuthorize("hasAnyRole('MUNICIPAL_ADMIN')")
+    @Transactional
+    public ResponseEntity<?> observeComplaint(@PathVariable Long id,
+                                              @RequestBody ObservationsDTO dto,
+                                              @RequestHeader("Authorization") String authHeader,
+                                              HttpServletRequest req) {
+        var handler = new GlobalResponseHandler();
+        var opt = complaintRepository.findById(id);
+        if (opt.isEmpty()) return handler.notFound("Denuncia no encontrada", req);
+
+        var c = opt.get();
+        if (isOutsideAdminMunicipality(c, authHeader)) {
+            return handler.badRequest("La denuncia no pertenece a su municipalidad", req);
+        }
+
+        var state = getComplaintStateEnumFromEntity(c);
+        if (!(state == ComplaintStateEnum.OPEN || state == ComplaintStateEnum.WITH_OBSERVATIONS)) {
+            return handler.badRequest("No se pueden indicar observaciones en el estado actual", req);
+        }
+
+        var next = complaintStateRepository.findByName(ComplaintStateEnum.WITH_OBSERVATIONS.getName());
+        if (next.isEmpty()) return handler.internalError("Estado Con observaciones no encontrado", req);
+
+        c.setComplaintState(next.get());
+        c.setObservations(dto.observations());
+        complaintRepository.save(c);
+
+        notificationService.notifyComplaintObservationsToUser(c);
+        return wrapComplaintAsDto("Observaciones agregadas", c, HttpStatus.OK, req);
     }
 
     /**
-     * Endpoint to mark a complaint as completed. Only complaints in the "Approved" state can be completed.
-     * Notifies the original complainant upon completion.
-     * @author dgutierrez
+     * Aprueba una denuncia (solo si está Abierta).
+     */
+    @PutMapping("/{id}/approve")
+    @PreAuthorize("hasAnyRole('MUNICIPAL_ADMIN')")
+    @Transactional
+    public ResponseEntity<?> approveComplaint(@PathVariable Long id,
+                                              @RequestHeader("Authorization") String authHeader,
+                                              HttpServletRequest req) {
+        var handler = new GlobalResponseHandler();
+        var opt = complaintRepository.findById(id);
+        if (opt.isEmpty()) return handler.notFound("Denuncia no encontrada", req);
+
+        var c = opt.get();
+        if (isOutsideAdminMunicipality(c, authHeader)) {
+            return handler.badRequest("La denuncia no pertenece a su municipalidad", req);
+        }
+
+        var currentState = getComplaintStateEnumFromEntity(c);
+        if (currentState != ComplaintStateEnum.OPEN) {
+            return handler.badRequest("Solo se puede aprobar una denuncia en estado Abierta", req);
+        }
+
+        var stateOpt = complaintStateRepository.findByName(ComplaintStateEnum.APPROVED.getName());
+        if (stateOpt.isEmpty()) return handler.internalError("Estado Aprobada no encontrado", req);
+
+        c.setComplaintState(stateOpt.get());
+        complaintRepository.save(c);
+
+        notificationService.notifyComplaintStateChanged(c);
+        return wrapComplaintAsDto("Denuncia aprobada", c, HttpStatus.OK, req);
+    }
+
+    /**
+     * Completa una denuncia (solo si está Aprobada).
      */
     @PutMapping("/{id}/complete")
     @PreAuthorize("hasAnyRole('MUNICIPAL_ADMIN')")
     @Transactional
-    public ResponseEntity<?> completeComplaint(@PathVariable Long id, HttpServletRequest req) {
+    public ResponseEntity<?> completeComplaint(@PathVariable Long id,
+                                               @RequestHeader("Authorization") String authHeader,
+                                               HttpServletRequest req) {
         var handler = new GlobalResponseHandler();
         var cOpt = complaintRepository.findById(id);
         if (cOpt.isEmpty()) return handler.notFound("Denuncia no encontrada", req);
 
         var c = cOpt.get();
-        var currentState = getComplaintStateEnumFromEntity(c);
+        if (isOutsideAdminMunicipality(c, authHeader)) {
+            return handler.badRequest("La denuncia no pertenece a su municipalidad", req);
+        }
 
+        var currentState = getComplaintStateEnumFromEntity(c);
         if (currentState != ComplaintStateEnum.APPROVED) {
-            return handler.badRequest("Solo se puede completar una denuncia aprobada", req);
+            return handler.badRequest("Solo se puede completar una denuncia Aprobada", req);
         }
 
         var stateOpt = complaintStateRepository.findByName(ComplaintStateEnum.COMPLETED.getName());
@@ -461,9 +517,48 @@ public class ComplaintRestController {
     }
 
     /**
-     * Helper method to map a Complaint entity's state to the corresponding ComplaintStateEnum.
-     * @author dgutierrez
+     * Cierra una denuncia.
+     * Permitido si está Completada o Con observaciones (caso de abandono por el usuario).
      */
+    @PutMapping("/{id}/close")
+    @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
+    @Transactional
+    public ResponseEntity<?> closeComplaint(@PathVariable Long id,
+                                            @RequestHeader("Authorization") String authHeader,
+                                            HttpServletRequest req) {
+        var handler = new GlobalResponseHandler();
+        var opt = complaintRepository.findById(id);
+        if (opt.isEmpty()) return handler.notFound("Denuncia no encontrada", req);
+
+        var c = opt.get();
+        if (isOutsideAdminMunicipality(c, authHeader)) {
+            return handler.badRequest("La denuncia no pertenece a su municipalidad", req);
+        }
+
+        var state = getComplaintStateEnumFromEntity(c);
+        if (!(state == ComplaintStateEnum.COMPLETED || state == ComplaintStateEnum.WITH_OBSERVATIONS)) {
+            return handler.badRequest("Solo se puede cerrar si la denuncia está Completada o Con observaciones", req);
+        }
+
+        var closed = complaintStateRepository.findByName(ComplaintStateEnum.CLOSED.getName());
+        if (closed.isEmpty()) return handler.internalError("Estado Cerrada no encontrado", req);
+
+        c.setComplaintState(closed.get());
+         if (state == ComplaintStateEnum.WITH_OBSERVATIONS && (c.getObservations() == null || c.getObservations().isBlank())) {
+             c.setObservations("Cerrada por la municipalidad tras inactividad del usuario.");
+        }
+        complaintRepository.save(c);
+
+        // opcional: notificar al denunciante que se cerró por inactividad si venía de WITH_OBSERVATIONS
+        // notificationService.notifyComplaintClosed(c);
+
+        return wrapComplaintAsDto("Denuncia cerrada", c, HttpStatus.OK, req);
+    }
+
+    /* ============================================================
+       HELPERS
+       ============================================================ */
+
     private ComplaintStateEnum getComplaintStateEnumFromEntity(Complaint complaint) {
         return Arrays.stream(ComplaintStateEnum.values())
                 .filter(e -> e.getName().equalsIgnoreCase(complaint.getComplaintState().getName()))
@@ -471,10 +566,21 @@ public class ComplaintRestController {
                 .orElse(null);
     }
 
-    /**
-     * Helper method to wrap a Complaint entity into a ComplaintDTO and return a standardized ResponseEntity.
-     * @author dgutierrez
-     */
+    // Verifica si el estado es terminal (Cancelada o Cerrada)
+    private boolean isTerminal(ComplaintStateEnum s) {
+        return s == ComplaintStateEnum.CANCELLED || s == ComplaintStateEnum.CLOSED;
+    }
+
+    // Verifica si la denuncia no pertenece a la municipalidad del admin autenticado
+    private boolean isOutsideAdminMunicipality(Complaint c, String authHeader) {
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        return userRepository.findByEmail(email)
+                .map(User::getMunicipality)
+                .map(m -> !c.getCreatedBy().getMunicipality().getId().equals(m.getId()))
+                .orElse(true);
+    }
+
+    // Envuelve la respuesta con DTO y mensaje
     private ResponseEntity<?> wrapComplaintAsDto(String message, Complaint complaint, HttpStatus status, HttpServletRequest request) {
         ComplaintDTO dto = ComplaintDTO.fromEntity(complaint);
         return new GlobalResponseHandler().handleResponse(message, dto, status, request);
