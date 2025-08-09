@@ -1,4 +1,5 @@
 package com.project.demo.rest.animal;
+import com.project.demo.logic.entity.animal.AbandonedAnimal;
 import com.project.demo.logic.entity.animal.Animal;
 import com.project.demo.logic.entity.animal.AnimalRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
@@ -10,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * REST controller for handling animal record operations.
@@ -35,23 +37,43 @@ public class AnimalRecordRestController {
      */
     @GetMapping
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> getCommunityAnimalsByOwnerId(@RequestParam Long ownerId, HttpServletRequest request) {
+    public ResponseEntity<?> getCommunityAnimalsByOwnerId(
+            @RequestParam Long ownerId,
+            @RequestParam String status,
+            HttpServletRequest request) {
         var globalResponseHandler = new GlobalResponseHandler();
 
-        List<Animal> communityAnimals = animalRepository.findCommunityAnimalsByUserId(ownerId);
+        if(!Objects.equals(status, "abandoned")){
+            List<Animal> communityAnimals = animalRepository.findCommunityAnimalsByUserId(ownerId);
 
-        if (communityAnimals.isEmpty()) {
+            if (communityAnimals.isEmpty()) {
+                return globalResponseHandler.notFound(
+                        "No community animals found for owner with ID " + ownerId + " and status " + status,
+                        request
+                );
+            }
+            return globalResponseHandler.handleResponse(
+                    "Community animals retrieved successfully",
+                    communityAnimals,
+                    HttpStatus.OK,
+                    request
+            );
+
+        }
+        List<AbandonedAnimal> abandonedAnimals = animalRepository.findAbandonedAnimalsByUserId(ownerId);
+        if (abandonedAnimals.isEmpty()) {
             return globalResponseHandler.notFound(
-                    "No community animals found for owner with ID " + ownerId,
+                    "No abandoned animals found for owner with ID " + ownerId,
                     request
             );
         }
         return globalResponseHandler.handleResponse(
-                "Community animals retrieved successfully",
-                communityAnimals,
+                "Abandoned animals retrieved successfully",
+                abandonedAnimals,
                 HttpStatus.OK,
                 request
         );
+
     }
 
 }
