@@ -154,6 +154,13 @@ public class GeneralConstants {
     public static final int COMPLAINT_STATE_SEEDER_ORDER = 22;
 
     /**
+     * Execution order for the Complaint Seeder.
+     * Seeds initial complaints in the application.
+     * This is important for testing and demonstrating the complaint management functionality.
+     */
+    public static final int COMPLAINT_SEEDER_ORDER = 23;
+
+    /**
      * Regular expression for validating secure passwords.
      * <p>
      * This regex requires at least 8 characters, one uppercase letter,
