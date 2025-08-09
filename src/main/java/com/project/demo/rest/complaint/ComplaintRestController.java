@@ -55,6 +55,7 @@ public class ComplaintRestController {
 
     /**
      * Filtra denuncias por tipo/estado dentro de la municipalidad del admin autenticado.
+     * @author dgutierrez
      */
     @GetMapping("/my-municipality/filter")
     @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
@@ -101,6 +102,7 @@ public class ComplaintRestController {
 
     /**
      * Obtiene una denuncia por ID si pertenece a la municipalidad del admin.
+     * @author dgutierrez
      */
     @GetMapping("/my-municipality/{id}")
     @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
@@ -131,6 +133,7 @@ public class ComplaintRestController {
 
     /**
      * Denuncias del usuario autenticado (opcionalmente filtradas).
+     * @author dgutierrez
      */
     @GetMapping("/my-complaints")
     @PreAuthorize("hasRole('COMMUNITY_USER')")
@@ -176,6 +179,7 @@ public class ComplaintRestController {
 
     /**
      * Obtiene una denuncia del usuario comunitario (propiedad obligatoria).
+     * @author dgutierrez
      */
     @GetMapping("/my-complaints/{id}")
     @PreAuthorize("hasRole('COMMUNITY_USER')")
@@ -207,6 +211,7 @@ public class ComplaintRestController {
 
     /**
      * Crea una denuncia (estado inicial: Abierta).
+     * @author dgutierrez
      */
     @PostMapping
     @PreAuthorize("hasAnyRole('COMMUNITY_USER')")
@@ -286,6 +291,7 @@ public class ComplaintRestController {
      * - Si está Abierta: solo actualiza campos.
      * - Si está Con observaciones: actualiza y pasa a Abierta (limpia observaciones).
      * - Otros estados: prohibido.
+     * @author dgutierrez
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('COMMUNITY_USER')")
@@ -339,6 +345,8 @@ public class ComplaintRestController {
 
     /**
      * Cancela una denuncia del comunitario (solo si está Abierta).
+     * Solo el usuario comunitario que la creó puede cancelarla.
+     * @author dgutierrez
      */
     @PutMapping("/{id}/cancel")
     @PreAuthorize("hasRole('COMMUNITY_USER')")
@@ -369,14 +377,52 @@ public class ComplaintRestController {
         c.setComplaintState(cancel.get());
         complaintRepository.save(c);
 
-        // Opcional: notificar a admins
-        // notificationService.notifyComplaintCancelled(c);
-
         return wrapComplaintAsDto("Denuncia cancelada", c, HttpStatus.OK, req);
     }
 
     /**
+     * Cancela una denuncia como administrador municipal.
+     * Puede cancelar en estado Abierta, Con observaciones o Aprobada.
+     * @author dgutierrez
+     */
+    @PutMapping("/{id}/cancel/admin")
+    @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
+    @Transactional
+    public ResponseEntity<?> cancelComplaintAsAdmin(@PathVariable Long id,
+                                                    @RequestHeader("Authorization") String authHeader,
+                                                    HttpServletRequest req) {
+        var handler = new GlobalResponseHandler();
+        var opt = complaintRepository.findById(id);
+        if (opt.isEmpty()) return handler.notFound("Denuncia no encontrada", req);
+
+        var c = opt.get();
+        if (isOutsideAdminMunicipality(c, authHeader)) {
+            return handler.badRequest("La denuncia no pertenece a su municipalidad", req);
+        }
+
+        var state = getComplaintStateEnumFromEntity(c);
+        if (!(state == ComplaintStateEnum.OPEN
+                || state == ComplaintStateEnum.WITH_OBSERVATIONS
+                || state == ComplaintStateEnum.APPROVED)) {
+            return handler.badRequest("Solo se puede cancelar una denuncia en estado Abierta, Con observaciones o Aprobada", req);
+        }
+
+        var cancel = complaintStateRepository.findByName(ComplaintStateEnum.CANCELLED.getName());
+        if (cancel.isEmpty()) return handler.internalError("Estado Cancelada no encontrado", req);
+
+        c.setComplaintState(cancel.get());
+        if (c.getObservations() == null || c.getObservations().isBlank()) {
+            c.setObservations("Cancelada por la municipalidad.");
+        }
+        complaintRepository.save(c);
+
+        return wrapComplaintAsDto("Denuncia cancelada por la municipalidad", c, HttpStatus.OK, req);
+    }
+
+    /**
      * Reenvía una denuncia que está Con observaciones → Abierta (atajo explícito).
+     * Solo el usuario comunitario que la creó puede reenviarla.
+     * @author dgutierrez
      */
     @PutMapping("/{id}/resubmit")
     @PreAuthorize("hasAnyRole('COMMUNITY_USER')")
@@ -417,6 +463,8 @@ public class ComplaintRestController {
 
     /**
      * Pasa a Con observaciones (o reescribe observaciones) desde Abierta/Con observaciones.
+     * Solo el admin municipal puede agregar observaciones.
+     * @author dgutierrez
      */
     @PutMapping("/{id}/observe")
     @PreAuthorize("hasAnyRole('MUNICIPAL_ADMIN')")
@@ -452,6 +500,8 @@ public class ComplaintRestController {
 
     /**
      * Aprueba una denuncia (solo si está Abierta).
+     * Solo el admin municipal puede aprobar denuncias.
+     * @author dgutierrez
      */
     @PutMapping("/{id}/approve")
     @PreAuthorize("hasAnyRole('MUNICIPAL_ADMIN')")
@@ -485,6 +535,8 @@ public class ComplaintRestController {
 
     /**
      * Completa una denuncia (solo si está Aprobada).
+     * Solo el admin municipal puede completar denuncias.
+     * @author dgutierrez
      */
     @PutMapping("/{id}/complete")
     @PreAuthorize("hasAnyRole('MUNICIPAL_ADMIN')")
@@ -519,6 +571,8 @@ public class ComplaintRestController {
     /**
      * Cierra una denuncia.
      * Permitido si está Completada o Con observaciones (caso de abandono por el usuario).
+     * Si está Abierta, se cierra con observaciones por defecto.
+     * @author dgutierrez
      */
     @PutMapping("/{id}/close")
     @PreAuthorize("hasRole('MUNICIPAL_ADMIN')")
@@ -536,22 +590,23 @@ public class ComplaintRestController {
         }
 
         var state = getComplaintStateEnumFromEntity(c);
-        if (!(state == ComplaintStateEnum.COMPLETED || state == ComplaintStateEnum.WITH_OBSERVATIONS)) {
-            return handler.badRequest("Solo se puede cerrar si la denuncia está Completada o Con observaciones", req);
+
+        if (state == ComplaintStateEnum.CANCELLED || state == ComplaintStateEnum.CLOSED) {
+            return handler.badRequest("La denuncia ya se encuentra en un estado terminal", req);
         }
 
         var closed = complaintStateRepository.findByName(ComplaintStateEnum.CLOSED.getName());
         if (closed.isEmpty()) return handler.internalError("Estado Cerrada no encontrado", req);
 
         c.setComplaintState(closed.get());
-         if (state == ComplaintStateEnum.WITH_OBSERVATIONS && (c.getObservations() == null || c.getObservations().isBlank())) {
-             c.setObservations("Cerrada por la municipalidad tras inactividad del usuario.");
+
+        // mensaje/observación por defecto si venía de WITH_OBSERVATIONS o OPEN
+        if ((state == ComplaintStateEnum.WITH_OBSERVATIONS || state == ComplaintStateEnum.OPEN)
+                && (c.getObservations() == null || c.getObservations().isBlank())) {
+            c.setObservations("Cerrada por la municipalidad.");
         }
+
         complaintRepository.save(c);
-
-        // opcional: notificar al denunciante que se cerró por inactividad si venía de WITH_OBSERVATIONS
-        // notificationService.notifyComplaintClosed(c);
-
         return wrapComplaintAsDto("Denuncia cerrada", c, HttpStatus.OK, req);
     }
 
@@ -559,6 +614,12 @@ public class ComplaintRestController {
        HELPERS
        ============================================================ */
 
+    /**
+     * Obtiene el estado de la denuncia como ComplaintStateEnum a partir de la entidad Complaint.
+     * @param complaint
+     * @return
+     * @author dgutierrez
+     */
     private ComplaintStateEnum getComplaintStateEnumFromEntity(Complaint complaint) {
         return Arrays.stream(ComplaintStateEnum.values())
                 .filter(e -> e.getName().equalsIgnoreCase(complaint.getComplaintState().getName()))
@@ -566,12 +627,22 @@ public class ComplaintRestController {
                 .orElse(null);
     }
 
-    // Verifica si el estado es terminal (Cancelada o Cerrada)
+    /**
+     * Verifica si el estado es terminal (Cancelada o Cerrada)
+     * @param s
+     * @return
+     * @author dgutierrez
+     */
     private boolean isTerminal(ComplaintStateEnum s) {
         return s == ComplaintStateEnum.CANCELLED || s == ComplaintStateEnum.CLOSED;
     }
 
-    // Verifica si la denuncia no pertenece a la municipalidad del admin autenticado
+    /**
+     * Verifica si la denuncia está fuera de la municipalidad del admin autenticado.
+     * @param c Denuncia a verificar
+     * @param authHeader Header de autorización del admin
+     * @return true si está fuera, false si pertenece a su municipalidad
+     */
     private boolean isOutsideAdminMunicipality(Complaint c, String authHeader) {
         String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
         return userRepository.findByEmail(email)
@@ -580,7 +651,14 @@ public class ComplaintRestController {
                 .orElse(true);
     }
 
-    // Envuelve la respuesta con DTO y mensaje
+    /**
+     * Envuelve una denuncia como DTO y la retorna en una ResponseEntity.
+     * @param message Mensaje de éxito
+     * @param complaint Denuncia a envolver
+     * @param status Estado HTTP de la respuesta
+     * @param request Objeto HttpServletRequest para el manejo de la respuesta
+     * @return ResponseEntity con el DTO de la denuncia
+     */
     private ResponseEntity<?> wrapComplaintAsDto(String message, Complaint complaint, HttpStatus status, HttpServletRequest request) {
         ComplaintDTO dto = ComplaintDTO.fromEntity(complaint);
         return new GlobalResponseHandler().handleResponse(message, dto, status, request);
