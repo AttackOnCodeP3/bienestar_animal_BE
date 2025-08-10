@@ -182,4 +182,12 @@ public class GeneralConstants {
      * such as for administrative purposes or data seeding.
      */
     public static final String NAME_OF_MUNICIPALITY_LA_UNION_CARTAGO_SEEDER = "La Unión-Cartago";
+
+    /**
+     * Maximum size for uploaded images in bytes.
+     * <p>
+     * This constant defines the maximum allowed size for image uploads in the application.
+     * It is set to 1MB (1,048,576 bytes).
+     */
+    public static final long MAX_IMAGE_SIZE_BYTES = 1_048_576L; // 1MB
 }
