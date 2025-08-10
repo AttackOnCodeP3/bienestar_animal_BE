@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=edge"/>
+<title>Test results - CommunityAnimalRestControllerTest</title>
+<link href="../css/base-style.css" rel="stylesheet" type="text/css"/>
+<link href="../css/style.css" rel="stylesheet" type="text/css"/>
+<script src="../js/report.js" type="text/javascript"></script>
+</head>
+<body>
+<div id="content">
+<h1>CommunityAnimalRestControllerTest</h1>
+<div class="breadcrumbs">
+<a href="../index.html">all</a> &gt; 
+<a href="../packages/com.project.demo.rest.community_animal.html">com.project.demo.rest.community_animal</a> &gt; CommunityAnimalRestControllerTest</div>
+<div id="summary">
+<table>
+<tr>
+<td>
+<div class="summaryGroup">
+<table>
+<tr>
+<td>
+<div class="infoBox" id="tests">
+<div class="counter">3</div>
+<p>tests</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="failures">
+<div class="counter">0</div>
+<p>failures</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="ignored">
+<div class="counter">0</div>
+<p>ignored</p>
+</div>
+</td>
+<td>
+<div class="infoBox" id="duration">
+<div class="counter">0.073s</div>
+<p>duration</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+</td>
+<td>
+<div class="infoBox success" id="successRate">
+<div class="percent">100%</div>
+<p>successful</p>
+</div>
+</td>
+</tr>
+</table>
+</div>
+<div id="tabs">
+<ul class="tabLinks">
+<li>
+<a href="#tab0">Tests</a>
+</li>
+<li>
+<a href="#tab1">Standard output</a>
+</li>
+</ul>
+<div id="tab0" class="tab">
+<h2>Tests</h2>
+<table>
+<thead>
+<tr>
+<th>Test</th>
+<th>Duration</th>
+<th>Result</th>
+</tr>
+</thead>
+<tr>
+<td class="success">createCommunityAnimal_badRequestOnIllegalArgument()</td>
+<td class="success">0.003s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">createCommunityAnimal_created201()</td>
+<td class="success">0.066s</td>
+<td class="success">passed</td>
+</tr>
+<tr>
+<td class="success">getMyAnimals_returns200()</td>
+<td class="success">0.004s</td>
+<td class="success">passed</td>
+</tr>
+</table>
+</div>
+<div id="tab1" class="tab">
+<h2>Standard output</h2>
+<span class="code">
+<pre>23:59:27.778 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.project.demo.rest.community_animal.CommunityAnimalRestControllerTest]: CommunityAnimalRestControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+23:59:27.829 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.project.demo.DemoApplication for test class com.project.demo.rest.community_animal.CommunityAnimalRestControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+2025-08-09T23:59:27.960-04:00  INFO 71091 --- [demo] [    Test worker] .d.r.c.CommunityAnimalRestControllerTest : Starting CommunityAnimalRestControllerTest using Java 21.0.2 with PID 71091 (started by gianluccajimenez in /Users/gianluccajimenez/Desktop/GitHub/bienestar_animal_BE)
+2025-08-09T23:59:27.960-04:00  INFO 71091 --- [demo] [    Test worker] .d.r.c.CommunityAnimalRestControllerTest : No active profile set, falling back to 1 default profile: &quot;default&quot;
+2025-08-09T23:59:28.511-04:00  INFO 71091 --- [demo] [    Test worker] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@e47637c, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@606f0f70, org.springframework.security.web.context.SecurityContextHolderFilter@15bcecf9, org.springframework.security.web.header.HeaderWriterFilter@6a261998, org.springframework.web.filter.CorsFilter@1a53ac0c, org.springframework.security.web.csrf.CsrfFilter@2c51c756, org.springframework.security.web.authentication.logout.LogoutFilter@71817f66, org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter@52463255, org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter@304e1e4e, org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter@53f94afe, org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter@44df834c, org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter@7fdf7359, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@22ea6051, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@539bb233, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@4a36a35d, org.springframework.security.oauth2.client.web.OAuth2AuthorizationCodeGrantFilter@2059c3ff, org.springframework.security.web.access.ExceptionTranslationFilter@4c6eaa65, org.springframework.security.web.access.intercept.AuthorizationFilter@a08e41b]
+2025-08-09T23:59:28.539-04:00  INFO 71091 --- [demo] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2025-08-09T23:59:28.539-04:00  INFO 71091 --- [demo] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2025-08-09T23:59:28.540-04:00  INFO 71091 --- [demo] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 1 ms
+2025-08-09T23:59:28.576-04:00  INFO 71091 --- [demo] [    Test worker] .d.r.c.CommunityAnimalRestControllerTest : Started CommunityAnimalRestControllerTest in 0.719 seconds (process running for 1.819)
+2025-08-09T23:59:28.628-04:00  INFO 71091 --- [demo] [    Test worker] c.p.d.r.c.CommunityAnimalRestController  : Registrando nuevo animal comunitario...
+2025-08-09T23:59:28.649-04:00  INFO 71091 --- [demo] [    Test worker] c.p.d.r.c.CommunityAnimalRestController  : Registrando nuevo animal comunitario...
+</pre>
+</span>
+</div>
+</div>
+<div id="footer">
+<p>
+<div>
+<label class="hidden" id="label-for-line-wrapping-toggle" for="line-wrapping-toggle">Wrap lines
+<input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
+</label>
+</div>Generated by 
+<a href="http://www.gradle.org">Gradle 8.7</a> at Aug 9, 2025, 11:59:29 PM</p>
+</div>
+</div>
+</body>
+</html>
