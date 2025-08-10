@@ -25,8 +25,9 @@ public interface AnimalRepository extends JpaRepository<Animal, Long> {
     List<Animal> findCommunityAnimalsByUserId(@Param("userId") Long userId);
 
 
-    @Query("SELECT a FROM AbandonedAnimal a WHERE a.createdBy = :createdBy")
-    List<AbandonedAnimal> findAbandonedAnimalsByUserId(@Param("createdBy") Long createdBy);
+
+    @Query("SELECT a FROM AbandonedAnimal a WHERE a.createdBy.id = :userId")
+    List<AbandonedAnimal> findAbandonedAnimalsByUserId(@Param("userId") Long userId);
 
 
 }

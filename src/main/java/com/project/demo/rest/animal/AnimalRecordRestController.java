@@ -35,32 +35,38 @@ public class AnimalRecordRestController {
      * @param request the HTTP servlet request
      * @return a {@link ResponseEntity} containing the list of animals or a not found response
      */
-    @GetMapping
+    @GetMapping("/community")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getCommunityAnimalsByOwnerId(
             @RequestParam Long ownerId,
-            @RequestParam String status,
             HttpServletRequest request) {
         var globalResponseHandler = new GlobalResponseHandler();
 
-        if(!Objects.equals(status, "abandoned")){
-            List<Animal> communityAnimals = animalRepository.findCommunityAnimalsByUserId(ownerId);
+        List<Animal> communityAnimals = animalRepository.findCommunityAnimalsByUserId(ownerId);
 
-            if (communityAnimals.isEmpty()) {
-                return globalResponseHandler.notFound(
-                        "No community animals found for owner with ID " + ownerId + " and status " + status,
-                        request
-                );
-            }
-            return globalResponseHandler.handleResponse(
-                    "Community animals retrieved successfully",
-                    communityAnimals,
-                    HttpStatus.OK,
+        if (communityAnimals.isEmpty()) {
+            return globalResponseHandler.notFound(
+                    "No community animals found for owner with ID " + ownerId,
                     request
             );
-
         }
+        return globalResponseHandler.handleResponse(
+                "Community animals retrieved successfully",
+                communityAnimals,
+                HttpStatus.OK,
+                request
+        );
+    }
+
+    @GetMapping("/abandoned")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getAbandonedAnimalsByOwnerId(
+            @RequestParam Long ownerId,
+            HttpServletRequest request) {
+        var globalResponseHandler = new GlobalResponseHandler();
+
         List<AbandonedAnimal> abandonedAnimals = animalRepository.findAbandonedAnimalsByUserId(ownerId);
+
         if (abandonedAnimals.isEmpty()) {
             return globalResponseHandler.notFound(
                     "No abandoned animals found for owner with ID " + ownerId,
@@ -73,7 +79,6 @@ public class AnimalRecordRestController {
                 HttpStatus.OK,
                 request
         );
-
     }
 
 }
