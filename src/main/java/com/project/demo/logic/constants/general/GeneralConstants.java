@@ -147,6 +147,20 @@ public class GeneralConstants {
     public static final int COMPLAINT_TYPE_SEEDER_ORDER = 21;
 
     /**
+     * Execution order for the Complaint State Seeder.
+     * Seeds predefined states for complaints, such as open, closed, or in progress.
+     * This is important for tracking the status of user complaints.
+     */
+    public static final int COMPLAINT_STATE_SEEDER_ORDER = 22;
+
+    /**
+     * Execution order for the Complaint Seeder.
+     * Seeds initial complaints in the application.
+     * This is important for testing and demonstrating the complaint management functionality.
+     */
+    public static final int COMPLAINT_SEEDER_ORDER = 23;
+
+    /**
      * Regular expression for validating secure passwords.
      * <p>
      * This regex requires at least 8 characters, one uppercase letter,
@@ -168,4 +182,12 @@ public class GeneralConstants {
      * such as for administrative purposes or data seeding.
      */
     public static final String NAME_OF_MUNICIPALITY_LA_UNION_CARTAGO_SEEDER = "La Unión-Cartago";
+
+    /**
+     * Maximum size for uploaded images in bytes.
+     * <p>
+     * This constant defines the maximum allowed size for image uploads in the application.
+     * It is set to 1MB (1,048,576 bytes).
+     */
+    public static final long MAX_IMAGE_SIZE_BYTES = 1_048_576L; // 1MB
 }
