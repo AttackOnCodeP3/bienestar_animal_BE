@@ -25,7 +25,7 @@ public interface AnimalRepository extends JpaRepository<Animal, Long> {
      *
      * @param userId The ID of the user whose community animals are to be retrieved.
      * @return A list of {@link Animal} objects owned or registered by the specified user.
-     *  @author @aBlancoC
+     * @author @aBlancoC
      */
     @Query("SELECT a FROM Animal a JOIN CommunityAnimal c ON a.id = c.id WHERE c.user.id = :userId")
     List<Animal> findCommunityAnimalsByUserId(@Param("userId") Long userId);
@@ -39,7 +39,8 @@ public interface AnimalRepository extends JpaRepository<Animal, Long> {
      *
      * @param userId The ID of the user who reported the abandoned animals.
      * @return A list of {@link AbandonedAnimal} entities reported by the specified user.
-     *  @author @aBlancoC
+     * @author @aBlancoC
      */
     @Query("SELECT a FROM AbandonedAnimal a WHERE a.createdBy.id = :userId")
     List<AbandonedAnimal> findAbandonedAnimalsByUserId(@Param("userId") Long userId);
+}
