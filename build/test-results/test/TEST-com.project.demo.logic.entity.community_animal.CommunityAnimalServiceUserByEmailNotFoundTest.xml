@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.project.demo.logic.entity.community_animal.CommunityAnimalServiceUserByEmailNotFoundTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-10T03:59:27" hostname="MacBook-Pro.local" time="0.001">
+  <properties/>
+  <testcase name="whenNoOwnerCard_andEmailUserNotFound_thenThrows()" classname="com.project.demo.logic.entity.community_animal.CommunityAnimalServiceUserByEmailNotFoundTest" time="0.001"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
