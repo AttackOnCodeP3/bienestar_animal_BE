@@ -39,8 +39,14 @@ dependencies {
 	// === Lombok (boilerplate reduction) ===
 	compileOnly 'org.projectlombok:lombok:1.18.38'
 	annotationProcessor 'org.projectlombok:lombok:1.18.38'
+
+	// === PDFBox (PDF export) ===
+	implementation 'org.apache.pdfbox:pdfbox:2.0.29'
 	testCompileOnly 'org.projectlombok:lombok:1.18.38'
 	testAnnotationProcessor 'org.projectlombok:lombok:1.18.38'
+
+	// === iTextPDF (PDF generation) ===
+	implementation 'com.itextpdf:itextpdf:5.5.13.3'
 
 	// === Testing ===
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
