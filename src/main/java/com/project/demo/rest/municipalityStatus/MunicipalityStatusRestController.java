@@ -1,10 +1,13 @@
 package com.project.demo.rest.municipalityStatus;
 
+import com.project.demo.common.PaginationUtils;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
 import com.project.demo.logic.entity.http.Meta;
 import com.project.demo.logic.entity.municipality.MunicipalityStatus;
 import com.project.demo.logic.entity.municipality.MunicipalityStatusRepository;
 import jakarta.servlet.http.HttpServletRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -19,6 +22,8 @@ import java.util.Optional;
 @RequestMapping("/municipality-statuses")
 public class MunicipalityStatusRestController {
 
+    private static final Logger logger = LoggerFactory.getLogger(MunicipalityStatusRestController.class);
+
     @Autowired
     private MunicipalityStatusRepository municipalityStatusRepository;
 
@@ -28,78 +33,127 @@ public class MunicipalityStatusRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
+        logger.info("Invocando getAll - obteniendo todos los estados de municipio. Página: {}, Tamaño: {}", page, size);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Pageable pageable = PageRequest.of(page - 1, size);
         Page<MunicipalityStatus> statusPage = municipalityStatusRepository.findAll(pageable);
 
-        Meta meta = new Meta(request.getMethod(), request.getRequestURL().toString());
-        meta.setTotalPages(statusPage.getTotalPages());
-        meta.setTotalElements(statusPage.getTotalElements());
-        meta.setPageNumber(statusPage.getNumber() + 1);
-        meta.setPageSize(statusPage.getSize());
+        Meta meta = PaginationUtils.buildMeta(request, statusPage);
 
-        return new GlobalResponseHandler().handleResponse("Municipality statuses retrieved successfully",
-                statusPage.getContent(), HttpStatus.OK, meta);
+        return globalResponseHandler.handleResponse(
+                "Estados de municipio obtenidos correctamente",
+                statusPage.getContent(),
+                HttpStatus.OK,
+                meta
+        );
     }
 
     @GetMapping("/{id}")
     public ResponseEntity<?> getById(@PathVariable Long id, HttpServletRequest request) {
+        logger.info("Invocando getById - buscando estado de municipio con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<MunicipalityStatus> found = municipalityStatusRepository.findById(id);
         if (found.isPresent()) {
-            return new GlobalResponseHandler().handleResponse("Municipality status retrieved successfully",
-                    found.get(), HttpStatus.OK, request);
+            return globalResponseHandler.handleResponse(
+                    "Estado de municipio obtenido correctamente",
+                    found.get(),
+                    HttpStatus.OK,
+                    request
+            );
         } else {
-            return new GlobalResponseHandler().handleResponse("Municipality status id " + id + " not found",
-                    HttpStatus.NOT_FOUND, request);
+            logger.warn("Estado de municipio con ID {} no encontrado", id);
+            return globalResponseHandler.notFound(
+                    "El estado de municipio con ID " + id + " no fue encontrado",
+                    request
+            );
         }
     }
 
     @PostMapping
     public ResponseEntity<?> create(@RequestBody MunicipalityStatus status, HttpServletRequest request) {
+        logger.info("Invocando create - creando nuevo estado de municipio: {}", status.getName());
+        var globalResponseHandler = new GlobalResponseHandler();
+
         MunicipalityStatus saved = municipalityStatusRepository.save(status);
-        return new GlobalResponseHandler().handleResponse("Municipality status created successfully",
-                saved, HttpStatus.CREATED, request);
+        return globalResponseHandler.created(
+                "Estado de municipio creado correctamente",
+                saved,
+                request
+        );
     }
 
     @PutMapping("/{id}")
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody MunicipalityStatus status, HttpServletRequest request) {
+        logger.info("Invocando update - actualizando estado de municipio con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<MunicipalityStatus> found = municipalityStatusRepository.findById(id);
         if (found.isPresent()) {
             status.setId(id);
             MunicipalityStatus updated = municipalityStatusRepository.save(status);
-            return new GlobalResponseHandler().handleResponse("Municipality status updated successfully",
-                    updated, HttpStatus.OK, request);
+            return globalResponseHandler.handleResponse(
+                    "Estado de municipio actualizado correctamente",
+                    updated,
+                    HttpStatus.OK,
+                    request
+            );
         } else {
-            return new GlobalResponseHandler().handleResponse("Municipality status id " + id + " not found",
-                    HttpStatus.NOT_FOUND, request);
+            logger.warn("Estado de municipio con ID {} no encontrado para actualización", id);
+            return globalResponseHandler.notFound(
+                    "El estado de municipio con ID " + id + " no fue encontrado",
+                    request
+            );
         }
     }
 
     @PatchMapping("/{id}")
     public ResponseEntity<?> patch(@PathVariable Long id, @RequestBody MunicipalityStatus status, HttpServletRequest request) {
+        logger.info("Invocando patch - aplicando actualización parcial al estado de municipio con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<MunicipalityStatus> found = municipalityStatusRepository.findById(id);
         if (found.isPresent()) {
             MunicipalityStatus existing = found.get();
             if (status.getName() != null) existing.setName(status.getName());
             if (status.getDescription() != null) existing.setDescription(status.getDescription());
             MunicipalityStatus patched = municipalityStatusRepository.save(existing);
-            return new GlobalResponseHandler().handleResponse("Municipality status updated successfully",
-                    patched, HttpStatus.OK, request);
+            return globalResponseHandler.handleResponse(
+                    "Estado de municipio actualizado correctamente",
+                    patched,
+                    HttpStatus.OK,
+                    request
+            );
         } else {
-            return new GlobalResponseHandler().handleResponse("Municipality status id " + id + " not found",
-                    HttpStatus.NOT_FOUND, request);
+            logger.warn("Estado de municipio con ID {} no encontrado para parche", id);
+            return globalResponseHandler.notFound(
+                    "El estado de municipio con ID " + id + " no fue encontrado",
+                    request
+            );
         }
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<?> delete(@PathVariable Long id, HttpServletRequest request) {
+        logger.info("Invocando delete - eliminando estado de municipio con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<MunicipalityStatus> found = municipalityStatusRepository.findById(id);
         if (found.isPresent()) {
             municipalityStatusRepository.deleteById(id);
-            return new GlobalResponseHandler().handleResponse("Municipality status deleted successfully",
-                    found.get(), HttpStatus.OK, request);
+            return globalResponseHandler.handleResponse(
+                    "Estado de municipio eliminado correctamente",
+                    found.get(),
+                    HttpStatus.OK,
+                    request
+            );
         } else {
-            return new GlobalResponseHandler().handleResponse("Municipality status id " + id + " not found",
-                    HttpStatus.NOT_FOUND, request);
+            logger.warn("Estado de municipio con ID {} no encontrado para eliminación", id);
+            return globalResponseHandler.notFound(
+                    "El estado de municipio con ID " + id + " no fue encontrado",
+                    request
+            );
         }
     }
 }

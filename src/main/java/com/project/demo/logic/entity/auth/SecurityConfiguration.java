@@ -74,8 +74,8 @@ public class SecurityConfiguration {
                                 PublicEndpointsConstants.DISTRICTS,
                                 PublicEndpointsConstants.NEIGHBORHOODS,
                                 PublicEndpointsConstants.FORGOT_PASSWORD
-
                         ).permitAll()
+                        .requestMatchers("/reports/**").hasRole("SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
 

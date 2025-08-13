@@ -38,15 +38,16 @@ public class VaccineRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
-        logger.info("Fetching all vaccines");
+        logger.info("Invocando getAllVaccines - obteniendo todas las vacunas. Página: {}, Tamaño: {}", page, size);
+        var globalResponseHandler = new GlobalResponseHandler();
 
         Pageable pageable = PaginationUtils.buildPageable(page, size);
         Page<Vaccine> vaccinePage = vaccineRepository.findAll(pageable);
 
         Meta meta = PaginationUtils.buildMeta(request, vaccinePage);
 
-        return new GlobalResponseHandler().handleResponse(
-                "Vaccines retrieved successfully",
+        return globalResponseHandler.handleResponse(
+                "Vacunas obtenidas correctamente",
                 vaccinePage.getContent(),
                 HttpStatus.OK,
                 meta
@@ -56,18 +57,20 @@ public class VaccineRestController {
     @GetMapping("/{id}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getVaccineById(@PathVariable Long id, HttpServletRequest request) {
-        logger.info("Fetching vaccine with id: {}", id);
+        logger.info("Invocando getVaccineById - obteniendo vacuna con ID: {}", id);
+        var globalResponseHandler = new GlobalResponseHandler();
+
         Optional<Vaccine> vaccineOpt = vaccineRepository.findById(id);
         if (vaccineOpt.isEmpty()) {
-            logger.warn("Vaccine with id {} not found", id);
-            return new GlobalResponseHandler().handleResponse(
-                    "Vaccine id " + id + " not found",
-                    HttpStatus.NOT_FOUND,
+            logger.warn("Vacuna con ID {} no fue encontrada", id);
+            return globalResponseHandler.notFound(
+                    "La vacuna con ID " + id + " no fue encontrada",
                     request
             );
         }
-        return new GlobalResponseHandler().handleResponse(
-                "Vaccine retrieved successfully",
+
+        return globalResponseHandler.handleResponse(
+                "Vacuna obtenida correctamente",
                 vaccineOpt.get(),
                 HttpStatus.OK,
                 request
@@ -82,14 +85,14 @@ public class VaccineRestController {
             @RequestParam(defaultValue = "10") int size,
             HttpServletRequest request) {
 
-        logger.info("Fetching vaccines for species id: {}", speciesId);
+        logger.info("Invocando getVaccinesBySpeciesId - obteniendo vacunas para especie con ID: {}", speciesId);
+        var globalResponseHandler = new GlobalResponseHandler();
 
         Optional<Species> speciesOpt = speciesRepository.findById(speciesId);
         if (speciesOpt.isEmpty()) {
-            logger.warn("Species with id {} not found", speciesId);
-            return new GlobalResponseHandler().handleResponse(
-                    "Species id " + speciesId + " not found",
-                    HttpStatus.NOT_FOUND,
+            logger.warn("Especie con ID {} no fue encontrada", speciesId);
+            return globalResponseHandler.notFound(
+                    "La especie con ID " + speciesId + " no fue encontrada",
                     request
             );
         }
@@ -99,8 +102,8 @@ public class VaccineRestController {
 
         Meta meta = PaginationUtils.buildMeta(request, vaccinePage);
 
-        return new GlobalResponseHandler().handleResponse(
-                "Vaccines for species retrieved successfully",
+        return globalResponseHandler.handleResponse(
+                "Vacunas para la especie obtenidas correctamente",
                 vaccinePage.getContent(),
                 HttpStatus.OK,
                 meta

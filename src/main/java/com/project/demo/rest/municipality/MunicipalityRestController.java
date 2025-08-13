@@ -1,5 +1,6 @@
 package com.project.demo.rest.municipality;
 
+import com.project.demo.common.PaginationUtils;
 import com.project.demo.logic.entity.canton.Canton;
 import com.project.demo.logic.entity.canton.CantonRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
@@ -8,6 +9,7 @@ import com.project.demo.logic.entity.municipality.*;
 import com.project.demo.logic.entity.rol.Role;
 import com.project.demo.logic.entity.rol.RoleEnum;
 import com.project.demo.logic.entity.rol.RoleRepository;
+import com.project.demo.logic.entity.user.ForgotPasswordService;
 import com.project.demo.logic.entity.user.User;
 import com.project.demo.logic.entity.user.UserRepository;
 import com.project.demo.rest.municipality.dto.*;
@@ -49,6 +51,9 @@ public class MunicipalityRestController {
     @Autowired
     private MunicipalityStatusRepository municipalityStatusRepository;
 
+    @Autowired
+    private ForgotPasswordService forgotPasswordService;
+
     private final Logger logger = LoggerFactory.getLogger(MunicipalityRestController.class);
 
     @GetMapping
@@ -69,11 +74,7 @@ public class MunicipalityRestController {
 
         Page<Municipality> municipalityPage = municipalityRepository.findAll(spec, pageable);
 
-        Meta meta = new Meta(request.getMethod(), request.getRequestURL().toString());
-        meta.setTotalPages(municipalityPage.getTotalPages());
-        meta.setTotalElements(municipalityPage.getTotalElements());
-        meta.setPageNumber(municipalityPage.getNumber() + 1);
-        meta.setPageSize(municipalityPage.getSize());
+        Meta meta = PaginationUtils.buildMeta(request, municipalityPage);
 
         return new GlobalResponseHandler().handleResponse(
                 "Municipalities retrieved successfully",
@@ -112,21 +113,41 @@ public class MunicipalityRestController {
             HttpServletRequest request
     ) {
         logger.info("Creating municipality with name: {}", dto.getName());
+        var globalResponseHandler = new GlobalResponseHandler();
         try {
             validarMunicipality(dto.getName(), dto.getEmail(), dto.getCantonId(), null);
         } catch (IllegalArgumentException ex) {
             return new GlobalResponseHandler().handleResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request);
         }
 
-        Role adminRole = roleRepository.findByName(RoleEnum.MUNICIPAL_ADMIN)
-                .orElseThrow(() -> new RuntimeException(RoleEnum.MUNICIPAL_ADMIN.name() + " role not found"));
+        Optional<Role> adminRole = roleRepository.findByName(RoleEnum.MUNICIPAL_ADMIN);
 
-        MunicipalityStatus activeStatus = municipalityStatusRepository
-                .findByName(MunicipalityStatusEnum.ACTIVE.getDisplayName())
-                .orElseThrow(() -> new IllegalArgumentException("Municipality status ACTIVE not found"));
+        if (adminRole.isEmpty()) {
+            return globalResponseHandler.badRequest(
+                    "Role " + RoleEnum.MUNICIPAL_ADMIN.name() + " not found",
+                    request
+            );
+        }
 
-        Canton canton = cantonRepository.findById(dto.getCantonId())
-                .orElseThrow(() -> new IllegalArgumentException("Canton not found"));
+
+        Optional<MunicipalityStatus> activeStatus = municipalityStatusRepository
+                .findByName(MunicipalityStatusEnum.ACTIVE.getDisplayName());
+
+        if (activeStatus.isEmpty()) {
+            return globalResponseHandler.badRequest(
+                    "Municipality status ACTIVE not found",
+                    request
+            );
+        }
+
+        Optional<Canton> canton = cantonRepository.findById(dto.getCantonId());
+
+        if (canton.isEmpty()) {
+            return globalResponseHandler.badRequest(
+                    "Canton with ID " + dto.getCantonId() + " not found",
+                    request
+            );
+        }
 
         Municipality municipality = Municipality.builder()
                 .name(dto.getName())
@@ -135,8 +156,8 @@ public class MunicipalityRestController {
                 .email(dto.getEmail())
                 .responsibleName(dto.getResponsibleName())
                 .responsibleRole(dto.getResponsibleRole())
-                .status(activeStatus)
-                .canton(canton)
+                .status(activeStatus.get())
+                .canton(canton.get())
                 .build();
 
         Municipality saved = municipalityRepository.save(municipality);
@@ -152,8 +173,15 @@ public class MunicipalityRestController {
                 .roles(new HashSet<>())
                 .build();
 
-        adminUser.addRole(adminRole);
+        adminUser.addRole(adminRole.get());
         userRepository.save(adminUser);
+
+        try {
+            forgotPasswordService.resetPasswordAndSendEmail(dto.getEmail());
+            logger.info("Email sent to admin user: {}", dto.getEmail());
+        } catch (Exception e) {
+            logger.error("Error sending email to admin user municipality: {}", e.getMessage());
+        }
 
         return new GlobalResponseHandler().handleResponse(
                 "Municipality and admin user created successfully",
@@ -171,26 +199,44 @@ public class MunicipalityRestController {
             HttpServletRequest request
     ) {
         logger.info("Updating municipality with ID: {}", municipalityId);
+        var globalResponseHandler = new GlobalResponseHandler();
 
-        Municipality municipality = municipalityRepository.findById(municipalityId)
-                .orElseThrow(() -> new EntityNotFoundException("Municipality not found"));
-
+        Optional<Municipality> municipality = municipalityRepository.findById(municipalityId);
+        if (municipality.isEmpty()) {
+            return globalResponseHandler.handleResponse(
+                    "Municipality with ID " + municipalityId + " not found",
+                    HttpStatus.NOT_FOUND,
+                    request
+            );
+        }
         try {
             validarMunicipality(dto.getName(), dto.getEmail(), dto.getCantonId(), municipalityId);
         } catch (IllegalArgumentException ex) {
-            return new GlobalResponseHandler().handleResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request);
+            return globalResponseHandler.handleResponse(ex.getMessage(), HttpStatus.BAD_REQUEST, request);
         }
 
-        MunicipalityStatus status = municipalityStatusRepository.findById(dto.getMunicipalityStatusId())
-                .orElseThrow(() -> new EntityNotFoundException("Municipality status not found"));
+        Optional<MunicipalityStatus> status = municipalityStatusRepository.findById(dto.getMunicipalityStatusId());
+        if (status.isEmpty()) {
+            return globalResponseHandler.handleResponse(
+                    "Municipality status not found",
+                    HttpStatus.BAD_REQUEST,
+                    request
+            );
+        }
 
-        Canton canton = cantonRepository.findById(dto.getCantonId())
-                .orElseThrow(() -> new EntityNotFoundException("Canton not found"));
+        Optional<Canton> canton = cantonRepository.findById(dto.getCantonId());
+        if (canton.isEmpty()) {
+            return globalResponseHandler.handleResponse(
+                    "Canton with ID " + dto.getCantonId() + " not found",
+                    HttpStatus.BAD_REQUEST,
+                    request
+            );
+        }
 
-        municipality.updateFromDto(dto, status, canton);
-        Municipality updated = municipalityRepository.save(municipality);
+        municipality.get().updateFromDto(dto, status.get(), canton.get());
+        Municipality updated = municipalityRepository.save(municipality.get());
 
-        return new GlobalResponseHandler().handleResponse(
+        return globalResponseHandler.handleResponse(
                 "Municipality updated successfully",
                 updated,
                 HttpStatus.OK,
@@ -231,12 +277,20 @@ public class MunicipalityRestController {
             HttpServletRequest request
     ) {
         logger.info("Updating responsible for municipality with ID: {}", municipalityId);
-        Municipality municipality = municipalityRepository.findById(municipalityId)
-                .orElseThrow(() -> new EntityNotFoundException("Municipality not found"));
+        var globalResponseHandler = new GlobalResponseHandler();
 
-        municipality.setResponsibleName(dto.getResponsibleName());
-        municipality.setResponsibleRole(dto.getResponsibleRole());
-        municipalityRepository.save(municipality);
+        Optional<Municipality> municipality = municipalityRepository.findById(municipalityId);
+        if (municipality.isEmpty()) {
+            return globalResponseHandler.handleResponse(
+                    "Municipality with ID " + municipalityId + " not found",
+                    HttpStatus.NOT_FOUND,
+                    request
+            );
+        }
+
+        municipality.get().setResponsibleName(dto.getResponsibleName());
+        municipality.get().setResponsibleRole(dto.getResponsibleRole());
+        municipalityRepository.save(municipality.get());
 
         return new GlobalResponseHandler().handleResponse(
                 "Responsible updated successfully",
@@ -254,11 +308,18 @@ public class MunicipalityRestController {
             HttpServletRequest request
     ) {
         logger.info("Updating logo for municipality with ID: {}", municipalityId);
-        Municipality municipality = municipalityRepository.findById(municipalityId)
-                .orElseThrow(() -> new EntityNotFoundException("Municipality not found"));
+        var globalResponseHandler = new GlobalResponseHandler();
+        Optional<Municipality> municipality = municipalityRepository.findById(municipalityId);
+        if (municipality.isEmpty()) {
+            return globalResponseHandler.notFound(
+                    "Municipality with ID " + municipalityId + " not found",
+                    request
+            );
+        }
 
-        municipality.setLogo(dto.getLogo());
-        municipalityRepository.save(municipality);
+
+        municipality.get().setLogo(dto.getLogo());
+        municipalityRepository.save(municipality.get());
 
         return new GlobalResponseHandler().handleResponse(
                 "Logo updated successfully",
@@ -272,19 +333,18 @@ public class MunicipalityRestController {
     @PreAuthorize("hasRole('SUPER_ADMIN')")
     public ResponseEntity<?> delete(@PathVariable Long municipalityId, HttpServletRequest request) {
         logger.info("Deleting municipality with ID: {}", municipalityId);
+        var globalResponseHandler = new GlobalResponseHandler();
         Optional<Municipality> found = municipalityRepository.findById(municipalityId);
         if (found.isPresent()) {
             municipalityRepository.deleteById(municipalityId);
-            return new GlobalResponseHandler().handleResponse(
+            return globalResponseHandler.success(
                     "Municipality deleted successfully",
                     found.get(),
-                    HttpStatus.OK,
                     request
             );
         } else {
-            return new GlobalResponseHandler().handleResponse(
+            return globalResponseHandler.notFound(
                     "Municipality not found",
-                    HttpStatus.NOT_FOUND,
                     request
             );
         }
@@ -299,7 +359,7 @@ public class MunicipalityRestController {
      * @param idActual   the current ID of the municipality being updated (null if creating)
      * @author dgutierrez
      */
-    private void validarMunicipality(String name, String email, Long cantonId, Long idActual) {
+        private void validarMunicipality(String name, String email, Long cantonId, Long idActual) {
         municipalityRepository.findByName(name).ifPresent(existing -> {
             if (!Objects.equals(existing.getId(), idActual)) {
                 throw new IllegalArgumentException("A municipality with this name already exists");
