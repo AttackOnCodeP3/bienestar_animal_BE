@@ -1,4 +1,5 @@
 package com.project.demo.logic.entity.complaint;
+import java.util.List;
 
 import com.project.demo.logic.entity.complaint_type.ComplaintType;
 import org.springframework.data.domain.Page;
@@ -14,6 +15,11 @@ import org.springframework.data.repository.query.Param;
  * @author dgutierrez
  */
 public interface ComplaintRepository extends JpaRepository<Complaint, Long> {
+        @Query("SELECT COUNT(c) FROM Complaint c WHERE c.complaintState.name = 'Abierta'")
+        long countOpenComplaints();
+
+        @Query("SELECT c.complaintType.name, COUNT(c) FROM Complaint c GROUP BY c.complaintType.name")
+        List<Object[]> countComplaintsByType();
     /**
      * Finds a Complaint by its ID and fetches it eagerly with its associated entities.
      *
