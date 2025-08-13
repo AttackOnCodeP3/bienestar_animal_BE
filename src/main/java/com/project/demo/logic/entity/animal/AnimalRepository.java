@@ -14,6 +14,12 @@ import java.util.List;
  */
 public interface AnimalRepository extends JpaRepository<Animal, Long> {
 
+    @Query("SELECT COUNT(a) FROM Animal a WHERE a.animalType.name = 'Abandonado'")
+    long countAbandonedAnimals();
+
+    @Query("SELECT a.animalType.name, COUNT(a) FROM Animal a GROUP BY a.animalType.name")
+    List<Object[]> countAnimalsByType();
+
     /**
      * Retrieves a list of community animals associated with a specific user.
      *

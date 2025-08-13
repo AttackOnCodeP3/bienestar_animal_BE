@@ -8,12 +8,15 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import com.project.demo.logic.entity.municipality.Municipality;
 
 import java.time.LocalDateTime;
 
 /**
  * Entity class representing a community animal. This class is a specialization of the Animal entity
  * @author dgutierrez
+ * 
+ * Modify by nav, to add the getMunicipality method
  */
 @SuperBuilder
 @Getter
@@ -28,6 +31,14 @@ public class CommunityAnimal extends Animal {
     @JoinColumn(name = "owner_user_id", nullable = false)
     @JsonIgnore
     private User user;
+
+    /**
+     * Returns the municipality of the community animal via its user.
+     * @return Municipality or null if not set
+     */
+    public Municipality getMunicipality() {
+        return user != null ? user.getMunicipality() : null;
+    }
 
     @CreationTimestamp
     @Column(updatable = false, name = "created_at")

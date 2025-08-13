@@ -8,6 +8,7 @@ import com.project.demo.logic.entity.race.Race;
 import com.project.demo.logic.entity.sanitary_control.SanitaryControl;
 import com.project.demo.logic.entity.sex.Sex;
 import com.project.demo.logic.entity.species.Species;
+import com.project.demo.logic.entity.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
@@ -88,6 +89,10 @@ public class Animal {
     @UpdateTimestamp
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "owner_id")
+    private User owner;
 
     @Transient
     public AgeDTO getAge() {
