@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.project.demo.DemoApplicationTests" tests="1" skipped="1" failures="0" errors="0" timestamp="2025-08-10T03:59:27" hostname="MacBook-Pro.local" time="0.0">
+  <properties/>
+  <testcase name="contextLoads()" classname="com.project.demo.DemoApplicationTests" time="0.0">
+    <skipped/>
+  </testcase>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

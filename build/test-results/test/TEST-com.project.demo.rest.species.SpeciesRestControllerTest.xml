@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.project.demo.rest.species.SpeciesRestControllerTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-08-10T03:59:28" hostname="MacBook-Pro.local" time="0.012">
+  <properties/>
+  <testcase name="getSpeciesById_found_returns200()" classname="com.project.demo.rest.species.SpeciesRestControllerTest" time="0.006"/>
+  <testcase name="getAllSpecies_returns200AndList()" classname="com.project.demo.rest.species.SpeciesRestControllerTest" time="0.002"/>
+  <testcase name="getSpeciesById_notFound_returns404()" classname="com.project.demo.rest.species.SpeciesRestControllerTest" time="0.002"/>
+  <system-out><![CDATA[2025-08-09T23:59:28.657-04:00  INFO 71091 --- [demo] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.project.demo.rest.species.SpeciesRestControllerTest]: SpeciesRestControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2025-08-09T23:59:28.667-04:00  INFO 71091 --- [demo] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.project.demo.DemoApplication for test class com.project.demo.rest.species.SpeciesRestControllerTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+2025-08-09T23:59:28.675-04:00  INFO 71091 --- [demo] [    Test worker] c.p.d.r.s.SpeciesRestControllerTest      : Starting SpeciesRestControllerTest using Java 21.0.2 with PID 71091 (started by gianluccajimenez in /Users/gianluccajimenez/Desktop/GitHub/bienestar_animal_BE)
+2025-08-09T23:59:28.675-04:00  INFO 71091 --- [demo] [    Test worker] c.p.d.r.s.SpeciesRestControllerTest      : No active profile set, falling back to 1 default profile: "default"
+2025-08-09T23:59:28.788-04:00  INFO 71091 --- [demo] [    Test worker] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@e98004e, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@368e7d3a, org.springframework.security.web.context.SecurityContextHolderFilter@64a00fe0, org.springframework.security.web.header.HeaderWriterFilter@ec67be1, org.springframework.web.filter.CorsFilter@381f05a9, org.springframework.security.web.csrf.CsrfFilter@60660d21, org.springframework.security.web.authentication.logout.LogoutFilter@4fd70118, org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter@507e3e77, org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter@3956e933, org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter@73796ae5, org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter@671561b9, org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter@375682a5, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@347f0950, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@5ab1107d, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@79827e71, org.springframework.security.oauth2.client.web.OAuth2AuthorizationCodeGrantFilter@2fb40e49, org.springframework.security.web.access.ExceptionTranslationFilter@2898c70d, org.springframework.security.web.access.intercept.AuthorizationFilter@27563444]
+2025-08-09T23:59:28.792-04:00  INFO 71091 --- [demo] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2025-08-09T23:59:28.793-04:00  INFO 71091 --- [demo] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2025-08-09T23:59:28.793-04:00  INFO 71091 --- [demo] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2025-08-09T23:59:28.796-04:00  INFO 71091 --- [demo] [    Test worker] c.p.d.r.s.SpeciesRestControllerTest      : Started SpeciesRestControllerTest in 0.128 seconds (process running for 2.039)
+2025-08-09T23:59:28.800-04:00  INFO 71091 --- [demo] [    Test worker] c.p.d.r.species.SpeciesRestController    : Invocando getSpeciesById - obteniendo especie con ID: 7
+2025-08-09T23:59:28.806-04:00  INFO 71091 --- [demo] [    Test worker] c.p.d.r.species.SpeciesRestController    : Invocando getAllSpecies - obteniendo todas las especies. Página: 1, Tamaño: 10
+2025-08-09T23:59:28.808-04:00  INFO 71091 --- [demo] [    Test worker] c.p.d.r.species.SpeciesRestController    : Invocando getSpeciesById - obteniendo especie con ID: 999
+2025-08-09T23:59:28.809-04:00  WARN 71091 --- [demo] [    Test worker] c.p.d.r.species.SpeciesRestController    : Especie con ID 999 no fue encontrada
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
