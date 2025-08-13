@@ -1,4 +1,6 @@
 package com.project.demo.rest.animal;
+
+import com.project.demo.logic.entity.animal.AbandonedAnimal;
 import com.project.demo.logic.entity.animal.Animal;
 import com.project.demo.logic.entity.animal.AnimalRepository;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
@@ -12,9 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 /**
- * REST controller for handling animal record operations.
+ * REST controller that manages operations related to animal records.
  * <p>
- * Provides endpoints to retrieve community animals by owner ID.
+ * Provides endpoints to retrieve lists of community animals and abandoned animals
+ * filtered by the owner's ID.
  * </p>
  *
  * @author @aBlancoC
@@ -23,19 +26,26 @@ import java.util.List;
 @RequestMapping("/animals/records")
 public class AnimalRecordRestController {
 
+    /**
+     * Repository for accessing and managing animal data.
+     */
     @Autowired
     private AnimalRepository animalRepository;
 
     /**
-     * Retrieves a list of community animals associated with a specific owner.
+     * Retrieves a list of community animals owned by a specific user.
      *
-     * @param ownerId the ID of the animal owner
-     * @param request the HTTP servlet request
-     * @return a {@link ResponseEntity} containing the list of animals or a not found response
+     * @param ownerId The ID of the owner whose community animals will be retrieved.
+     * @param request The HTTP request object, used for response metadata.
+     * @return A {@link ResponseEntity} containing the list of community animals or
+     *         a "not found" message if no animals match the criteria.
      */
-    @GetMapping
+    @GetMapping("/community")
     @PreAuthorize("isAuthenticated()")
-    public ResponseEntity<?> getCommunityAnimalsByOwnerId(@RequestParam Long ownerId, HttpServletRequest request) {
+    public ResponseEntity<?> getCommunityAnimalsByOwnerId(
+            @RequestParam Long ownerId,
+            HttpServletRequest request) {
+
         var globalResponseHandler = new GlobalResponseHandler();
 
         List<Animal> communityAnimals = animalRepository.findCommunityAnimalsByUserId(ownerId);
@@ -46,6 +56,7 @@ public class AnimalRecordRestController {
                     request
             );
         }
+
         return globalResponseHandler.handleResponse(
                 "Community animals retrieved successfully",
                 communityAnimals,
@@ -54,5 +65,36 @@ public class AnimalRecordRestController {
         );
     }
 
-}
+    /**
+     * Retrieves a list of abandoned animals reported by a specific user.
+     *
+     * @param ownerId The ID of the owner whose abandoned animal reports will be retrieved.
+     * @param request The HTTP request object, used for response metadata.
+     * @return A {@link ResponseEntity} containing the list of abandoned animals or
+     *         a "not found" message if no animals match the criteria.
+     */
+    @GetMapping("/abandoned")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<?> getAbandonedAnimalsByOwnerId(
+            @RequestParam Long ownerId,
+            HttpServletRequest request) {
 
+        var globalResponseHandler = new GlobalResponseHandler();
+
+        List<AbandonedAnimal> abandonedAnimals = animalRepository.findAbandonedAnimalsByUserId(ownerId);
+
+        if (abandonedAnimals.isEmpty()) {
+            return globalResponseHandler.notFound(
+                    "No abandoned animals found for owner with ID " + ownerId,
+                    request
+            );
+        }
+
+        return globalResponseHandler.handleResponse(
+                "Abandoned animals retrieved successfully",
+                abandonedAnimals,
+                HttpStatus.OK,
+                request
+        );
+    }
+}

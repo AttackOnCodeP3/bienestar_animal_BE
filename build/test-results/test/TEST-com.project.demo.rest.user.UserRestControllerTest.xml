@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.project.demo.rest.user.UserRestControllerTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2025-08-10T03:59:29" hostname="MacBook-Pro.local" time="0.022">
+  <properties/>
+  <testcase name="getUserById_notFound_returns404()" classname="com.project.demo.rest.user.UserRestControllerTest" time="0.003"/>
+  <testcase name="addUser_encodesPasswordAndSaves_returns200()" classname="com.project.demo.rest.user.UserRestControllerTest" time="0.011"/>
+  <testcase name="getAll_usesRoleFilterAndReturns200()" classname="com.project.demo.rest.user.UserRestControllerTest" time="0.006"/>
+  <system-out><![CDATA[2025-08-09T23:59:29.015-04:00  INFO 71091 --- [demo] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.project.demo.rest.user.UserRestControllerTest]: UserRestControllerTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2025-08-09T23:59:29.017-04:00  INFO 71091 --- [demo] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.project.demo.DemoApplication for test class com.project.demo.rest.user.UserRestControllerTest
+2025-08-09T23:59:29.020-04:00  INFO 71091 --- [demo] [    Test worker] c.p.demo.rest.user.UserRestController    : Invocación de GET /users/123 - Obtener usuario por ID
+2025-08-09T23:59:29.031-04:00  INFO 71091 --- [demo] [    Test worker] c.p.demo.rest.user.UserRestController    : Invocación de POST /users - Crear usuario con correo: j@p.com
+2025-08-09T23:59:29.038-04:00  INFO 71091 --- [demo] [    Test worker] c.p.demo.rest.user.UserRestController    : Invocación de GET /users - Listar usuarios (página 1, tamaño 10)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

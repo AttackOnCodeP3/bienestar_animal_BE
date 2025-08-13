@@ -15,7 +15,9 @@ public enum ComplaintStateEnum {
     OPEN("Abierta", "Denuncia recién creada y pendiente de revisión."),
     APPROVED("Aprobada", "Denuncia validada y aceptada para su procesamiento."),
     WITH_OBSERVATIONS("Con observaciones", "La denuncia contiene observaciones que deben corregirse."),
-    COMPLETED("Completada", "Denuncia atendida satisfactoriamente y cerrada.");
+    COMPLETED("Completada", "Denuncia atendida satisfactoriamente y cerrada."),
+    CLOSED("Cerrada", "Denuncia no aprobada y cerrada por el usuario."),
+    CANCELLED("Cancelada", "Denuncia cancelada por el usuario antes de su procesamiento.");
 
     private final String name;
     private final String description;

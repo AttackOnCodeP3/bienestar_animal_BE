@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.project.demo.rest.user.UserRestControllerGetByCedulaTest" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-08-10T03:59:29" hostname="MacBook-Pro.local" time="0.006">
+  <properties/>
+  <testcase name="getByCedula_found_returns200()" classname="com.project.demo.rest.user.UserRestControllerGetByCedulaTest" time="0.006"/>
+  <system-out><![CDATA[2025-08-09T23:59:28.811-04:00  INFO 71091 --- [demo] [    Test worker] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.project.demo.rest.user.UserRestControllerGetByCedulaTest]: UserRestControllerGetByCedulaTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2025-08-09T23:59:28.819-04:00  INFO 71091 --- [demo] [    Test worker] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.project.demo.DemoApplication for test class com.project.demo.rest.user.UserRestControllerGetByCedulaTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v3.2.5)
+
+2025-08-09T23:59:28.825-04:00  INFO 71091 --- [demo] [    Test worker] .d.r.u.UserRestControllerGetByCedulaTest : Starting UserRestControllerGetByCedulaTest using Java 21.0.2 with PID 71091 (started by gianluccajimenez in /Users/gianluccajimenez/Desktop/GitHub/bienestar_animal_BE)
+2025-08-09T23:59:28.826-04:00  INFO 71091 --- [demo] [    Test worker] .d.r.u.UserRestControllerGetByCedulaTest : No active profile set, falling back to 1 default profile: "default"
+2025-08-09T23:59:28.999-04:00  INFO 71091 --- [demo] [    Test worker] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with [org.springframework.security.web.session.DisableEncodeUrlFilter@18be7f57, org.springframework.security.web.context.request.async.WebAsyncManagerIntegrationFilter@64aab3fd, org.springframework.security.web.context.SecurityContextHolderFilter@42a698bd, org.springframework.security.web.header.HeaderWriterFilter@62243a7a, org.springframework.web.filter.CorsFilter@2565b097, org.springframework.security.web.csrf.CsrfFilter@3bfbe2a6, org.springframework.security.web.authentication.logout.LogoutFilter@8ae7e03, org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter@70d61624, org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter@4a0161ee, org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter@7b50e70a, org.springframework.security.web.authentication.ui.DefaultLoginPageGeneratingFilter@3d306fd5, org.springframework.security.web.authentication.ui.DefaultLogoutPageGeneratingFilter@34c79268, org.springframework.security.web.savedrequest.RequestCacheAwareFilter@26acbc9d, org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter@7e047d85, org.springframework.security.web.authentication.AnonymousAuthenticationFilter@5fe80760, org.springframework.security.oauth2.client.web.OAuth2AuthorizationCodeGrantFilter@58192546, org.springframework.security.web.access.ExceptionTranslationFilter@275ff5f8, org.springframework.security.web.access.intercept.AuthorizationFilter@bf32f3f]
+2025-08-09T23:59:29.002-04:00  INFO 71091 --- [demo] [    Test worker] o.s.b.t.m.w.SpringBootMockServletContext : Initializing Spring TestDispatcherServlet ''
+2025-08-09T23:59:29.003-04:00  INFO 71091 --- [demo] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2025-08-09T23:59:29.003-04:00  INFO 71091 --- [demo] [    Test worker] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+2025-08-09T23:59:29.006-04:00  INFO 71091 --- [demo] [    Test worker] .d.r.u.UserRestControllerGetByCedulaTest : Started UserRestControllerGetByCedulaTest in 0.186 seconds (process running for 2.249)
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

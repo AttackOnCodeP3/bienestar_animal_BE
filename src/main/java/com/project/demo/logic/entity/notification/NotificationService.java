@@ -139,11 +139,14 @@ public class NotificationService {
             return;
         }
 
-        Optional<NotificationType> typeOpt = notificationTypeRepository.findByName(NotificationTypeEnum.COMPLAINT.name());
+        Optional<NotificationType> typeOpt = notificationTypeRepository.findByName(NotificationTypeEnum.COMPLAINT.getName());
         if (typeOpt.isEmpty()) {
             logger.error("Tipo de notificación 'COMPLAINT' no encontrado");
             return;
         }
+
+        var status = notificationStatusRepository.findByName(NotificationStatusEnum.SENT.getName())
+                .orElseThrow(() -> new IllegalStateException("Notification status '" + NotificationStatusEnum.SENT.getName() + "' not found"));
 
         NotificationType type = typeOpt.get();
         NotificationTemplate template = NotificationTemplateRegistry.getTemplate(NotificationTypeEnum.COMPLAINT);
@@ -160,11 +163,13 @@ public class NotificationService {
                 .title(template.title())
                 .description(stateMessage)
                 .notificationType(type)
+                .dateIssued(LocalDateTime.now())
+                .notificationStatus(status)
                 .user(complaint.getCreatedBy())
                 .build();
 
         notificationRepository.save(notification);
-        logger.info("Notificación enviada al usuario {} por cambio de estado de denuncia a '{}'.", complaint.getCreatedBy().getEmail(), stateEnum.name());
+        logger.info("Notificación enviada al usuario {} por cambio de estado de denuncia a '{}'.", complaint.getCreatedBy().getEmail(), stateEnum.getName());
     }
 
     /**
@@ -173,15 +178,24 @@ public class NotificationService {
      * @author dgutierrez
      */
     public void notifyComplaintObservationsToUser(Complaint complaint) {
-        var type = notificationTypeRepository.findByName(NotificationTypeEnum.COMPLAINT.name())
-                .orElseThrow(() -> new IllegalStateException("Tipo de notificación 'COMPLAINT' no encontrado"));
+        var type = notificationTypeRepository.findByName(NotificationTypeEnum.COMPLAINT.getName());
+
+        if (type.isEmpty()) {
+            logger.error("Tipo de notificación 'COMPLAINT' no encontrado");
+            throw new IllegalStateException("Tipo de notificación 'COMPLAINT' no encontrado");
+        }
+
+        var status = notificationStatusRepository.findByName(NotificationStatusEnum.SENT.getName())
+                .orElseThrow(() -> new IllegalStateException("Notification status '" + NotificationStatusEnum.SENT.getName() + "' not found"));
 
         var template = NotificationTemplateRegistry.getTemplate(NotificationTypeEnum.COMPLAINT);
 
         Notification notification = Notification.builder()
                 .title("Observaciones a su denuncia")
                 .description("Su denuncia ha sido revisada y tiene observaciones que deben ser corregidas.")
-                .notificationType(type)
+                .notificationType(type.get())
+                .dateIssued(LocalDateTime.now())
+                .notificationStatus(status)
                 .user(complaint.getCreatedBy())
                 .build();
 
@@ -204,14 +218,19 @@ public class NotificationService {
                 complaint.getCreatedBy().getMunicipality().getId(),
                 RoleEnum.MUNICIPAL_ADMIN);
 
-        var type = notificationTypeRepository.findByName(NotificationTypeEnum.COMPLAINT.name())
+        var type = notificationTypeRepository.findByName(NotificationTypeEnum.COMPLAINT.getName())
                 .orElseThrow(() -> new IllegalStateException("Tipo de notificación 'COMPLAINT' no encontrado"));
+
+        var status = notificationStatusRepository.findByName(NotificationStatusEnum.SENT.getName())
+                .orElseThrow(() -> new IllegalStateException("Notification status '" + NotificationStatusEnum.SENT.getName() + "' not found"));
 
         for (User admin : admins) {
             Notification notification = Notification.builder()
                     .title("Denuncia reenviada")
                     .description("Una denuncia ha sido reenviada por el usuario tras correcciones.")
                     .notificationType(type)
+                    .dateIssued(LocalDateTime.now())
+                    .notificationStatus(status)
                     .user(admin)
                     .build();
 
@@ -232,13 +251,18 @@ public class NotificationService {
      * @author dgutierrez
      */
     public void notifyComplaintCompleted(Complaint complaint) {
-        var type = notificationTypeRepository.findByName(NotificationTypeEnum.COMPLAINT.name())
-                .orElseThrow(() -> new IllegalStateException("Tipo de notificación" + NotificationTypeEnum.COMPLAINT.name() + " no encontrado"));
+        var type = notificationTypeRepository.findByName(NotificationTypeEnum.COMPLAINT.getName())
+                .orElseThrow(() -> new IllegalStateException("Tipo de notificación" + NotificationTypeEnum.COMPLAINT.getName() + " no encontrado"));
+
+        var status = notificationStatusRepository.findByName(NotificationStatusEnum.SENT.getName())
+                .orElseThrow(() -> new IllegalStateException("Notification status '" + NotificationStatusEnum.SENT.getName() + "' not found"));
 
         Notification notification = Notification.builder()
                 .title("Denuncia completada")
                 .description("Su denuncia ha sido atendida y se considera completada.")
                 .notificationType(type)
+                .dateIssued(LocalDateTime.now())
+                .notificationStatus(status)
                 .user(complaint.getCreatedBy())
                 .build();
 

@@ -45,7 +45,7 @@ public class NotificationRestController {
         logger.info("Invocando getMyNotifications - Obteniendo mis notificaciones. Page: {}, Size: {}", page, size);
 
         String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
-        Pageable pageable = PageRequest.of(page - 1, size);
+        Pageable pageable = PageRequest.of(page - 1, size, Sort.by(Sort.Direction.DESC, "createdAt"));
 
         Page<Notification> notificationPage = notificationRepository.findByUser_Email(email, pageable);
         Page<NotificationDTO> dtoPage = notificationPage.map(NotificationDTO::fromEntity);

@@ -72,26 +72,84 @@ public class AnnouncementSeeder implements ApplicationListener<ContextRefreshedE
         AnnouncementState state = optionalState.get();
 
         Announcement announcement1 = Announcement.builder()
-                .title("Campaña de vacunación animal")
-                .description("Vacunación gratuita para perros y gatos el próximo sábado en el parque central.")
+                .title("Evento Adiestramiento canino")
+                .description("""
+        <p>Únete a nuestra <strong>jornada especial de adiestramiento canino</strong> en la playa, 
+        donde expertos en comportamiento animal compartirán <em>técnicas prácticas</em> para mejorar 
+        la obediencia y la convivencia con tu mascota. 
+        </p>
+        <ul>
+            <li>Entrenamiento básico y avanzado</li>
+            <li>Consejos para socialización entre perros</li>
+            <li>Actividades recreativas y juegos guiados</li>
+        </ul>
+        <p><strong>¡No olvides llevar agua, correa y mucha energía!</strong></p>
+    """)
                 .startDate(LocalDate.now())
                 .endDate(LocalDate.now().plusDays(1))
-                .imageUrl("https://placehold.co/600x400?text=Vacunation")
+                .imageUrl("https://i.imgur.com/oJj0Y69.jpeg")
                 .state(state)
                 .municipalities(List.of(municipality))
                 .build();
 
         Announcement announcement2 = Announcement.builder()
-                .title("Jornada de adopción")
-                .description("Adopta una mascota este domingo en el centro comunitario.")
-                .startDate(LocalDate.now().plusDays(1))
-                .endDate(LocalDate.now().plusDays(3))
-                .imageUrl("https://placehold.co/600x400?text=Adopcion")
+                .title("Evento cuidados de los felinos")
+                .description("""
+        <p>Descubre cómo <strong>mejorar la calidad de vida de tus gatos</strong> con\s
+        recomendaciones de especialistas en salud y comportamiento felino.</p>
+        <ul>
+            <li>Alimentación balanceada para cada etapa de vida</li>
+            <li>Enriquecimiento ambiental y juegos</li>
+            <li>Prevención de enfermedades comunes</li>
+        </ul>
+        <p>Ideal para dueños primerizos y amantes de los felinos.</p>
+   \s""")
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(1))
+                .imageUrl("https://i.imgur.com/Fv45TzL.jpeg")
                 .state(state)
                 .municipalities(List.of(municipality))
                 .build();
 
-        announcementRepository.saveAll(List.of(announcement1, announcement2));
+        Announcement announcement3 = Announcement.builder()
+                .title("Capacitación Alimentación saludable")
+                .description("""
+        <p>Aprende con profesionales de la nutrición animal sobre\s
+        <strong>dietas equilibradas y saludables</strong> para perros y gatos.</p>
+        <ul>
+            <li>Elección de alimentos según edad y condición física</li>
+            <li>Snacks naturales y caseros</li>
+            <li>Hábitos que mejoran la digestión y el bienestar</li>
+        </ul>
+        <p>Incluye material digital y asesoría personalizada.</p>
+   \s""")
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(1))
+                .imageUrl("https://i.imgur.com/3MQCUBZ.jpeg")
+                .state(state)
+                .municipalities(List.of(municipality))
+                .build();
+
+        Announcement announcement4 = Announcement.builder()
+                .title("Campaña de castración")
+                .description("""
+        <p>Participa en nuestra <strong>campaña masiva de castración</strong> y ayuda\s
+        a controlar la sobrepoblación animal en nuestra comunidad.</p>
+        <ul>
+            <li>Procedimientos realizados por veterinarios certificados</li>
+            <li>Recuperación supervisada y cuidados postoperatorios</li>
+            <li>Precios accesibles y cupos limitados</li>
+        </ul>
+        <p><em>¡Tu compromiso salva vidas!</em></p>
+   \s""")
+                .startDate(LocalDate.now())
+                .endDate(LocalDate.now().plusDays(1))
+                .imageUrl("https://i.imgur.com/COiI5zt.jpeg")
+                .state(state)
+                .municipalities(List.of(municipality))
+                .build();
+
+        announcementRepository.saveAll(List.of(announcement1, announcement2, announcement3, announcement4));
 
         logger.info("Seeded 2 announcements in state '{}' for municipality '{}'.",
                 state.getName(), municipality.getName());

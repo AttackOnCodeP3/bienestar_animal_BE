@@ -1,8 +1,10 @@
 package com.project.demo.rest.announcement;
 
 import com.project.demo.common.PaginationUtils;
+import com.project.demo.logic.constants.general.GeneralConstants;
 import com.project.demo.logic.entity.announcement.Announcement;
 import com.project.demo.logic.entity.announcement.AnnouncementRepository;
+import com.project.demo.logic.entity.announcement_state.AnnouncementStateEnum;
 import com.project.demo.logic.entity.announcement_state.AnnouncementStateRepository;
 import com.project.demo.logic.entity.auth.JwtService;
 import com.project.demo.logic.entity.http.GlobalResponseHandler;
@@ -41,6 +43,8 @@ public class AnnouncementRestController {
     @Autowired private JwtService jwtService;
     @Autowired private Tripo3DService tripo3DService;
     @Autowired private NotificationService notificationService;
+
+
 
     /**
      * Retrieves all announcements in the system.
@@ -342,6 +346,109 @@ public class AnnouncementRestController {
     }
 
     /**
+     * Retrieves all visible announcements for the municipality of the currently authenticated user.
+     * Only announcements that are published and not expired are returned.
+     *
+     * @param authHeader the Authorization header containing the JWT token.
+     * @param page       the requested page number.
+     * @param size       the number of items per page.
+     * @param request    the HTTP request for metadata construction.
+     * @return a paginated list of visible announcements for the user's municipality.
+     * @author dgutierrez
+     */
+    @GetMapping("/my-municipality/visible")
+    @PreAuthorize("hasAnyRole('MUNICIPAL_ADMIN','COMMUNITY_USER')")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getVisibleAnnouncementsForMyMunicipality(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpServletRequest request
+    ) {
+        logger.info("Invocando getVisibleAnnouncementsForMyMunicipality");
+
+        var grh = new GlobalResponseHandler();
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        var optUser = userRepository.findByEmail(email);
+        if (optUser.isEmpty() || optUser.get().getMunicipality() == null) {
+            return grh.notFound("No se encontró la municipalidad del usuario autenticado", request);
+        }
+
+        Long municipalityId = optUser.get().getMunicipality().getId();
+        Pageable pageable = PaginationUtils.buildPageable(page, size);
+        LocalDate today = LocalDate.now();
+
+        var pageResult = announcementRepository.findVisibleByMunicipalityUsingStateName(
+                municipalityId,
+                AnnouncementStateEnum.PUBLISHED.getName(),
+                today,
+                pageable
+        );
+
+        Meta meta = PaginationUtils.buildMeta(request, pageResult);
+        return grh.handleResponse(
+                "Anuncios visibles de la municipalidad obtenidos correctamente",
+                pageResult.getContent(),
+                HttpStatus.OK,
+                meta
+        );
+    }
+
+    /**
+     * Retrieves a specific visible announcement by its ID for the municipality of the currently authenticated user.
+     * Only announcements that are published and not expired are returned.
+     *
+     * @param authHeader the Authorization header containing the JWT token.
+     * @param id         the ID of the announcement.
+     * @param request    the HTTP request for error handling.
+     * @return the visible announcement if found, otherwise a 404 response.
+     * @author dgutierrez
+     */
+    @GetMapping("/my-municipality/visible/{id}")
+    @PreAuthorize("hasAnyRole('MUNICIPAL_ADMIN','COMMUNITY_USER')")
+    @Transactional(readOnly = true)
+    public ResponseEntity<?> getVisibleAnnouncementByIdForMyMunicipality(
+            @RequestHeader("Authorization") String authHeader,
+            @PathVariable Long id,
+            HttpServletRequest request
+    ) {
+        logger.info("Invocando getVisibleAnnouncementByIdForMyMunicipality - ID: {}", id);
+
+        var grh = new GlobalResponseHandler();
+
+        String email = jwtService.extractUsername(jwtService.getTokenFromHeader(authHeader));
+        var optUser = userRepository.findByEmail(email);
+        if (optUser.isEmpty() || optUser.get().getMunicipality() == null) {
+            return grh.notFound("No se encontró la municipalidad del usuario autenticado", request);
+        }
+
+        Long municipalityId = optUser.get().getMunicipality().getId();
+        LocalDate today = LocalDate.now();
+
+        var optAnnouncement = announcementRepository.findVisibleByIdAndMunicipalityUsingStateName(
+                id,
+                municipalityId,
+                AnnouncementStateEnum.PUBLISHED.getName(),
+                today
+        );
+
+        if (optAnnouncement.isEmpty()) {
+            return grh.notFound(
+                    "No se encontró un anuncio visible con ID " + id + " para su municipalidad",
+                    request
+            );
+        }
+
+        return grh.handleResponse(
+                "Anuncio visible obtenido correctamente",
+                optAnnouncement.get(),
+                HttpStatus.OK,
+                request
+        );
+    }
+
+    /**
      * Creates a new announcement associated with the currently authenticated MUNICIPAL_ADMIN's municipality.
      * The announcement requires an image file and metadata sent as multipart/form-data.
      *
@@ -367,6 +474,13 @@ public class AnnouncementRestController {
         if (dto.getFile() == null || dto.getFile().isEmpty()) {
             return globalResponseHandler.badRequest(
                     "El archivo de imagen es obligatorio para crear un anuncio",
+                    request
+            );
+        }
+
+        if (dto.getFile().getSize() > GeneralConstants.MAX_IMAGE_SIZE_BYTES) {
+            return globalResponseHandler.badRequest(
+                    "La imagen supera el tamaño máximo permitido de 1 MB",
                     request
             );
         }
@@ -487,6 +601,13 @@ public class AnnouncementRestController {
         }
 
         if (dto.getFile() != null && !dto.getFile().isEmpty()) {
+            if (dto.getFile().getSize() > GeneralConstants.MAX_IMAGE_SIZE_BYTES) {
+                return globalResponseHandler.badRequest(
+                        "La imagen supera el tamaño máximo permitido de 1 MB",
+                        request
+                );
+            }
+
             String imageUrl = tripo3DService.uploadToImgur(dto.getFile());
             announcement.setImageUrl(imageUrl);
         }
