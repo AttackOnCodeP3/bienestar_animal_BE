@@ -1,32 +1,32 @@
-name: Scheduled Merge Desarrollo to QA
-
-on:
-  schedule:
-    - cron: "0 23 * * *"
-  workflow_dispatch:
-
-jobs:
-  merge:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout QA branch
-        uses: actions/checkout@v4
-        with:
-          ref: QA
-          token: ${{ secrets.PAT_TOKEN }}
-
-      - name: Set up Git user
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Set up authenticated git
-        run: git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/AttackOnCodeP3/bienestar_animal_BE.git
-
-      - name: Merge Desarrollo into QA
-        run: |
-          git fetch origin Desarrollo
-          git merge origin/Desarrollo --no-ff -m "Automated merge from Desarrollo to QA" --allow-unrelated-histories
-
-      - name: Push changes
-        run: git push origin QA
+# name: Scheduled Merge Desarrollo to QA
+#
+# on:
+#   schedule:
+#     - cron: "0 23 * * *"
+#   workflow_dispatch:
+#
+# jobs:
+#   merge:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout QA branch
+#         uses: actions/checkout@v4
+#         with:
+#           ref: QA
+#           token: ${{ secrets.PAT_TOKEN }}
+#
+#       - name: Set up Git user
+#         run: |
+#           git config user.name "github-actions[bot]"
+#           git config user.email "github-actions[bot]@users.noreply.github.com"
+#
+#       - name: Set up authenticated git
+#         run: git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/AttackOnCodeP3/bienestar_animal_BE.git
+#
+#       - name: Merge Desarrollo into QA
+#         run: |
+#           git fetch origin Desarrollo
+#           git merge origin/Desarrollo --no-ff -m "Automated merge from Desarrollo to QA" --allow-unrelated-histories
+#
+#       - name: Push changes
+#         run: git push origin QA
